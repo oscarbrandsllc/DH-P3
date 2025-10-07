@@ -39,11 +39,11 @@
         <i class="fa-solid fa-house-user" aria-hidden="true"></i>
         <span class="nav-label">Home</span>
     </button>
-    <button class="nav-button active" id="nav-rosters" data-nav="rosters">
+    <button class="nav-button active" id="fetchRostersButton" data-nav="rosters">
         <i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>
         <span class="nav-label">Rosters</span>
     </button>
-    <button class="nav-button" id="nav-ownership" data-nav="ownership">
+    <button class="nav-button" id="fetchOwnershipButton" data-nav="ownership">
         <i class="fa-solid fa-percent" aria-hidden="true"></i>
         <span class="nav-label">Ownership</span>
     </button>
@@ -51,7 +51,7 @@
         <i class="fa-solid fa-square-poll-vertical" aria-hidden="true"></i>
         <span class="nav-label">L.Analyze</span>
     </button>
-    <button class="nav-button" id="nav-research" data-nav="research">
+    <button class="nav-button" id="researchButton" data-nav="research">
         <i class="fa-solid fa-flask" aria-hidden="true"></i>
         <span class="nav-label">Research</span>
     </button>
@@ -60,7 +60,7 @@
 <div id="contextual-controls">
 <div class="header-row" id="secondary-header-row">
 <div class="username-area">
-<input autocapitalize="none" autocomplete="username" autocorrect="off" id="usernameInput" inputmode="text" name="username" placeholder="SLPR Username..." type="text" value="The_Oracle"/>
+<input autocapitalize="none" autocomplete="username" autocorrect="off" id="usernameInput" inputmode="text" name="username" placeholder="SLPR Username..." type="text" value=""/>
 </div>
 <div class="custom-select-wrapper">
 <select disabled="" id="leagueSelect">
@@ -82,7 +82,7 @@
     <div class="start-sit-button-slot" id="start-sit-button-slot">
     <div class="start-sit-button-container">
         <button class="menu-button analyzer-button start-sit-button" id="startSitButton" type="button" aria-label="Open Start/Sit recommendations">
-            <i class="fa-solid fa-elevator analyzer-icon" aria-hidden="true"></i>
+            <i class="fa-solid fa-calendar-days analyzer-icon" aria-hidden="true"></i>
             <span class="analyzer-label">Start/Sit</span>
         </button>
     </div>
