@@ -7179,3 +7179,23 @@ body[data-page="analyzer"] #leagueSelect {
 #dh-scramble .dh-dud { color: #7666b5 !important; opacity: 0.75; }
 
 /* === end loader block === */
+
+/* --- HOME-PAGE ONLY HEADER RULES --- */
+body[data-page="welcome"] #filters-row,
+body[data-page="welcome"] #secondary-header-row .view-switcher {
+    display: none !important;
+}
+
+body[data-page="welcome"] #secondary-header-row {
+    justify-content: center; /* Center the remaining items */
+    gap: 0.75rem; /* Add some space between them */
+}
+
+/* Make the inputs take up more space on mobile */
+@media (max-width: 520px) {
+    body[data-page="welcome"] #secondary-header-row .username-area,
+    body[data-page="welcome"] #secondary-header-row .custom-select-wrapper {
+        flex: 1; /* Allow them to grow equally */
+        max-width: 50%; /* Each takes up half the space */
+    }
+}
