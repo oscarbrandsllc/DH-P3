@@ -520,6 +520,23 @@
         gap: 0.4rem;
         padding: 0.2rem;
     }
+
+    /* Mobile adjustments for welcome page with only username and league select */
+    body[data-page="welcome"] #secondary-header-row {
+        gap: 0.4rem;
+        padding: 0.4rem 0.25rem;
+    }
+
+    body[data-page="welcome"] #secondary-header-row .username-area,
+    body[data-page="welcome"] #secondary-header-row .custom-select-wrapper {
+        max-width: none;
+        min-width: 0;
+    }
+
+    body[data-page="welcome"] #secondary-header-row .username-area input,
+    body[data-page="welcome"] #secondary-header-row .custom-select-wrapper select {
+        font-size: 0.85rem;
+    }
 }
 
 /* === Desktop Responsive Adjustments === */
@@ -562,6 +579,12 @@
     #secondary-header-row .username-area,
     #secondary-header-row .custom-select-wrapper {
         max-width: 180px;
+    }
+
+    /* Desktop adjustments for welcome page */
+    body[data-page="welcome"] #secondary-header-row .username-area,
+    body[data-page="welcome"] #secondary-header-row .custom-select-wrapper {
+        max-width: 220px;
     }
 }
 
@@ -744,6 +767,34 @@
         }
         #contextual-controls.hidden {
             display: none;
+        }
+
+        /* Hide filters row and view switcher on welcome/home page */
+        body[data-page="welcome"] #filters-row {
+            display: none !important;
+        }
+
+        body[data-page="welcome"] #secondary-header-row .view-switcher {
+            display: none !important;
+        }
+
+        /* Adjust secondary header row layout when only username and league select are visible */
+        body[data-page="welcome"] #secondary-header-row {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.25rem;
+        }
+
+        body[data-page="welcome"] #secondary-header-row .username-area {
+            flex: 1;
+            max-width: none;
+        }
+
+        body[data-page="welcome"] #secondary-header-row .custom-select-wrapper {
+            flex: 1;
+            max-width: none;
         }
 
         @media (min-width: 1024px) {
