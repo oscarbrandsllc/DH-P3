@@ -274,6 +274,19 @@
   filter: drop-shadow(0 1px 1px rgba(0,0,0,0.12));
 }
 
+/* Reduce vertical spacing specifically for the Home button logo so it matches other nav buttons */
+#homeButton .nav-logo {
+  display: inline-block;
+  vertical-align: middle;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+#homeButton {
+  padding-top: 0.35rem;
+  padding-bottom: 0.35rem;
+}
+
 .nav-buttons-container {
     display: flex;
     align-items: center;
