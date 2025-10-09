@@ -267,12 +267,11 @@
 }
 
 .nav-logo {
-    width: 1.3rem; /* slightly larger than icons */
-    height: 1.3rem;
-    object-fit: contain;
-    display: block;
-    opacity: 0.85; /* a little transparent */
-    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.12));
+  width: 1.1rem; /* match icon size */
+  height: 1.1rem;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.12));
 }
 
 .nav-buttons-container {
