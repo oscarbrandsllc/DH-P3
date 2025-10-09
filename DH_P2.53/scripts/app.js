@@ -694,17 +694,28 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
 
         function handlePositionFilter(e) {
             closeComparisonModal();
-            if (e.target.tagName !== 'BUTTON') return;
-            const btn = e.target;
-            const position = btn.dataset.position;
+            const button = e.target.closest('.filter-btn');
+            if (!button) return;
+
+            const position = button.dataset.position;
             const flexPositions = ['RB', 'WR', 'TE'];
 
-            if (position === 'FLX') {
+   if (position === 'FLX') {
                 const isActivating = !state.activePositions.has('FLX');
+                const starFilterIsActive = state.activePositions.has('STAR');
                 state.activePositions.clear();
+                if (starFilterIsActive) {
+                    state.activePositions.add('STAR');
+                }
                 if (isActivating) {
                     flexPositions.forEach(p => state.activePositions.add(p));
                     state.activePositions.add('FLX');
+                }
+            } else if (position === 'STAR') {
+                if (state.activePositions.has('STAR')) {
+                    state.activePositions.delete('STAR');
+                } else {
+                    state.activePositions.add('STAR');
                 }
             } else {
                 state.activePositions.delete('FLX');
@@ -1644,7 +1655,7 @@ const SEASON_META_HEADERS = {
 
         function getPlayerData(playerId, slot) {
             const player = state.players[playerId];
-            if (!player) return { id: playerId, name: 'Unknown Player', pos: '?', age: '?', team: '?', adp: null, ktc: null, slot, posRank: null };
+            if (!player) return { id: playerId, name: 'Unknown Player', pos: '?', age: '?', team: '?', adp: null, ktc: null, slot, posRank: null, ppg: 0 };
             const valueData = state.isSuperflex ? state.sflxData[playerId] : state.oneQbData[playerId];
             let lastName = player.last_name || '';
             if (lastName.length > 10) lastName = lastName.slice(0, 10) + '..'; // add ellipsis if truncated
@@ -1653,6 +1664,8 @@ const SEASON_META_HEADERS = {
             // Prioritize age from the sheet and format it to one decimal place
             const ageFromSheet = valueData?.age;
             const formattedAge = (typeof ageFromSheet === 'number') ? ageFromSheet.toFixed(1) : (player.age ? Number(player.age).toFixed(1) : '?');
+
+            const playerRanks = calculatePlayerStatsAndRanks(playerId) || getDefaultPlayerRanks();
 
             return { 
                 id: playerId, 
@@ -1664,7 +1677,9 @@ const SEASON_META_HEADERS = {
                 ktc: valueData?.ktc || null, 
                 slot, 
                 posRank: valueData?.posRank || null,
-                overallRank: valueData?.overallRank || null
+                overallRank: valueData?.overallRank || null,
+                ppg: playerRanks ? parseFloat(playerRanks.ppg) : 0,
+                playerRanks: playerRanks
             };
         }
 
@@ -3036,8 +3051,30 @@ const wrTeStatOrder = [
             card.className = 'team-card';
             card.innerHTML = `<div class="roster-section starters-section"><h3>Starters</h3></div><div class="roster-section bench-section"><h3>Bench</h3></div><div class="roster-section taxi-section"><h3>Taxi</h3></div><div class="roster-section picks-section"><h3>Draft Picks</h3></div>`;
             
-            const filterActive = state.activePositions.size > 0;
-            const filterFunc = player => !filterActive || state.activePositions.has(player.pos) || (state.activePositions.has('FLX') && ['RB', 'WR', 'TE'].includes(player.pos));
+            const activePos = state.activePositions;
+            const filterActive = activePos.size > 0;
+
+            const filterFunc = player => {
+                if (!filterActive) return true;
+
+                const isStarActive = activePos.has('STAR');
+                const meetsStarCriteria = (player.ktc || 0) >= 3000 || (player.ppg || 0) >= 9;
+
+                if (isStarActive && !meetsStarCriteria) {
+                    return false;
+                }
+
+                const posFilters = new Set(activePos);
+                posFilters.delete('STAR');
+
+                if (posFilters.size === 0) return true;
+
+                const isFlexActive = posFilters.has('FLX');
+                const posMatch = posFilters.has(player.pos);
+                const flexMatch = isFlexActive && ['RB', 'WR', 'TE'].includes(player.pos);
+
+                return posMatch || flexMatch;
+            };
 
             const populate = (sel, data, creator) => {
                 const el = card.querySelector(sel);
@@ -3081,8 +3118,10 @@ const wrTeStatOrder = [
                 <div class="roster-section picks-section"><h3>Draft Picks</h3></div>
             `;
 
-            const filterActive = state.activePositions.size > 0;
-            const isFlexActive = state.activePositions.has('FLX');
+            const activePos = state.activePositions;
+            const filterActive = activePos.size > 0;
+            const isFlexActive = activePos.has('FLX');
+            const isStarActive = activePos.has('STAR');
 
             const positions = {
                 QB: team.allPlayers.filter(p => p.pos === 'QB').sort((a, b) => (b.ktc || 0) - (a.ktc || 0)),
@@ -3095,14 +3134,28 @@ const wrTeStatOrder = [
                 const el = card.querySelector(sel);
                 const pos = sel.split('-')[0].toUpperCase().replace('.', '');
                 
+                const posFilters = new Set(activePos);
+                posFilters.delete('STAR');
+
+                const isPosVisible = posFilters.size === 0 || posFilters.has(pos) || (isFlexActive && ['RB', 'WR', 'TE'].includes(pos));
+
                 el.style.display = 'none';
-                if (!filterActive || state.activePositions.has(pos) || (isFlexActive && ['RB', 'WR', 'TE'].includes(pos))) {
+
+                if (isPosVisible) {
                     el.style.display = 'block';
+                    let filteredData = data;
+                    if (isStarActive) {
+                        filteredData = data.filter(player => {
+                            return (player.ktc || 0) >= 3000 || (player.ppg || 0) >= 9;
+                        });
+                    }
+
                     const h3 = el.querySelector('h3');
                     el.innerHTML = '';
                     el.appendChild(h3);
-                    if (data && data.length > 0) {
-                        data.forEach(item => el.appendChild(creator(item, team.teamName)));
+
+                    if (filteredData && filteredData.length > 0) {
+                        filteredData.forEach(item => el.appendChild(creator(item, team.teamName)));
                     } else {
                         el.innerHTML += `<div class="text-xs text-slate-500 p-1 italic">None</div>`;
                     }
@@ -4125,13 +4178,13 @@ function setLoading(isLoading, message = 'Loading...') {
   // listeners
   input.addEventListener('change', persistNormalized);
   input.addEventListener('blur', () => { persistNormalized(); });
-  input.addEventListener('keydown', e => { if (e.key === 'Enter') { persistNormalized(); resetIOSZoom(); }});
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') { persistNormalized(); }});
 
   // Hook buttons (capture) so normalization executes before fetch handlers, then reset zoom
   ['rostersButton','ownershipButton', 'analyzerButton', 'researchButton'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    el.addEventListener('click', () => { persistNormalized(); resetIOSZoom(); }, { capture: true });
+    el.addEventListener('click', () => { persistNormalized(); }, { capture: true });
   });
 })();
 
