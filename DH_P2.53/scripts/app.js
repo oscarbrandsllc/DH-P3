@@ -145,6 +145,37 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
                 window.dumpFocusLog = function() { return (window._focusLog || []).slice(); };
             } catch (e) {}
         })();
+
+        // Extra protection: when the page is shown or becomes visible (navigation/back),
+        // re-enable temporary suppression and blur any active input to avoid the keyboard.
+        try {
+            window.addEventListener('pageshow', () => {
+                try { suppressFocusTemporary(800); } catch (e) {}
+                try { usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
+            });
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    try { suppressFocusTemporary(800); } catch (e) {}
+                    try { usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
+                }
+            });
+
+            // As a final safety-net, intercept focusin events and blur input-like
+            // elements while suppression is active. This will catch focus that
+            // originates from browser heuristics or other scripts.
+            document.addEventListener('focusin', (e) => {
+                try {
+                    if (Date.now() < __suppressFocusUntil) {
+                        const el = e.target;
+                        const tag = el && el.tagName ? el.tagName.toUpperCase() : '';
+                        const isInputLike = tag === 'INPUT' || tag === 'TEXTAREA' || el.isContentEditable;
+                        if (isInputLike) {
+                            try { el.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
+                        }
+                    }
+                } catch (e) {}
+            }, true);
+        } catch (e) {}
         const getPageUrl = (page) => {
             const username = usernameInput.value.trim();
             let url = '';
