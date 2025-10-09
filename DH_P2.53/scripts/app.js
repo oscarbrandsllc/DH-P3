@@ -120,12 +120,16 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
         };
 
         homeButton?.addEventListener('click', () => {
-             if (pageType !== 'welcome') {
-                window.location.href = getPageUrl('home');
-             }
+                 // Defensive blur to avoid mobile keyboards appearing when nav buttons are tapped
+                 try { usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
+                 if (pageType !== 'welcome') {
+                     window.location.href = getPageUrl('home');
+                 }
         });
 
         rostersButton?.addEventListener('click', () => {
+            // Defensive blur to avoid mobile keyboards appearing when nav buttons are tapped
+            try { usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
             if (pageType === 'rosters') {
                 handleFetchRosters();
             } else {
@@ -134,6 +138,8 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
         });
 
         ownershipButton?.addEventListener('click', () => {
+            // Defensive blur to avoid mobile keyboards appearing when nav buttons are tapped
+            try { usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
             if (pageType === 'ownership') {
                 handleFetchOwnership();
             } else {
@@ -142,12 +148,30 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
         });
 
         analyzerButton?.addEventListener('click', () => {
+            // Defensive blur to avoid mobile keyboards appearing when nav buttons are tapped
+            try { usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
             window.location.href = getPageUrl('analyzer');
         });
 
         researchButton?.addEventListener('click', () => {
-            window.location.href = getPageUrl('research');
+                        // Defensive blur to avoid mobile keyboards appearing when nav buttons are tapped
+                        try { usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
+                        window.location.href = getPageUrl('research');
         });
+
+// Add pointer/touch guards so quick taps on mobile also blur the input before navigation fires
+['homeButton','rostersButton','ownershipButton','analyzerButton','researchButton'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (!el) return;
+    const handler = () => { try { usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch(e){} };
+    try {
+        el.addEventListener('pointerdown', handler, { passive: true });
+        el.addEventListener('touchstart', handler, { passive: true });
+    } catch (e) {
+        // some older browsers may throw on options; fall back
+        try { el.addEventListener('pointerdown', handler); el.addEventListener('touchstart', handler); } catch (e) {}
+    }
+});
 
         // --- State ---
         let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, calculatedRankCache: null };
