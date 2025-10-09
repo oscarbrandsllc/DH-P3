@@ -279,12 +279,12 @@
   display: inline-block;
   vertical-align: middle;
   margin-top: 0;
-  margin-bottom: 0;
+  margin-bottom: -1.5px;
 }
 
 #homeButton {
-  padding-top: 0.35rem;
-  padding-bottom: 0.35rem;
+  padding-top: 0.15rem;
+  padding-bottom: 0.25rem;
 }
 
 .nav-buttons-container {
