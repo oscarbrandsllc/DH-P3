@@ -700,9 +700,13 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
             const position = button.dataset.position;
             const flexPositions = ['RB', 'WR', 'TE'];
 
-            if (position === 'FLX') {
+   if (position === 'FLX') {
                 const isActivating = !state.activePositions.has('FLX');
+                const starFilterIsActive = state.activePositions.has('STAR');
                 state.activePositions.clear();
+                if (starFilterIsActive) {
+                    state.activePositions.add('STAR');
+                }
                 if (isActivating) {
                     flexPositions.forEach(p => state.activePositions.add(p));
                     state.activePositions.add('FLX');
