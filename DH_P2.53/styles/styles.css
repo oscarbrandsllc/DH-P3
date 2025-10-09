@@ -7185,11 +7185,20 @@ body[data-page="analyzer"] #leagueSelect {
 
 /* --- HOME-PAGE ONLY HEADER RULES --- */
 body[data-page="welcome"] #filters-row,
-body[data-page="welcome"] #secondary-header-row .view-switcher {
+body[data-page="welcome"] #secondary-header-row .view-switcher,
+body[data-page="ownership"] #filters-row,
+body[data-page="ownership"] #secondary-header-row .view-switcher,
+body[data-page="analyzer"] #filters-row,
+body[data-page="analyzer"] #secondary-header-row .view-switcher,
+body[data-page="research"] #filters-row,
+body[data-page="research"] #secondary-header-row .view-switcher {
     display: none !important;
 }
 
-body[data-page="welcome"] #secondary-header-row {
+body[data-page="welcome"] #secondary-header-row,
+body[data-page="ownership"] #secondary-header-row,
+body[data-page="analyzer"] #secondary-header-row,
+body[data-page="research"] #secondary-header-row {
     justify-content: center; /* Center the remaining items */
     gap: 0.75rem; /* Add some space between them */
 }

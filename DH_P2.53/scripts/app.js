@@ -4156,7 +4156,7 @@ function setLoading(isLoading, message = 'Loading...') {
     input.value = v;
     if (v) localStorage.setItem(KEY, v);
     else localStorage.removeItem(KEY);
-    if (document.activeElement === input) input.blur();
+    input.blur();
   }
 
   // iOS viewport reset helper (temporary max-scale=1 toggle)
