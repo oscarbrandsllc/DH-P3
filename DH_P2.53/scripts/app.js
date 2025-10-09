@@ -82,6 +82,69 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
         }
 
         // --- Navigation Logic ---
+
+        // Temporary focus suppression to prevent mobile keyboards from opening
+        // when navigation buttons are tapped and other scripts may re-focus inputs.
+        // We patch HTMLElement.prototype.focus to ignore focus calls on input-like
+        // elements for a short window after navigation gestures.
+        let __suppressFocusUntil = 0;
+        const __suppressFocusMs = 700;
+        function suppressFocusTemporary(ms) {
+            __suppressFocusUntil = Date.now() + (ms || __suppressFocusMs);
+        }
+        (function installFocusGuard(){
+            try {
+                const originalFocus = HTMLElement.prototype.focus;
+                HTMLElement.prototype.focus = function(...args) {
+                    try {
+                        const now = Date.now();
+                        if (now < __suppressFocusUntil) {
+                            const tag = (this && this.tagName) ? this.tagName.toUpperCase() : '';
+                            const isInputLike = tag === 'INPUT' || tag === 'TEXTAREA' || this.isContentEditable;
+                            if (isInputLike) {
+                                // swallow the focus call during suppression window
+                                return this;
+                            }
+                        }
+                    } catch (e) {
+                        // fall through to original focus if anything unexpected
+                    }
+                    return originalFocus.apply(this, args);
+                };
+            } catch (e) {
+                // If monkey-patching isn't allowed in some environments, ignore.
+            }
+        })();
+
+        // Optional focus-event instrumentation for debugging autofocusing issues.
+        // Enable by adding ?debugFocus=1 to the URL.
+        (function installFocusLogger(){
+            try {
+                const params = new URLSearchParams(window.location.search);
+                if (!params.has('debugFocus')) return;
+                if (params.get('debugFocus') !== '1') return;
+                window._focusLog = window._focusLog || [];
+                const maxEntries = 200;
+                const pushLog = (entry) => {
+                    window._focusLog.push(entry);
+                    if (window._focusLog.length > maxEntries) window._focusLog.shift();
+                };
+                document.addEventListener('focusin', (e) => {
+                    try {
+                        const el = e.target;
+                        const now = Date.now();
+                        const tag = el && el.tagName ? el.tagName.toLowerCase() : 'unknown';
+                        const name = el && (el.id || el.name || el.className) ? (el.id || el.name || el.className) : '';
+                        const stack = (new Error()).stack || '';
+                        const msg = `[focusin] ${new Date(now).toISOString()} ${tag} ${name}`;
+                        console.warn(msg);
+                        pushLog({ t: now, msg, tag, name, stack });
+                    } catch (e) {}
+                }, true);
+                // expose helper to dump logs
+                window.dumpFocusLog = function() { return (window._focusLog || []).slice(); };
+            } catch (e) {}
+        })();
         const getPageUrl = (page) => {
             const username = usernameInput.value.trim();
             let url = '';
@@ -121,7 +184,7 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
 
         homeButton?.addEventListener('click', () => {
                  // Defensive blur to avoid mobile keyboards appearing when nav buttons are tapped
-                 try { usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
+                 try { suppressFocusTemporary(); usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
                  if (pageType !== 'welcome') {
                      window.location.href = getPageUrl('home');
                  }
@@ -129,7 +192,7 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
 
         rostersButton?.addEventListener('click', () => {
             // Defensive blur to avoid mobile keyboards appearing when nav buttons are tapped
-            try { usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
+            try { suppressFocusTemporary(); usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
             if (pageType === 'rosters') {
                 handleFetchRosters();
             } else {
@@ -139,7 +202,7 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
 
         ownershipButton?.addEventListener('click', () => {
             // Defensive blur to avoid mobile keyboards appearing when nav buttons are tapped
-            try { usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
+            try { suppressFocusTemporary(); usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
             if (pageType === 'ownership') {
                 handleFetchOwnership();
             } else {
@@ -149,21 +212,21 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
 
         analyzerButton?.addEventListener('click', () => {
             // Defensive blur to avoid mobile keyboards appearing when nav buttons are tapped
-            try { usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
+            try { suppressFocusTemporary(); usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
             window.location.href = getPageUrl('analyzer');
         });
 
-        researchButton?.addEventListener('click', () => {
-                        // Defensive blur to avoid mobile keyboards appearing when nav buttons are tapped
-                        try { usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
-                        window.location.href = getPageUrl('research');
-        });
+    researchButton?.addEventListener('click', () => {
+            // Defensive blur to avoid mobile keyboards appearing when nav buttons are tapped
+            try { suppressFocusTemporary(); usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
+            window.location.href = getPageUrl('research');
+    });
 
 // Add pointer/touch guards so quick taps on mobile also blur the input before navigation fires
 ['homeButton','rostersButton','ownershipButton','analyzerButton','researchButton'].forEach(id=>{
     const el = document.getElementById(id);
     if (!el) return;
-    const handler = () => { try { usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch(e){} };
+    const handler = () => { try { suppressFocusTemporary(); usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch(e){} };
     try {
         el.addEventListener('pointerdown', handler, { passive: true });
         el.addEventListener('touchstart', handler, { passive: true });
@@ -281,6 +344,15 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
                 }
                 return;
             }
+            // Prevent mobile keyboard appearing when arriving via nav with ?username=
+            try {
+                const params = new URLSearchParams(window.location.search);
+                if (params.has('username')) {
+                    // enable temporary focus suppression and blur after the page settles
+                    try { suppressFocusTemporary(600); } catch (e) {}
+                    setTimeout(() => { try { usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {} }, 50);
+                }
+            } catch (e) {}
             setLoading(true, 'Loading initial data...');
             await Promise.all([ fetchSleeperPlayers(), fetchDataFromGoogleSheet(), fetchPlayerStatsSheets() ]);
             setLoading(false);
@@ -289,6 +361,7 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
             const params = new URLSearchParams(window.location.search);
             const uname = params.get('username');
             if (uname) {
+                try { suppressFocusTemporary(600); } catch (e) {}
                 usernameInput.value = uname;
                 if (pageType === 'rosters') {
                     await handleFetchRosters();
