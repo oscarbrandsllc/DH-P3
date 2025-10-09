@@ -33,6 +33,7 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
         const homeButton = document.getElementById('homeButton');
         const rostersButton = document.getElementById('rostersButton');
         const ownershipButton = document.getElementById('ownershipButton');
+    const statsButton = document.getElementById('statsButton');
         const analyzerButton = document.getElementById('analyzerButton');
         const researchButton = document.getElementById('researchButton');
         const startSitButton = document.getElementById('startSitButton');
@@ -239,6 +240,13 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
             } else {
                 window.location.href = getPageUrl('ownership');
             }
+        });
+
+        // Placeholder stats button (inserted between Ownership and Analyzer)
+        statsButton?.addEventListener('click', () => {
+            try { suppressFocusTemporary(); usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
+            // Placeholder behavior: navigate to '#stats' for now
+            window.location.href = getPageUrl('research') + '#stats';
         });
 
         analyzerButton?.addEventListener('click', () => {
