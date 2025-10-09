@@ -6,17 +6,6 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
         // --- DOM Elements ---
         const usernameInput = document.getElementById('usernameInput');
         const leagueSelect = document.getElementById('leagueSelect');
-
-        // Prevent mobile keyboard from auto-showing when setting input value programmatically
-        if (usernameInput) {
-            usernameInput.setAttribute('readonly', 'readonly');
-            usernameInput.addEventListener('click', function() {
-                this.removeAttribute('readonly');
-            }, { once: true });
-            usernameInput.addEventListener('touchstart', function() {
-                this.removeAttribute('readonly');
-            }, { once: true });
-        }
         const loadingIndicator = document.getElementById('loading');
         const welcomeScreen = document.getElementById('welcome-screen');
         const rosterView = document.getElementById('rosterView');

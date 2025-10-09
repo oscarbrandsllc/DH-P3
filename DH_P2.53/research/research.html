@@ -60,6 +60,65 @@
         </div>
     </div>
     <div id="contextual-controls">
+        <div class="header-row" id="secondary-header-row">
+            <div class="username-area">
+                <input autocapitalize="none" autocomplete="username" autocorrect="off" id="usernameInput" inputmode="text" name="username" placeholder="SLPR Username..." type="text" value="The_Oracle"/>
+            </div>
+            <div class="custom-select-wrapper">
+                <select disabled="" id="leagueSelect">
+                    <option>Select a league...</option>
+                </select>
+            </div>
+            <div class="view-switcher secondary-switcher compact-switcher">
+                <button id="positionalViewBtn">
+                    <i class="fa-solid fa-users" aria-hidden="true"></i>
+                    <span class="switcher-label">Positional</span>
+                </button>
+                <button id="lineupViewBtn">
+                    <i class="fa-solid fa-list-ol" aria-hidden="true"></i>
+                    <span class="switcher-label">Lineup</span>
+                </button>
+            </div>
+        </div>
+        <div class="header-row" id="filters-row">
+            <div class="start-sit-button-slot" id="start-sit-button-slot">
+                <div class="start-sit-button-container">
+                    <button class="menu-button analyzer-button start-sit-button" id="startSitButton" type="button" aria-label="Open Start/Sit recommendations">
+                        <i class="fa-solid fa-elevator analyzer-icon" aria-hidden="true"></i>
+                        <span class="analyzer-label">Start/Sit</span>
+                    </button>
+                </div>
+            </div>
+            <div class="filters-container">
+                <div id="positional-filters">
+                    <button class="filter-btn" data-position="QB">QB</button>
+                    <button class="filter-btn" data-position="RB">RB</button>
+                    <button class="filter-btn" data-position="WR">WR</button>
+                    <button class="filter-btn" data-position="TE">TE</button>
+                    <button class="filter-btn" data-position="FLX">FLX</button>
+                </div>
+                <button class="control-button-subtle" id="clearFiltersButton">
+                    <span class="clear-filters-stack">
+                        <i class="fa-solid fa-filter-circle-xmark" aria-hidden="true"></i>
+                        <span class="sr-only">Clear filters</span>
+                    </span>
+                </button>
+                <div class="compare-controls">
+                    <button class="control-button hidden" id="compareButton" aria-hidden="true" tabindex="-1" style="display:none;"></button>
+                    <button id="compareSearchToggle" class="control-button-subtle compare-search-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="compareSearchPopover">
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                        <span class="sr-only">Search teams</span>
+                    </button>
+                    <div id="compareSearchPopover" class="compare-search-popover hidden" role="dialog" aria-modal="false">
+                        <button type="button" id="compareSearchClose" class="compare-search-close" aria-label="Close search popover">
+                            <i class="fa-solid fa-circle-xmark" aria-hidden="true"></i>
+                        </button>
+                        <label for="compareSearchInput" class="sr-only">Search teams</label>
+                        <input id="compareSearchInput" type="search" placeholder="Search Players…" autocomplete="off" inputmode="search" />
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </header>
   </div>
