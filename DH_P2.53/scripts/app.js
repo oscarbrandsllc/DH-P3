@@ -4178,13 +4178,13 @@ function setLoading(isLoading, message = 'Loading...') {
   // listeners
   input.addEventListener('change', persistNormalized);
   input.addEventListener('blur', () => { persistNormalized(); });
-  input.addEventListener('keydown', e => { if (e.key === 'Enter') { persistNormalized(); resetIOSZoom(); }});
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') { persistNormalized(); }});
 
   // Hook buttons (capture) so normalization executes before fetch handlers, then reset zoom
   ['rostersButton','ownershipButton', 'analyzerButton', 'researchButton'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    el.addEventListener('click', () => { persistNormalized(); resetIOSZoom(); }, { capture: true });
+    el.addEventListener('click', () => { persistNormalized(); }, { capture: true });
   });
 })();
 
