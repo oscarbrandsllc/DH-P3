@@ -267,11 +267,12 @@
 }
 
 .nav-logo {
-  width: 1.1rem; /* match icon size roughly */
-  height: 1.1rem;
-  object-fit: contain;
-  display: block;
-  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.15));
+    width: 1.3rem; /* slightly larger than icons */
+    height: 1.3rem;
+    object-fit: contain;
+    display: block;
+    opacity: 0.85; /* a little transparent */
+    filter: drop-shadow(0 1px 1px rgba(0,0,0,0.12));
 }
 
 .nav-buttons-container {
@@ -483,12 +484,6 @@
         font-size: 0.4rem;
     }
 
-    .app-logo-wrapper {
-        width: 2.7rem;
-        height: 2.7rem;
-        padding: 0.35rem;
-    }
-
     .app-logo {
         width: 1.8rem;
         height: 1.8rem;
@@ -524,12 +519,6 @@
 
     .nav-label {
         font-size: 0.5rem;
-    }
-
-    .app-logo-wrapper {
-        width: 3.4rem;
-        height: 3.4rem;
-        padding: 0.45rem;
     }
 
     .app-logo {

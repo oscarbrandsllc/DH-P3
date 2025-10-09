@@ -214,55 +214,74 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
             return url;
         };
 
-        homeButton?.addEventListener('click', () => {
+        // Ensure the username is valid for pages that require it.
+        async function ensureValidUser(username) {
+            if (!username || !username.trim()) {
+                throw new Error('Please enter a username');
+            }
+            try {
+                await fetchAndSetUser(username.trim());
+                return true;
+            } catch (e) {
+                throw e;
+            }
+        }
+
+        // Helper wrapper to validate username for non-home pages and navigate.
+        async function ensureNavigate(page) {
+            const username = usernameInput?.value?.trim();
+            if (!username && page !== 'home') {
+                showTemporaryTooltip(usernameInput || document.body, 'Enter a valid SLPR username');
+                return;
+            }
+            if (page === 'home') {
+                window.location.href = getPageUrl('home');
+                return;
+            }
+            try {
+                await ensureValidUser(username);
+            } catch (e) {
+                showTemporaryTooltip(usernameInput || document.body, 'Username not found');
+                return;
+            }
+            // all good: navigate
+            window.location.href = getPageUrl(page);
+        }
+
+        homeButton?.addEventListener('click', async () => {
                  // Defensive blur to avoid mobile keyboards appearing when nav buttons are tapped
                  try { suppressFocusTemporary(); usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
-                 if (pageType !== 'welcome') {
-                     window.location.href = getPageUrl('home');
-                 }
+                 await ensureNavigate('home');
         });
 
-        rostersButton?.addEventListener('click', () => {
-            // Defensive blur to avoid mobile keyboards appearing when nav buttons are tapped
+        rostersButton?.addEventListener('click', async () => {
             try { suppressFocusTemporary(); usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
-            if (pageType === 'rosters') {
-                handleFetchRosters();
-            } else {
-                window.location.href = getPageUrl('rosters');
-            }
+            await ensureNavigate('rosters');
         });
 
-        ownershipButton?.addEventListener('click', () => {
-            // Defensive blur to avoid mobile keyboards appearing when nav buttons are tapped
+        ownershipButton?.addEventListener('click', async () => {
             try { suppressFocusTemporary(); usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
-            if (pageType === 'ownership') {
-                handleFetchOwnership();
-            } else {
-                window.location.href = getPageUrl('ownership');
-            }
+            await ensureNavigate('ownership');
         });
 
         // Placeholder stats button (inserted between Ownership and Analyzer)
-        statsButton?.addEventListener('click', () => {
+        statsButton?.addEventListener('click', async () => {
             try { suppressFocusTemporary(); usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
-            // Placeholder behavior: navigate to '#stats' for now
-            window.location.href = getPageUrl('research') + '#stats';
+            await ensureNavigate('stats');
         });
 
-        analyzerButton?.addEventListener('click', () => {
-            // Defensive blur to avoid mobile keyboards appearing when nav buttons are tapped
+        analyzerButton?.addEventListener('click', async () => {
             try { suppressFocusTemporary(); usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
-            window.location.href = getPageUrl('analyzer');
+            await ensureNavigate('analyzer');
         });
 
-    researchButton?.addEventListener('click', () => {
-            // Defensive blur to avoid mobile keyboards appearing when nav buttons are tapped
+    researchButton?.addEventListener('click', async () => {
             try { suppressFocusTemporary(); usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
-            window.location.href = getPageUrl('research');
+            await ensureNavigate('research');
     });
 
 // Add pointer/touch guards so quick taps on mobile also blur the input before navigation fires
-['homeButton','rostersButton','ownershipButton','analyzerButton','researchButton'].forEach(id=>{
+['homeButton','rostersButton','ownershipButton','statsButton','analyzerButton','researchButton'].forEach(id=>{
     const el = document.getElementById(id);
     if (!el) return;
     const handler = () => { try { suppressFocusTemporary(); usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch(e){} };
