@@ -3768,6 +3768,8 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     #modal-body tbody .week-cell,
     #modal-body tfoot .week-column-header {
         color: #8f93ab;
+        padding-right: 1px;
+        padding-left: 7px;
     }
 
   #modal-body tbody .week-cell {
@@ -3798,13 +3800,13 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     /* Keep the label at the cell's base font size so annotations scale the same
        as other stat annotations across the table. Previous fixed sizing caused
        the annotation to appear mismatched. */
-    font-size: inherit;
+    font-size: .5rem;
     line-height: 1;
     margin-top: 0;
     font-weight: 600;
     display: inline-flex;
     align-items: center; /* vertically center annotation and label */
-    gap: 0.18em;
+    gap: 0.01rem;
   }
   /* Make the opponent rank annotation inline, centered, and wrapped in parentheses
      without affecting other stat-rank annotations elsewhere. Keep sizing identical
