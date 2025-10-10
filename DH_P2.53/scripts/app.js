@@ -1921,7 +1921,7 @@ const SEASON_META_HEADERS = {
             if (modalPlayerVitals) {
                 modalPlayerVitals.innerHTML = '';
                 const vitals = getPlayerVitals(player.id);
-                modalPlayerVitals.appendChild(createPlayerVitalsElement(vitals, { variant: 'modal' }));
+                modalPlayerVitals.appendChild(createPlayerVitalsElement(vitals, { variant: 'modal', pos: player.pos }));
             }
 
             // Render summary chips
@@ -2550,7 +2550,7 @@ const wrTeStatOrder = [
             players.forEach(player => {
                 const summaryChipsContainer = document.createElement('div');
                 summaryChipsContainer.className = 'summary-chips-container';
-                const compareVitals = createPlayerVitalsElement(getPlayerVitals(player.id), { variant: 'compare' });
+                const compareVitals = createPlayerVitalsElement(getPlayerVitals(player.id), { variant: 'compare', pos: player.pos });
 
                 const overallRankNumber = typeof player.overallRank === 'number' ? player.overallRank : Number(player.overallRank);
                 const overallRankDisplay = Number.isFinite(overallRankNumber)
@@ -3993,7 +3993,7 @@ const wrTeStatOrder = [
             };
         }
 
-        function createPlayerVitalsElement(vitals, { variant = 'modal' } = {}) {
+        function createPlayerVitalsElement(vitals, { variant = 'modal', pos = '' } = {}) {
             const container = document.createElement('div');
             container.className = `player-vitals player-vitals--${variant}`;
 
@@ -4016,6 +4016,11 @@ const wrTeStatOrder = [
                 const valueEl = document.createElement('span');
                 valueEl.className = 'player-vitals__value';
                 valueEl.textContent = value;
+                // apply conditional color for AGE, HEIGHT, WEIGHT based on position
+                if (label === 'AGE' || label === 'HEIGHT' || label === 'WEIGHT') {
+                    const color = getVitalsColor(label, pos, value);
+                    if (color) valueEl.style.color = color;
+                }
 
                 item.appendChild(labelEl);
                 item.appendChild(valueEl);
@@ -4099,6 +4104,131 @@ const wrTeStatOrder = [
           }
         
           return s[s.length - 1].c;
+        }
+        
+        // --- Vitals conditional coloring helpers ---
+        function parseHeightToInches(heightStr) {
+            if (!heightStr || typeof heightStr !== 'string') return null;
+            const m = heightStr.match(/(\d+)\s*'\s*(\d+)?\s*"?/);
+            if (m) {
+                const f = parseInt(m[1], 10);
+                const i = m[2] ? parseInt(m[2], 10) : 0;
+                if (Number.isFinite(f)) return f * 12 + (Number.isFinite(i) ? i : 0);
+            }
+            // fallback: try to parse digits only (e.g. 605 -> 6'05)
+            const digits = (heightStr.match(/\d+/g) || []).map(d => Number(d));
+            if (digits.length === 2) return digits[0] * 12 + digits[1];
+            if (digits.length === 1) {
+                const v = digits[0];
+                if (v > 100) { // probably inches like 74
+                    return v;
+                }
+                if (v > 10) { // probably cm? ignore
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        function parseWeightToLbs(weightStr) {
+            if (!weightStr || typeof weightStr !== 'string') return null;
+            const m = weightStr.match(/(\d{2,3})/);
+            if (m) return parseInt(m[1], 10);
+            return null;
+        }
+
+        function parseAgeValue(ageStr) {
+            if (!ageStr && ageStr !== 0) return null;
+            const n = Number(String(ageStr).replace(/[^\n0-9.\-]/g, ''));
+            return Number.isFinite(n) ? n : null;
+        }
+
+        function getVitalsColor(label, pos, rawValue) {
+            const position = (pos || '').toUpperCase();
+            if (!rawValue) return null;
+            if (label === 'AGE') {
+                const age = parseAgeValue(rawValue);
+                if (age === null) return null;
+                // rules per position
+                if (position === 'WR' || position === 'TE') {
+                    if (age < 22.5) return '#cefcf1';
+                    if (age >= 22.5 && age < 26) return '#a0f0f9';
+                    if (age >= 26 && age < 29) return '#c3c9ff';
+                    if (age >= 29 && age < 31) return '#dfbbfe';
+                    if (age >= 31) return '#ffb8f4';
+                }
+                if (position === 'RB') {
+                    if (age < 22.5) return '#cefcf1';
+                    if (age >= 22.5 && age < 25) return '#a0f0f9';
+                    if (age >= 25 && age < 27) return '#c3c9ff';
+                    if (age >= 27 && age < 29) return '#dfbbfe';
+                    if (age >= 29 && age < 31) return '#ffb8f4';
+                    if (age >= 31) return '#ffb8f4';
+                }
+                if (position === 'QB') {
+                    if (age < 25.5) return '#cefcf1';
+                    if (age >= 25.5 && age < 29) return '#a0f0f9';
+                    if (age >= 29 && age < 33) return '#c3c9ff';
+                    if (age >= 33 && age < 40) return '#dfbbfe';
+                    if (age >= 40 && age < 44) return '#ffb8f4';
+                    if (age >= 44) return '#ffb8f4';
+                }
+                return null;
+            }
+            if (label === 'WEIGHT') {
+                const w = parseWeightToLbs(rawValue);
+                if (w === null) return null;
+                if (position === 'QB') {
+                    if (w < 210) return '#ffb8f4';
+                    if (w >= 210 && w <= 250) return '#c3efff';
+                    if (w > 250) return '#ffb8f4';
+                }
+                if (position === 'RB') {
+                    if (w < 190) return '#ffb8f4';
+                    if (w >= 190 && w < 200) return '#c3c9ff';
+                    if (w >= 200) return '#cefcf1';
+                }
+                if (position === 'TE') {
+                    if (w < 230) return '#ffb8f4';
+                    if (w >= 230 && w < 240) return '#c3c9ff';
+                    if (w >= 240) return '#cefcf1';
+                }
+                if (position === 'WR') {
+                    if (w < 190) return '#ffb8f4';
+                    if (w >= 190 && w <= 200) return '#c3c9ff';
+                    if (w >= 200 && w <= 234) return '#cefcf1';
+                    if (w >= 235) return '#ffb8f4';
+                }
+                return null;
+            }
+            if (label === 'HEIGHT') {
+                const inches = parseHeightToInches(rawValue);
+                if (inches === null) return null;
+                // thresholds are given in feet/inches; convert to inches
+                if (position === 'QB') {
+                    if (inches < 72) return '#ffb8f4';
+                    if (inches >= 72 && inches <= 73) return '#c3c9ff';
+                    if (inches > 73) return '#cefcf1';
+                }
+                if (position === 'RB') {
+                    if (inches >= 75) return '#ffb8f4'; // >=6'3"
+                    if (inches > 69 && inches < 75) return '#cefcf1'; // >5'9 and <6'3
+                    if (inches >= 67 && inches <= 69) return '#c3c9ff'; // 5'7 - 5'9
+                    if (inches < 67) return '#ffb8f4';
+                }
+                if (position === 'TE') {
+                    if (inches > 74) return '#cefcf1'; // >6'2
+                    if (inches >= 73 && inches <= 74) return '#c3c9ff'; // 6'1 - 6'2
+                    if (inches < 73) return '#ffb8f4';
+                }
+                if (position === 'WR') {
+                    if (inches < 71) return '#ffb8f4'; // <5'11
+                    if (inches >= 71 && inches <= 72) return '#c3c9ff'; // 5'11 - 6'0
+                    if (inches > 72) return '#cefcf1';
+                }
+                return null;
+            }
+            return null;
         }
         function getAdpColorForRoster(a){const s=[{v:12,c:"#00EEB6"},{v:24,c:"#14D7CB"},{v:36,c:"#0599AA"},{v:48,c:"#03a8ce"},{v:60,c:"#0690DC"},{v:72,c:"#066CDC"},{v:84,c:"#1350fd"},{v:96,c:"#5e41ff"},{v:108,c:"#7158ff"},{v:120,c:"#964eff"},{v:144,c:"#9200ff"},{v:168,c:"#b70fff"},{v:192,c:"#ba00cc"},{v:216,c:"#e800ff"},{v:240,c:"#db00af"},{v:280,c:"#c70097"},{v:320,c:"#FF0080"}];if(!a||a===0)return null;for(const t of s)if(a<=t.v)return t.c;return s[s.length-1].c}
         function getAgeColorForRoster(p,a){const s={wrTe:[{v:22.5,c:"#00ffc4"},{v:25,c:"#85fff3"},{v:26,c:"#56dfe8"},{v:27,c:"#7dd1ff"},{v:29,c:"#89a3ff"},{v:30,c:"#957cff"},{v:31,c:"#a642ff"},{v:32,c:"#cf60ff"},{v:33,c:"#ff6fe1"}],rb:[{v:22.5,c:"#00ffc4"},{v:24,c:"#85fff3"},{v:25,c:"#56dfe8"},{v:26,c:"#7dd1ff"},{v:27,c:"#89a3ff"},{v:28,c:"#957cff"},{v:29,c:"#a642ff"},{v:30,c:"#cf60ff"},{v:31,c:"#ff6fe1"}],qb:[{v:25.5,c:"#00ffc4"},{v:28,c:"#85fff3"},{v:29,c:"#7dd1ff"},{v:31,c:"#48a6ff"},{v:33,c:"#957cff"},{v:36,c:"#a642ff"},{v:40,c:"#cf60ff"},{v:44,c:"#ff6fe1"}]};let sc=p==="WR"||p==="TE"?s.wrTe:p==="RB"?s.rb:p==="QB"?s.qb:null;if(!sc||!a||a===0)return null;for(const t of sc)if(a<=t.v)return t.c;return sc[sc.length-1].c}
