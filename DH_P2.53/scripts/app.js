@@ -2071,7 +2071,7 @@ const wrTeStatOrder = [
             const headerRow = document.createElement('tr');
             const wkTh = document.createElement('th');
             wkTh.classList.add('week-column-header');
-            wkTh.textContent = 'WK · VS ';
+            wkTh.textContent = 'WK  ·  VS ';
             headerRow.appendChild(wkTh);
 
             for (const key of orderedStatKeys) {
@@ -2107,7 +2107,8 @@ const wrTeStatOrder = [
                     const opponentRankDisplay = getRankDisplayText(opponentRank);
                     if (opponentRankDisplay !== 'NA') {
                         opponentSpan.classList.add('has-rank-annotation');
-                        const rankAnnotation = createRankAnnotation(opponentRank, { wrapInParens: false });
+                        // Use default createRankAnnotation so the rank is wrapped in parentheses
+                        const rankAnnotation = createRankAnnotation(opponentRank);
                         opponentSpan.appendChild(rankAnnotation);
                     }
 
