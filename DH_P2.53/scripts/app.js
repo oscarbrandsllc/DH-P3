@@ -2097,19 +2097,9 @@ const wrTeStatOrder = [
                 weekTd.appendChild(weekNumberSpan);
                 const opponent = weekStats.stats?.opponent;
                 if (opponent) {
-                    const separatorSpan = document.createElement('span');
-                    separatorSpan.className = 'week-opponent-separator';
-                    separatorSpan.textContent = ' ·';
-                    const weekNumberColor = typeof window !== 'undefined'
-                        ? window.getComputedStyle(weekNumberSpan)?.color
-                        : null;
-                    if (weekNumberColor) {
-                        separatorSpan.style.color = weekNumberColor;
-                    }
-
                     const opponentSpan = document.createElement('span');
                     opponentSpan.className = 'week-opponent-label';
-                    opponentSpan.textContent = ` ${opponent}`;
+                    opponentSpan.textContent = opponent;
                     const color = getOpponentRankColor(weekStats.stats?.opponent_rank);
                     if (color) opponentSpan.style.color = color;
 
@@ -2121,7 +2111,6 @@ const wrTeStatOrder = [
                         opponentSpan.appendChild(rankAnnotation);
                     }
 
-                    weekTd.appendChild(separatorSpan);
                     weekTd.appendChild(opponentSpan);
                 }
                 row.appendChild(weekTd);

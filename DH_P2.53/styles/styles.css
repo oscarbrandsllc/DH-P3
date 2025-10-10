@@ -3778,7 +3778,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     display: inline-flex; /* keep content centered but inline */
     align-items: center;
     justify-content: center;
-    gap: 0.35rem;
+    gap: 0rem;
   }
 
   .week-cell .week-number,
@@ -3795,13 +3795,14 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
   }
 
   .week-opponent-label {
-    font-size: 0.8em;
+    font-size: 0.68em;
     line-height: 1;
     margin-top: 0;
     font-weight: 600;
   }
     .week-opponent-label .stat-rank-annotation {
-        font-size: 0.9em;
+        font-size: 0.5rem !important; 
+        font-weight: 400 !important; 
     }
 
 /* · · Table Footer · · */
