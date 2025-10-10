@@ -33,6 +33,7 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
         const homeButton = document.getElementById('homeButton');
         const rostersButton = document.getElementById('rostersButton');
         const ownershipButton = document.getElementById('ownershipButton');
+    const statsButton = document.getElementById('statsButton');
         const analyzerButton = document.getElementById('analyzerButton');
         const researchButton = document.getElementById('researchButton');
         const startSitButton = document.getElementById('startSitButton');
@@ -82,6 +83,100 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
         }
 
         // --- Navigation Logic ---
+
+        // Temporary focus suppression to prevent mobile keyboards from opening
+        // when navigation buttons are tapped and other scripts may re-focus inputs.
+        // We patch HTMLElement.prototype.focus to ignore focus calls on input-like
+        // elements for a short window after navigation gestures.
+        let __suppressFocusUntil = 0;
+        const __suppressFocusMs = 700;
+        function suppressFocusTemporary(ms) {
+            __suppressFocusUntil = Date.now() + (ms || __suppressFocusMs);
+        }
+        (function installFocusGuard(){
+            try {
+                const originalFocus = HTMLElement.prototype.focus;
+                HTMLElement.prototype.focus = function(...args) {
+                    try {
+                        const now = Date.now();
+                        if (now < __suppressFocusUntil) {
+                            const tag = (this && this.tagName) ? this.tagName.toUpperCase() : '';
+                            const isInputLike = tag === 'INPUT' || tag === 'TEXTAREA' || this.isContentEditable;
+                            if (isInputLike) {
+                                // swallow the focus call during suppression window
+                                return this;
+                            }
+                        }
+                    } catch (e) {
+                        // fall through to original focus if anything unexpected
+                    }
+                    return originalFocus.apply(this, args);
+                };
+            } catch (e) {
+                // If monkey-patching isn't allowed in some environments, ignore.
+            }
+        })();
+
+        // Optional focus-event instrumentation for debugging autofocusing issues.
+        // Enable by adding ?debugFocus=1 to the URL.
+        (function installFocusLogger(){
+            try {
+                const params = new URLSearchParams(window.location.search);
+                if (!params.has('debugFocus')) return;
+                if (params.get('debugFocus') !== '1') return;
+                window._focusLog = window._focusLog || [];
+                const maxEntries = 200;
+                const pushLog = (entry) => {
+                    window._focusLog.push(entry);
+                    if (window._focusLog.length > maxEntries) window._focusLog.shift();
+                };
+                document.addEventListener('focusin', (e) => {
+                    try {
+                        const el = e.target;
+                        const now = Date.now();
+                        const tag = el && el.tagName ? el.tagName.toLowerCase() : 'unknown';
+                        const name = el && (el.id || el.name || el.className) ? (el.id || el.name || el.className) : '';
+                        const stack = (new Error()).stack || '';
+                        const msg = `[focusin] ${new Date(now).toISOString()} ${tag} ${name}`;
+                        console.warn(msg);
+                        pushLog({ t: now, msg, tag, name, stack });
+                    } catch (e) {}
+                }, true);
+                // expose helper to dump logs
+                window.dumpFocusLog = function() { return (window._focusLog || []).slice(); };
+            } catch (e) {}
+        })();
+
+        // Extra protection: when the page is shown or becomes visible (navigation/back),
+        // re-enable temporary suppression and blur any active input to avoid the keyboard.
+        try {
+            window.addEventListener('pageshow', () => {
+                try { suppressFocusTemporary(800); } catch (e) {}
+                try { usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
+            });
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') {
+                    try { suppressFocusTemporary(800); } catch (e) {}
+                    try { usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
+                }
+            });
+
+            // As a final safety-net, intercept focusin events and blur input-like
+            // elements while suppression is active. This will catch focus that
+            // originates from browser heuristics or other scripts.
+            document.addEventListener('focusin', (e) => {
+                try {
+                    if (Date.now() < __suppressFocusUntil) {
+                        const el = e.target;
+                        const tag = el && el.tagName ? el.tagName.toUpperCase() : '';
+                        const isInputLike = tag === 'INPUT' || tag === 'TEXTAREA' || el.isContentEditable;
+                        if (isInputLike) {
+                            try { el.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
+                        }
+                    }
+                } catch (e) {}
+            }, true);
+        } catch (e) {}
         const getPageUrl = (page) => {
             const username = usernameInput.value.trim();
             let url = '';
@@ -119,35 +214,85 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
             return url;
         };
 
-        homeButton?.addEventListener('click', () => {
-             if (pageType !== 'welcome') {
+        // Ensure the username is valid for pages that require it.
+        async function ensureValidUser(username) {
+            if (!username || !username.trim()) {
+                throw new Error('Please enter a username');
+            }
+            try {
+                await fetchAndSetUser(username.trim());
+                return true;
+            } catch (e) {
+                throw e;
+            }
+        }
+
+        // Helper wrapper to validate username for non-home pages and navigate.
+        async function ensureNavigate(page) {
+            const username = usernameInput?.value?.trim();
+            if (!username && page !== 'home') {
+                showTemporaryTooltip(usernameInput || document.body, 'Enter a valid SLPR username');
+                return;
+            }
+            if (page === 'home') {
                 window.location.href = getPageUrl('home');
-             }
-        });
-
-        rostersButton?.addEventListener('click', () => {
-            if (pageType === 'rosters') {
-                handleFetchRosters();
-            } else {
-                window.location.href = getPageUrl('rosters');
+                return;
             }
-        });
-
-        ownershipButton?.addEventListener('click', () => {
-            if (pageType === 'ownership') {
-                handleFetchOwnership();
-            } else {
-                window.location.href = getPageUrl('ownership');
+            try {
+                await ensureValidUser(username);
+            } catch (e) {
+                showTemporaryTooltip(usernameInput || document.body, 'Username not found');
+                return;
             }
+            // all good: navigate
+            window.location.href = getPageUrl(page);
+        }
+
+        homeButton?.addEventListener('click', async () => {
+                 // Defensive blur to avoid mobile keyboards appearing when nav buttons are tapped
+                 try { suppressFocusTemporary(); usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
+                 await ensureNavigate('home');
         });
 
-        analyzerButton?.addEventListener('click', () => {
-            window.location.href = getPageUrl('analyzer');
+        rostersButton?.addEventListener('click', async () => {
+            try { suppressFocusTemporary(); usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
+            await ensureNavigate('rosters');
         });
 
-        researchButton?.addEventListener('click', () => {
-            window.location.href = getPageUrl('research');
+        ownershipButton?.addEventListener('click', async () => {
+            try { suppressFocusTemporary(); usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
+            await ensureNavigate('ownership');
         });
+
+        // Placeholder stats button (inserted between Ownership and Analyzer)
+        statsButton?.addEventListener('click', async () => {
+            try { suppressFocusTemporary(); usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
+            await ensureNavigate('stats');
+        });
+
+        analyzerButton?.addEventListener('click', async () => {
+            try { suppressFocusTemporary(); usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
+            await ensureNavigate('analyzer');
+        });
+
+    researchButton?.addEventListener('click', async () => {
+            try { suppressFocusTemporary(); usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
+            await ensureNavigate('research');
+    });
+
+// Add pointer/touch guards so quick taps on mobile also blur the input before navigation fires
+['homeButton','rostersButton','ownershipButton','statsButton','analyzerButton','researchButton'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (!el) return;
+    const handler = () => { try { suppressFocusTemporary(); usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch(e){} };
+    try {
+        el.addEventListener('pointerdown', handler, { passive: true });
+        el.addEventListener('touchstart', handler, { passive: true });
+    } catch (e) {
+        // some older browsers may throw on options; fall back
+        try { el.addEventListener('pointerdown', handler); el.addEventListener('touchstart', handler); } catch (e) {}
+    }
+});
 
         // --- State ---
         let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, calculatedRankCache: null };
@@ -257,6 +402,15 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
                 }
                 return;
             }
+            // Prevent mobile keyboard appearing when arriving via nav with ?username=
+            try {
+                const params = new URLSearchParams(window.location.search);
+                if (params.has('username')) {
+                    // enable temporary focus suppression and blur after the page settles
+                    try { suppressFocusTemporary(600); } catch (e) {}
+                    setTimeout(() => { try { usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {} }, 50);
+                }
+            } catch (e) {}
             setLoading(true, 'Loading initial data...');
             await Promise.all([ fetchSleeperPlayers(), fetchDataFromGoogleSheet(), fetchPlayerStatsSheets() ]);
             setLoading(false);
@@ -265,6 +419,7 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
             const params = new URLSearchParams(window.location.search);
             const uname = params.get('username');
             if (uname) {
+                try { suppressFocusTemporary(600); } catch (e) {}
                 usernameInput.value = uname;
                 if (pageType === 'rosters') {
                     await handleFetchRosters();
@@ -694,17 +849,28 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
 
         function handlePositionFilter(e) {
             closeComparisonModal();
-            if (e.target.tagName !== 'BUTTON') return;
-            const btn = e.target;
-            const position = btn.dataset.position;
+            const button = e.target.closest('.filter-btn');
+            if (!button) return;
+
+            const position = button.dataset.position;
             const flexPositions = ['RB', 'WR', 'TE'];
 
-            if (position === 'FLX') {
+   if (position === 'FLX') {
                 const isActivating = !state.activePositions.has('FLX');
+                const starFilterIsActive = state.activePositions.has('STAR');
                 state.activePositions.clear();
+                if (starFilterIsActive) {
+                    state.activePositions.add('STAR');
+                }
                 if (isActivating) {
                     flexPositions.forEach(p => state.activePositions.add(p));
                     state.activePositions.add('FLX');
+                }
+            } else if (position === 'STAR') {
+                if (state.activePositions.has('STAR')) {
+                    state.activePositions.delete('STAR');
+                } else {
+                    state.activePositions.add('STAR');
                 }
             } else {
                 state.activePositions.delete('FLX');
@@ -1644,7 +1810,7 @@ const SEASON_META_HEADERS = {
 
         function getPlayerData(playerId, slot) {
             const player = state.players[playerId];
-            if (!player) return { id: playerId, name: 'Unknown Player', pos: '?', age: '?', team: '?', adp: null, ktc: null, slot, posRank: null };
+            if (!player) return { id: playerId, name: 'Unknown Player', pos: '?', age: '?', team: '?', adp: null, ktc: null, slot, posRank: null, ppg: 0 };
             const valueData = state.isSuperflex ? state.sflxData[playerId] : state.oneQbData[playerId];
             let lastName = player.last_name || '';
             if (lastName.length > 10) lastName = lastName.slice(0, 10) + '..'; // add ellipsis if truncated
@@ -1653,6 +1819,8 @@ const SEASON_META_HEADERS = {
             // Prioritize age from the sheet and format it to one decimal place
             const ageFromSheet = valueData?.age;
             const formattedAge = (typeof ageFromSheet === 'number') ? ageFromSheet.toFixed(1) : (player.age ? Number(player.age).toFixed(1) : '?');
+
+            const playerRanks = calculatePlayerStatsAndRanks(playerId) || getDefaultPlayerRanks();
 
             return { 
                 id: playerId, 
@@ -1664,7 +1832,9 @@ const SEASON_META_HEADERS = {
                 ktc: valueData?.ktc || null, 
                 slot, 
                 posRank: valueData?.posRank || null,
-                overallRank: valueData?.overallRank || null
+                overallRank: valueData?.overallRank || null,
+                ppg: playerRanks ? parseFloat(playerRanks.ppg) : 0,
+                playerRanks: playerRanks
             };
         }
 
@@ -3036,8 +3206,30 @@ const wrTeStatOrder = [
             card.className = 'team-card';
             card.innerHTML = `<div class="roster-section starters-section"><h3>Starters</h3></div><div class="roster-section bench-section"><h3>Bench</h3></div><div class="roster-section taxi-section"><h3>Taxi</h3></div><div class="roster-section picks-section"><h3>Draft Picks</h3></div>`;
             
-            const filterActive = state.activePositions.size > 0;
-            const filterFunc = player => !filterActive || state.activePositions.has(player.pos) || (state.activePositions.has('FLX') && ['RB', 'WR', 'TE'].includes(player.pos));
+            const activePos = state.activePositions;
+            const filterActive = activePos.size > 0;
+
+            const filterFunc = player => {
+                if (!filterActive) return true;
+
+                const isStarActive = activePos.has('STAR');
+                const meetsStarCriteria = (player.ktc || 0) >= 3000 || (player.ppg || 0) >= 9;
+
+                if (isStarActive && !meetsStarCriteria) {
+                    return false;
+                }
+
+                const posFilters = new Set(activePos);
+                posFilters.delete('STAR');
+
+                if (posFilters.size === 0) return true;
+
+                const isFlexActive = posFilters.has('FLX');
+                const posMatch = posFilters.has(player.pos);
+                const flexMatch = isFlexActive && ['RB', 'WR', 'TE'].includes(player.pos);
+
+                return posMatch || flexMatch;
+            };
 
             const populate = (sel, data, creator) => {
                 const el = card.querySelector(sel);
@@ -3081,8 +3273,10 @@ const wrTeStatOrder = [
                 <div class="roster-section picks-section"><h3>Draft Picks</h3></div>
             `;
 
-            const filterActive = state.activePositions.size > 0;
-            const isFlexActive = state.activePositions.has('FLX');
+            const activePos = state.activePositions;
+            const filterActive = activePos.size > 0;
+            const isFlexActive = activePos.has('FLX');
+            const isStarActive = activePos.has('STAR');
 
             const positions = {
                 QB: team.allPlayers.filter(p => p.pos === 'QB').sort((a, b) => (b.ktc || 0) - (a.ktc || 0)),
@@ -3095,14 +3289,28 @@ const wrTeStatOrder = [
                 const el = card.querySelector(sel);
                 const pos = sel.split('-')[0].toUpperCase().replace('.', '');
                 
+                const posFilters = new Set(activePos);
+                posFilters.delete('STAR');
+
+                const isPosVisible = posFilters.size === 0 || posFilters.has(pos) || (isFlexActive && ['RB', 'WR', 'TE'].includes(pos));
+
                 el.style.display = 'none';
-                if (!filterActive || state.activePositions.has(pos) || (isFlexActive && ['RB', 'WR', 'TE'].includes(pos))) {
+
+                if (isPosVisible) {
                     el.style.display = 'block';
+                    let filteredData = data;
+                    if (isStarActive) {
+                        filteredData = data.filter(player => {
+                            return (player.ktc || 0) >= 3000 || (player.ppg || 0) >= 9;
+                        });
+                    }
+
                     const h3 = el.querySelector('h3');
                     el.innerHTML = '';
                     el.appendChild(h3);
-                    if (data && data.length > 0) {
-                        data.forEach(item => el.appendChild(creator(item, team.teamName)));
+
+                    if (filteredData && filteredData.length > 0) {
+                        filteredData.forEach(item => el.appendChild(creator(item, team.teamName)));
                     } else {
                         el.innerHTML += `<div class="text-xs text-slate-500 p-1 italic">None</div>`;
                     }
@@ -4103,7 +4311,7 @@ function setLoading(isLoading, message = 'Loading...') {
     input.value = v;
     if (v) localStorage.setItem(KEY, v);
     else localStorage.removeItem(KEY);
-    if (document.activeElement === input) input.blur();
+    input.blur();
   }
 
   // iOS viewport reset helper (temporary max-scale=1 toggle)
