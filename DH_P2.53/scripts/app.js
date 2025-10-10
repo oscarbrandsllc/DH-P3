@@ -4106,42 +4106,83 @@ const wrTeStatOrder = [
           return s[s.length - 1].c;
         }
         
-        // --- Vitals conditional coloring helpers ---
+        // --- Vitals conditional coloring helpers (robust parsing) ---
         function parseHeightToInches(heightStr) {
-            if (!heightStr || typeof heightStr !== 'string') return null;
-            const m = heightStr.match(/(\d+)\s*'\s*(\d+)?\s*"?/);
+            if (!heightStr && heightStr !== 0) return null;
+            const s = String(heightStr).trim();
+            if (!s) return null;
+
+            // Normalize common unicode primes/apostrophes and separators
+            const norm = s.replace(/[’‘]/g, "'").replace(/[‐–—−]/g, '-').replace(/\s+ft\b/gi, "'").replace(/\s*in\b/gi, '');
+
+            // Patterns like 6'1" or 6' 1 or 6-1 or 6 1
+            let m = norm.match(/^(\d{1,2})\s*(?:'|-)\s*(\d{1,2})\s*(?:\"?)$/);
             if (m) {
-                const f = parseInt(m[1], 10);
-                const i = m[2] ? parseInt(m[2], 10) : 0;
-                if (Number.isFinite(f)) return f * 12 + (Number.isFinite(i) ? i : 0);
+                const feet = parseInt(m[1], 10);
+                const inches = parseInt(m[2], 10);
+                if (Number.isFinite(feet)) return feet * 12 + (Number.isFinite(inches) ? inches : 0);
             }
-            // fallback: try to parse digits only (e.g. 605 -> 6'05)
-            const digits = (heightStr.match(/\d+/g) || []).map(d => Number(d));
-            if (digits.length === 2) return digits[0] * 12 + digits[1];
+
+            // Patterns like 6' or 6 (no inches) -> interpret as feet
+            m = norm.match(/^(\d{1,2})\s*(?:'|ft)?\s*$/i);
+            if (m) {
+                const feet = parseInt(m[1], 10);
+                if (Number.isFinite(feet)) return feet * 12;
+            }
+
+            // Patterns like 601 or 605 -> interpret as feet+inches if 3 digits
+            const digits = norm.match(/\d+/g) || [];
             if (digits.length === 1) {
-                const v = digits[0];
-                if (v > 100) { // probably inches like 74
-                    return v;
+                const raw = digits[0];
+                if (raw.length === 3) {
+                    const feet = parseInt(raw.slice(0, 1), 10);
+                    const inches = parseInt(raw.slice(1), 10);
+                    if (Number.isFinite(feet)) return feet * 12 + (Number.isFinite(inches) ? inches : 0);
                 }
-                if (v > 10) { // probably cm? ignore
-                    return null;
-                }
+                // If a plain number and > 50 and < 90, treat as inches
+                const num = parseInt(raw, 10);
+                if (num >= 50 && num <= 90) return num;
             }
+
+            // If two numbers separated (e.g., "6 1")
+            if (digits.length >= 2) {
+                const feet = parseInt(digits[0], 10);
+                const inches = parseInt(digits[1], 10);
+                if (Number.isFinite(feet)) return feet * 12 + (Number.isFinite(inches) ? inches : 0);
+            }
+
             return null;
         }
 
         function parseWeightToLbs(weightStr) {
-            if (!weightStr || typeof weightStr !== 'string') return null;
-            const m = weightStr.match(/(\d{2,3})/);
+            if (!weightStr && weightStr !== 0) return null;
+            const s = String(weightStr);
+            // look for number followed by lb or lbs
+            let m = s.match(/(\d{2,3})\s*(?:lbs?|lb)?/i);
+            if (m) return parseInt(m[1], 10);
+            // fallback: first 2-3 digit number
+            m = s.match(/(\d{2,3})/);
             if (m) return parseInt(m[1], 10);
             return null;
         }
 
         function parseAgeValue(ageStr) {
             if (!ageStr && ageStr !== 0) return null;
-            const n = Number(String(ageStr).replace(/[^\n0-9.\-]/g, ''));
+            const s = String(ageStr).trim();
+            if (!s) return null;
+            // Accept decimals
+            const m = s.match(/\d+(?:\.\d+)?/);
+            if (!m) return null;
+            const n = Number(m[0]);
             return Number.isFinite(n) ? n : null;
         }
+
+        // Use the stronger color palette you suggested for height/weight
+        const HEIGHT_WEIGHT_COLORS = {
+            low: '#ffa8f4',
+            mid: '#b3b9ff',
+            high: '#befbf1'
+        };
 
         function getVitalsColor(label, pos, rawValue) {
             const position = (pos || '').toUpperCase();
@@ -4149,7 +4190,6 @@ const wrTeStatOrder = [
             if (label === 'AGE') {
                 const age = parseAgeValue(rawValue);
                 if (age === null) return null;
-                // rules per position
                 if (position === 'WR' || position === 'TE') {
                     if (age < 22.5) return '#cefcf1';
                     if (age >= 22.5 && age < 26) return '#a0f0f9';
@@ -4175,56 +4215,57 @@ const wrTeStatOrder = [
                 }
                 return null;
             }
+
             if (label === 'WEIGHT') {
                 const w = parseWeightToLbs(rawValue);
                 if (w === null) return null;
                 if (position === 'QB') {
-                    if (w < 210) return '#ffb8f4';
-                    if (w >= 210 && w <= 250) return '#c3efff';
-                    if (w > 250) return '#ffb8f4';
+                    if (w < 210) return HEIGHT_WEIGHT_COLORS.low;
+                    if (w >= 210 && w <= 250) return HEIGHT_WEIGHT_COLORS.mid;
+                    if (w > 250) return HEIGHT_WEIGHT_COLORS.low;
                 }
                 if (position === 'RB') {
-                    if (w < 190) return '#ffb8f4';
-                    if (w >= 190 && w < 200) return '#c3c9ff';
-                    if (w >= 200) return '#cefcf1';
+                    if (w < 190) return HEIGHT_WEIGHT_COLORS.low;
+                    if (w >= 190 && w < 200) return HEIGHT_WEIGHT_COLORS.mid;
+                    if (w >= 200) return HEIGHT_WEIGHT_COLORS.high;
                 }
                 if (position === 'TE') {
-                    if (w < 230) return '#ffb8f4';
-                    if (w >= 230 && w < 240) return '#c3c9ff';
-                    if (w >= 240) return '#cefcf1';
+                    if (w < 230) return HEIGHT_WEIGHT_COLORS.low;
+                    if (w >= 230 && w < 240) return HEIGHT_WEIGHT_COLORS.mid;
+                    if (w >= 240) return HEIGHT_WEIGHT_COLORS.high;
                 }
                 if (position === 'WR') {
-                    if (w < 190) return '#ffb8f4';
-                    if (w >= 190 && w <= 200) return '#c3c9ff';
-                    if (w >= 200 && w <= 234) return '#cefcf1';
-                    if (w >= 235) return '#ffb8f4';
+                    if (w < 190) return HEIGHT_WEIGHT_COLORS.low;
+                    if (w >= 190 && w <= 200) return HEIGHT_WEIGHT_COLORS.mid;
+                    if (w >= 200 && w <= 234) return HEIGHT_WEIGHT_COLORS.high;
+                    if (w >= 235) return HEIGHT_WEIGHT_COLORS.low;
                 }
                 return null;
             }
+
             if (label === 'HEIGHT') {
                 const inches = parseHeightToInches(rawValue);
                 if (inches === null) return null;
-                // thresholds are given in feet/inches; convert to inches
                 if (position === 'QB') {
-                    if (inches < 72) return '#ffb8f4';
-                    if (inches >= 72 && inches <= 73) return '#c3c9ff';
-                    if (inches > 73) return '#cefcf1';
+                    if (inches < 72) return HEIGHT_WEIGHT_COLORS.low;
+                    if (inches >= 72 && inches <= 73) return HEIGHT_WEIGHT_COLORS.mid;
+                    if (inches > 73) return HEIGHT_WEIGHT_COLORS.high;
                 }
                 if (position === 'RB') {
-                    if (inches >= 75) return '#ffb8f4'; // >=6'3"
-                    if (inches > 69 && inches < 75) return '#cefcf1'; // >5'9 and <6'3
-                    if (inches >= 67 && inches <= 69) return '#c3c9ff'; // 5'7 - 5'9
-                    if (inches < 67) return '#ffb8f4';
+                    if (inches >= 75) return HEIGHT_WEIGHT_COLORS.low; // >=6'3"
+                    if (inches > 69 && inches < 75) return HEIGHT_WEIGHT_COLORS.high; // >5'9 and <6'3
+                    if (inches >= 67 && inches <= 69) return HEIGHT_WEIGHT_COLORS.mid; // 5'7 - 5'9
+                    if (inches < 67) return HEIGHT_WEIGHT_COLORS.low;
                 }
                 if (position === 'TE') {
-                    if (inches > 74) return '#cefcf1'; // >6'2
-                    if (inches >= 73 && inches <= 74) return '#c3c9ff'; // 6'1 - 6'2
-                    if (inches < 73) return '#ffb8f4';
+                    if (inches > 74) return HEIGHT_WEIGHT_COLORS.high; // >6'2
+                    if (inches >= 73 && inches <= 74) return HEIGHT_WEIGHT_COLORS.mid; // 6'1 - 6'2
+                    if (inches < 73) return HEIGHT_WEIGHT_COLORS.low;
                 }
                 if (position === 'WR') {
-                    if (inches < 71) return '#ffb8f4'; // <5'11
-                    if (inches >= 71 && inches <= 72) return '#c3c9ff'; // 5'11 - 6'0
-                    if (inches > 72) return '#cefcf1';
+                    if (inches < 71) return HEIGHT_WEIGHT_COLORS.low; // <5'11
+                    if (inches >= 71 && inches <= 72) return HEIGHT_WEIGHT_COLORS.mid; // 5'11 - 6'0
+                    if (inches > 72) return HEIGHT_WEIGHT_COLORS.high;
                 }
                 return null;
             }
