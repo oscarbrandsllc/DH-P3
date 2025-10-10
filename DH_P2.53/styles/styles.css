@@ -728,7 +728,6 @@
         #contextual-controls {
             display: flex;
             flex-direction: column;
-            gap: 0.25rem;
         }
         #contextual-controls.hidden {
             display: none;
