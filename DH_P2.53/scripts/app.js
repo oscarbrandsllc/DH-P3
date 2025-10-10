@@ -2071,7 +2071,7 @@ const wrTeStatOrder = [
             const headerRow = document.createElement('tr');
             const wkTh = document.createElement('th');
             wkTh.classList.add('week-column-header');
-            wkTh.textContent = 'WK';
+            wkTh.textContent = 'WK · VS ';
             headerRow.appendChild(wkTh);
 
             for (const key of orderedStatKeys) {
