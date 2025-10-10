@@ -186,7 +186,7 @@
             font-size: 1.2rem; 
             color: var(--color-text-secondary); 
             max-width: 600px;
-            margin: 1.2rem auto;
+            margin: 0.51rem auto;
         }
 
         #welcome-screen, #loading {
@@ -2474,7 +2474,7 @@ main#content { align-items: stretch !important; }
 
 /* ⬇︎  INSTALL PANEL & LEGEND PANEL  ⬇︎ */
 .panel {
-  margin: 0.75rem auto;
+  margin: 0.45rem auto;
   padding: 0.75rem 0.85rem;
   border: 1px solid var(--color-panel-border);
   border-radius: 10px;
@@ -2702,14 +2702,13 @@ font-weight: 500 !important;
   /* Default size can be overridden by setting --welcome-logo-size on the
      #welcome-screen or via a global rule. Value can be px, %, vw, or a
      clamp expression. Percentage values are relative to the containing block. */
-  --welcome-logo-size: clamp(72px, 18vw, 128px);
+  --welcome-logo-size: clamp(72px, 24vw, 128px);
   display: block;
-  margin: 0 auto 0.0rem;
+  margin: 0 auto -1rem;
   width: var(--welcome-logo-size);
   height: auto;
   position: relative;
   z-index: 0;
-  filter: drop-shadow(0 8px 22px rgba(0,0,0,.35));
 }
 #welcome-screen .welcome-logo img {
   display:block; width:100%; height:auto; position:relative; z-index:1;
@@ -2722,9 +2721,7 @@ font-weight: 500 !important;
     filter: drop-shadow(3px 2px 2px #5900ffed) drop-shadow(0px 0px 16px #7300ff58);
     }
 #welcome-screen .welcome-logo::after {
-  content:""; position:absolute; inset:-4px; border-radius:14px; pointer-events:none;
-  background: radial-gradient(ellipse at center, rgba(0,0,0,0.0) 45%, rgba(0,0,0,0.06) 75%, rgba(0,0,0,0.10) 92%, rgba(0,0,0,0) 100%);
-  filter:blur(4px); z-index:0;
+  content:""; position:absolute; inset:-4px; border-radius:14px; pointer-events:none; z-index:0;
 }
 
   /* · · Welcome logo gradient glow (safe, no size changes) · · */
