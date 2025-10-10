@@ -3770,28 +3770,36 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
         color: #8f93ab;
     }
 
-    #modal-body tbody .week-cell {
-        font-weight: 700;
-        text-align: center;
-        white-space: nowrap;
-        vertical-align: middle;
-    }
+  #modal-body tbody .week-cell {
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    display: inline-flex; /* keep content centered but inline */
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+  }
 
-    .week-cell .week-number,
-    .week-opponent-label {
-        display: block;
-    }
+  .week-cell .week-number,
+  .week-opponent-label {
+    display: inline-block;
+    vertical-align: middle;
+  }
 
-    .week-opponent-separator {
-        display: none;
-    }
+  .week-opponent-separator {
+    display: inline-block;
+    margin: 0 0.15rem;
+    color: inherit;
+    opacity: 0.7;
+  }
 
-    .week-opponent-label {
-        font-size: 0.65em;
-        line-height: 1;
-        margin-top: -2px;
-        font-weight: 600;
-    }
+  .week-opponent-label {
+    font-size: 0.8em;
+    line-height: 1;
+    margin-top: 0;
+    font-weight: 600;
+  }
     .week-opponent-label .stat-rank-annotation {
         font-size: 0.9em;
     }
