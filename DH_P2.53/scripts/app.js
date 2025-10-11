@@ -4191,25 +4191,25 @@ const wrTeStatOrder = [
                 const age = parseAgeValue(rawValue);
                 if (age === null) return null;
                 if (position === 'WR' || position === 'TE') {
-                    if (age < 22.5) return '#cefcf1';
-                    if (age >= 22.5 && age < 26) return '#a0f0f9';
-                    if (age >= 26 && age < 29) return '#c3c9ff';
-                    if (age >= 29 && age < 31) return '#dfbbfe';
-                    if (age >= 31) return '#ffb8f4';
+                    if (age < 22.5) return '#96f2cee9';
+                    if (age >= 22.5 && age < 26) return '#84e5fbff';
+                    if (age >= 26 && age < 29) return '#84b4fbff';
+                    if (age >= 29 && age < 31) return '#dfa3f7ff';
+                    if (age >= 31) return '#f397d8ef';
                 }
                 if (position === 'RB') {
-                    if (age < 22.5) return '#cefcf1';
-                    if (age >= 22.5 && age < 25) return '#a0f0f9';
-                    if (age >= 25 && age < 27) return '#c3c9ff';
-                    if (age >= 27 && age < 29) return '#dfbbfe';
-                    if (age >= 29) return '#ffb8f4';
+                    if (age < 22.5) return '#96f2cee9';
+                    if (age >= 22.5 && age < 25) return '#84e5fbff';
+                    if (age >= 25 && age < 27) return '#84b4fbff';
+                    if (age >= 27 && age < 29) return '#dfa3f7ff';
+                    if (age >= 29) return '#f397d8ef';
                 }
                 if (position === 'QB') {
-                    if (age < 25.5) return '#cefcf1';
-                    if (age >= 25.5 && age < 29) return '#a0f0f9';
-                    if (age >= 29 && age < 33) return '#c3c9ff';
-                    if (age >= 33 && age < 41) return '#dfbbfe';
-                    if (age >= 41) return '#ffb8f4';
+                    if (age < 25.5) return '#96f2cee9';
+                    if (age >= 25.5 && age < 29) return '#84e5fbff';
+                    if (age >= 29 && age < 33) return '#84b4fbff';
+                    if (age >= 33 && age < 41) return '#dfa3f7ff';
+                    if (age >= 41) return '#f397d8ef';
                 }
                 return null;
             }
