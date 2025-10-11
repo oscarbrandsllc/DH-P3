@@ -4179,9 +4179,9 @@ const wrTeStatOrder = [
 
         // Use the stronger color palette you suggested for height/weight
         const HEIGHT_WEIGHT_COLORS = {
-            low: '#f185e3ff',
-            mid: '#8d96f5ff',
-            high: '#90f5e4ff'
+            low: '#f08fe3ff',
+            mid: '#84b8fbff',
+            high: '#96f2e3ff'
         };
 
         function getVitalsColor(label, pos, rawValue) {
@@ -4202,16 +4202,14 @@ const wrTeStatOrder = [
                     if (age >= 22.5 && age < 25) return '#a0f0f9';
                     if (age >= 25 && age < 27) return '#c3c9ff';
                     if (age >= 27 && age < 29) return '#dfbbfe';
-                    if (age >= 29 && age < 31) return '#ffb8f4';
-                    if (age >= 31) return '#ffb8f4';
+                    if (age >= 29) return '#ffb8f4';
                 }
                 if (position === 'QB') {
                     if (age < 25.5) return '#cefcf1';
                     if (age >= 25.5 && age < 29) return '#a0f0f9';
                     if (age >= 29 && age < 33) return '#c3c9ff';
-                    if (age >= 33 && age < 40) return '#dfbbfe';
-                    if (age >= 40 && age < 44) return '#ffb8f4';
-                    if (age >= 44) return '#ffb8f4';
+                    if (age >= 33 && age < 41) return '#dfbbfe';
+                    if (age >= 41) return '#ffb8f4';
                 }
                 return null;
             }
