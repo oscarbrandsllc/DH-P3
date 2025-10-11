@@ -2157,6 +2157,7 @@ body[data-page="welcome"] .enter-button {
   height: 40px; /* uniform control height */
   min-width: 78px; /* ensure the control doesn't shrink too small */
   white-space: nowrap; /* prevent enter label wrapping */
+  flex-shrink: 0; /* do not allow the button to shrink when space is tight */
 }
 
 body[data-page="welcome"] .enter-button:hover {
@@ -2251,11 +2252,11 @@ body[data-page="welcome"] .home-menu-item i { width: 16px; text-align: center; }
 
 /* Mobile tweaks: keep button compact and inline */
 @media (max-width: 520px) {
-  body[data-page="welcome"] #primary-header-row { grid-template-columns: auto 1fr auto; gap: 0.4rem; padding-left: 8px; padding-right: 8px; }
-  body[data-page="welcome"] .enter-button { min-width: 84px; height: 38px; padding: 0 12px; gap: 0.7rem; }
+  body[data-page="welcome"] #primary-header-row { grid-template-columns: auto 1fr auto; gap: 0.28rem; padding-left: 8px; padding-right: 8px; }
+  body[data-page="welcome"] .enter-button { min-width: 92px; height: 38px; padding: 0 14px; gap: 0.8rem; flex-shrink: 0; }
   body[data-page="welcome"] .enter-label { font-size: 0.98rem; }
-  body[data-page="welcome"] .enter-circle { width: 30px; height: 30px; font-size: 0.92rem; }
-  body[data-page="welcome"] #usernameInput { font-size: 0.94rem; padding: 0.34rem 0.5rem; height: 38px; }
+  body[data-page="welcome"] .enter-circle { width: 34px; height: 34px; font-size: 0.98rem; }
+  body[data-page="welcome"] #usernameInput { font-size: 0.94rem; padding: 0.32rem 0.48rem; height: 38px; flex: 1 1 auto; }
 }
 
     
