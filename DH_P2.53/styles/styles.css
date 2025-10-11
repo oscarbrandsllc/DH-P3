@@ -2029,6 +2029,93 @@
     }
 }
 
+/* === Home page (welcome) — scoped header simplification === */
+body[data-page="welcome"] .app-header {
+  display: flex !important;
+  align-items: center;
+  justify-content: center; /* center header on desktop */
+  padding: 0.6rem 0.5rem;
+}
+
+body[data-page="welcome"] #primary-header-row {
+  width: 100%;
+  max-width: 860px; /* keep header constrained and centered */
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+/* make sure only for home: hide any leftover contextual controls */
+body[data-page="welcome"] #contextual-controls { display: none !important; }
+
+/* Username field sizing for home */
+body[data-page="welcome"] .username-area { min-width: 0; }
+body[data-page="welcome"] #usernameInput {
+  max-width: 520px;
+  width: 100%;
+  font-size: 0.88rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 12px;
+}
+
+/* Enter button styling — circular icon + tiny label */
+body[data-page="welcome"] .home-enter-slot { display: flex; align-items: center; justify-content: center; }
+body[data-page="welcome"] .enter-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.18rem;
+  padding: 6px 8px;
+  background: linear-gradient(180deg, rgba(118,109,255,0.14), rgba(66,194,255,0.06));
+  border: 1px solid rgba(128,138,189,0.24);
+  color: var(--color-text-primary);
+  border-radius: 999px;
+  width: 56px;
+  height: 56px;
+  box-shadow: 0 8px 28px rgba(23, 12, 58, 0.45), inset 0 1px 0 rgba(255,255,255,0.02);
+  cursor: pointer;
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+body[data-page="welcome"] .enter-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 40px rgba(23, 12, 58, 0.6), inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+body[data-page="welcome"] .enter-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, var(--color-accent-primary), rgba(118,109,255,0.88));
+  color: white;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 12px rgba(118,109,255,0.18);
+}
+
+body[data-page="welcome"] .enter-circle i { transform: rotate(-180deg); }
+
+body[data-page="welcome"] .enter-label {
+  font-size: 0.55rem;
+  color: var(--color-text-mid-test1);
+  text-transform: lowercase;
+  letter-spacing: 0.06em;
+  margin-top: 1px;
+}
+
+/* Mobile tweaks: keep button compact and inline */
+@media (max-width: 520px) {
+  body[data-page="welcome"] #primary-header-row { grid-template-columns: 1fr auto; gap: 0.5rem; }
+  body[data-page="welcome"] .enter-button { width: 48px; height: 48px; }
+  body[data-page="welcome"] .enter-circle { width: 30px; height: 30px; font-size: 0.86rem; }
+  body[data-page="welcome"] #usernameInput { font-size: 0.9rem; padding: 0.45rem 0.5rem; }
+}
+
     
 
 @media (max-width: 540px) {
