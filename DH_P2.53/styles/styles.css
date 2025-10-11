@@ -489,9 +489,8 @@
     }
 
     .nav-button i {
-        font-size: 0.85rem;
+        font-size: 0.95rem;
         color: #ddeb;
-        text-shadow: 3px 1px 1px #5800ff;
     }
 
     .nav-label {
@@ -2184,7 +2183,12 @@ body[data-page="welcome"] .enter-circle {
 }
 
 /* allow the Font Awesome rotation class to apply; keep inline-block for sizing */
-body[data-page="welcome"] .enter-circle i { display: inline-block; line-height: 1; }
+body[data-page="welcome"] .enter-circle i {
+  display: inline-block;
+  line-height: 1; 
+  text-shadow: 2px 1px 1px #5800ff;
+  font-size: 0.85rem !important;
+}
 
 body[data-page="welcome"] .enter-label {
   font-size: 0.95rem; /* larger label font */
