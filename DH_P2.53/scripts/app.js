@@ -294,6 +294,42 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
     }
 });
 
+// --- Home page menu wiring (only when on welcome page) ---
+if (pageType === 'welcome') {
+    const homeMenuToggle = document.getElementById('homeMenuToggle');
+    const homeMenu = document.getElementById('homeMenu');
+
+    if (homeMenuToggle && homeMenu) {
+        homeMenuToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = homeMenu.classList.toggle('hidden') ? true : !homeMenu.classList.contains('hidden');
+            homeMenuToggle.setAttribute('aria-expanded', String(!homeMenu.classList.contains('hidden')));
+            homeMenu.setAttribute('aria-hidden', String(homeMenu.classList.contains('hidden')));
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!homeMenu.contains(e.target) && !homeMenuToggle.contains(e.target)) {
+                if (!homeMenu.classList.contains('hidden')) {
+                    homeMenu.classList.add('hidden');
+                    homeMenuToggle.setAttribute('aria-expanded', 'false');
+                    homeMenu.setAttribute('aria-hidden', 'true');
+                }
+            }
+        });
+
+        // Wire menu items
+        homeMenu.querySelectorAll('.home-menu-item').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const page = btn.dataset.page;
+                try { suppressFocusTemporary(); usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {}
+                // reuse ensureNavigate to validate username where needed
+                await ensureNavigate(page);
+            });
+        });
+    }
+}
+
         // --- State ---
         let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, calculatedRankCache: null };
         const assignedLeagueColors = new Map();
