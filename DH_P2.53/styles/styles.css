@@ -2043,9 +2043,9 @@ body[data-page="welcome"] #primary-header-row {
   max-width: 1120px;
   margin: 0 auto;
   display: grid;
-  /* keep items close: menu | username (constrained) | enter */
-  grid-template-columns: auto minmax(220px, 520px) auto;
-  gap: 0.4rem;
+  /* tighter columns so items sit next to each other: menu | username (constrained) | enter */
+  grid-template-columns: auto minmax(300px, 1fr) auto;
+  gap: 0.25rem;
   align-items: center;
 }
 
@@ -2055,22 +2055,24 @@ body[data-page="welcome"] #contextual-controls { display: none !important; }
 /* Username field sizing for home */
 body[data-page="welcome"] .username-area { min-width: 0; }
 body[data-page="welcome"] #usernameInput {
-  max-width: 520px; /* constrain width so it doesn't float away */
+  max-width: 640px; /* allow the input to be larger but keep it constrained */
   width: 100%;
   font-size: 1rem;
   padding: 0.48rem 0.7rem;
   border-radius: 12px;
+  height: 44px; /* uniform control height */
+  box-sizing: border-box;
 }
 
 /* Enter button styling — styled to match the other nav buttons with a circular icon inside */
 body[data-page="welcome"] .home-enter-slot { display: flex; align-items: center; justify-content: center; }
 body[data-page="welcome"] .enter-button {
   display: inline-flex;
-  flex-direction: column;
+  flex-direction: row; /* label left of icon */
   align-items: center;
   justify-content: center;
-  gap: 0.06rem;
-  padding: 0.08rem 0.12rem; /* minimal padding so outer button hugs the circle */
+  gap: 0.5rem;
+  padding: 0 12px;
   background: rgba(13, 14, 35, 0.12);
   border: 1px solid rgba(128, 138, 189, 0.12);
   color: var(--color-text-secondary);
@@ -2079,7 +2081,7 @@ body[data-page="welcome"] .enter-button {
   cursor: pointer;
   transition: transform 110ms ease, box-shadow 110ms ease, background 110ms ease;
   align-self: center;
-  line-height: 1;
+  height: 44px; /* uniform control height */
 }
 
 body[data-page="welcome"] .enter-button:hover {
@@ -2094,26 +2096,29 @@ body[data-page="welcome"] .enter-circle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background: linear-gradient(180deg, rgba(118,109,255,0.16), rgba(118,109,255,0.08));
+  background: linear-gradient(180deg, rgba(118,109,255,0.14), rgba(118,109,255,0.06));
   color: white;
   font-size: 0.92rem;
-  box-shadow: 0 4px 10px rgba(91,76,255,0.12);
+  box-shadow: 0 4px 8px rgba(91,76,255,0.10);
 }
 
 /* allow the Font Awesome rotation class to apply; keep inline-block for sizing */
 body[data-page="welcome"] .enter-circle i { display: inline-block; line-height: 1; }
 
 body[data-page="welcome"] .enter-label {
-  font-size: 0.56rem;
-  color: var(--color-text-mid-test1);
-  text-transform: lowercase;
-  letter-spacing: 0.06em;
-  margin: 0; /* remove extra bottom spacing */
+  font-size: 0.95rem; /* larger label font */
+  color: var(--color-text-primary);
+  text-transform: none;
+  letter-spacing: 0.02em;
+  margin: 0;
   line-height: 1;
+  font-weight: 600;
+  order: 0; /* ensure label is left of icon */
 }
+body[data-page="welcome"] .enter-circle { order: 1; }
 
 /* Home menu dropdown */
 body[data-page="welcome"] .home-menu-slot { display: flex; align-items: center; gap: 0.5rem; position: relative; }
@@ -2121,12 +2126,13 @@ body[data-page="welcome"] .menu-toggle {
   background: transparent;
   border: 1px solid rgba(128,138,189,0.12);
   color: var(--color-text-secondary);
-  padding: 6px 8px;
+  padding: 0 10px;
   border-radius: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  height: 44px; /* match control height */
 }
 
 body[data-page="welcome"] .menu-toggle:hover { color: var(--color-text-primary); border-color: rgba(128,138,189,0.24); }
