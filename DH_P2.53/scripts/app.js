@@ -4179,9 +4179,9 @@ const wrTeStatOrder = [
 
         // Use the stronger color palette you suggested for height/weight
         const HEIGHT_WEIGHT_COLORS = {
-            low: '#ffa8f4',
-            mid: '#b3b9ff',
-            high: '#befbf1'
+            low: '#f116d4ff',
+            mid: '#4653ebff',
+            high: '#54f1d7ff'
         };
 
         function getVitalsColor(label, pos, rawValue) {
@@ -4191,19 +4191,19 @@ const wrTeStatOrder = [
                 const age = parseAgeValue(rawValue);
                 if (age === null) return null;
                 if (position === 'WR' || position === 'TE') {
-                    if (age < 22.5) return '#cefcf1';
-                    if (age >= 22.5 && age < 26) return '#a0f0f9';
-                    if (age >= 26 && age < 29) return '#c3c9ff';
-                    if (age >= 29 && age < 31) return '#dfbbfe';
-                    if (age >= 31) return '#ffb8f4';
+                    if (age < 22.5) return '#4fe8c4ff';
+                    if (age >= 22.5 && age < 26) return '#5ad6e4ff';
+                    if (age >= 26 && age < 29) return '#5e6deeff';
+                    if (age >= 29 && age < 31) return '#a854f2ff';
+                    if (age >= 31) return '#e228c6ff';
                 }
                 if (position === 'RB') {
-                    if (age < 22.5) return '#cefcf1';
-                    if (age >= 22.5 && age < 25) return '#a0f0f9';
-                    if (age >= 25 && age < 27) return '#c3c9ff';
-                    if (age >= 27 && age < 29) return '#dfbbfe';
-                    if (age >= 29 && age < 31) return '#ffb8f4';
-                    if (age >= 31) return '#ffb8f4';
+                    if (age < 22.5) return '#4fe8c4ff';
+                    if (age >= 22.5 && age < 25) return '#5ad6e4ff';
+                    if (age >= 25 && age < 27) return '#6674f3ff';
+                    if (age >= 27 && age < 29) return '#bf85f3ff';
+                    if (age >= 29 && age < 31) return '#a854f2ff';
+                    if (age >= 31) return '#e228c6ff';
                 }
                 if (position === 'QB') {
                     if (age < 25.5) return '#cefcf1';
