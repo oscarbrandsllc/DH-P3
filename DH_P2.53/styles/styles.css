@@ -1151,6 +1151,62 @@
 .app-header.preview-active #secondary-header-row {
   display: none !important;
 }
+/* Welcome page: enforce uniform control heights and tighter mobile spacing */
+body[data-page="welcome"] {
+  /* single source of truth for header control sizing on the welcome page */
+  --welcome-header-control-height: 36px; /* slightly smaller for a tighter header */
+}
+
+/* Make menu slot, username area and enter control share a single height */
+body[data-page="welcome"] #primary-header-row .menu-container,
+body[data-page="welcome"] .username-area,
+body[data-page="welcome"] .enter-button,
+body[data-page="welcome"] .menu-button,
+body[data-page="welcome"] .home-menu-slot {
+  height: var(--welcome-header-control-height) !important;
+  min-height: var(--welcome-header-control-height) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+/* Ensure the input fills the shared height and has balanced paddings */
+body[data-page="welcome"] #usernameInput {
+  height: var(--welcome-header-control-height) !important;
+  padding-top: 0.18rem !important;
+  padding-bottom: 0.18rem !important;
+  padding-left: 0.6rem !important;
+  padding-right: 0.6rem !important;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+/* Keep the enter button vertically centered and same height */
+body[data-page="welcome"] .enter-button {
+  height: var(--welcome-header-control-height) !important;
+  min-height: var(--welcome-header-control-height) !important;
+  align-items: center;
+}
+
+/* Reduce vertical gap on small screens so elements sit closer */
+@media (max-width: 520px) {
+  body[data-page="welcome"] #primary-header-row { gap: 0.22rem !important; }
+  body[data-page="welcome"] .nav-buttons-container { gap: 0.25rem !important; }
+}
+
+/* Small tweak: ensure the hamburger/menu button matches sizing */
+body[data-page="welcome"] .menu-button,
+body[data-page="welcome"] #homeMenuToggle {
+  height: 100% !important;
+  width: 40px !important; /* fixed square for consistent visual */
+  min-width: 40px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Make the enter label a touch-friendly height on mobile while keeping it short */
+body[data-page="welcome"] .enter-label { line-height: 1; }
+
 /* ⬇︎ ROSTER VIEW  ⬇︎ */
         #rosterContainer { 
             padding: 1px;
