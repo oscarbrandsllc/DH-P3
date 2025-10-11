@@ -2133,17 +2133,17 @@ body[data-page="welcome"] .menu-toggle:hover { color: var(--color-text-primary);
 
 body[data-page="welcome"] .home-menu {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 4px);
   left: 0;
-  min-width: 200px;
-  background: rgba(13,14,35,0.98);
+  min-width: 160px;
+  background: rgba(38,37,63,0.94);
   border: 1px solid rgba(128,138,189,0.14);
   box-shadow: 0 18px 40px rgba(0,0,0,0.6);
   padding: 8px;
   border-radius: 8px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 3px;
   z-index: 1200;
   max-height: 60vh;
   overflow: auto;
