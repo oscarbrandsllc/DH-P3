@@ -4181,7 +4181,7 @@ const wrTeStatOrder = [
         const HEIGHT_WEIGHT_COLORS = {
             low: '#f08fe3ff',
             mid: '#84b8fbff',
-            high: '#96f2e3ff'
+            high: '#96f2ceff'
         };
 
         function getVitalsColor(label, pos, rawValue) {

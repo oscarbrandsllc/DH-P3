@@ -3501,15 +3501,15 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 
     .player-vitals__label {
       font-size: 0.45rem;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.07em;
       color: var(--color-text-tertiary);
       text-transform: uppercase;
       line-height: 1;
     }
 
     .player-vitals__value {
-      font-size: 0.8rem;
-      font-weight: 600;
+      font-size: 0.75rem;
+      font-weight: 400;
       color: #BDC1D8df;
       line-height: 1;
     }
