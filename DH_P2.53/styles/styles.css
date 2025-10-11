@@ -783,7 +783,7 @@
                 .username-area {
                     flex-grow: 1;
                     min-width: 100px; /* prevent it from getting too small */
-                    max-width: 220px;
+                    max-width: 211px;
                     padding: 0;
                     height: var(--header-control-height);
                     display: flex;
@@ -1192,7 +1192,7 @@ body[data-page="welcome"] .enter-button {
 
 /* Reduce vertical gap on small screens so elements sit closer */
 @media (max-width: 520px) {
-  body[data-page="welcome"] #primary-header-row { gap: 0.65rem !important; }
+  body[data-page="welcome"] #primary-header-row {gap: 0.65rem !important;}
   body[data-page="welcome"] .nav-buttons-container { gap: 0.25rem !important; }
 }
 
@@ -2160,7 +2160,6 @@ body[data-page="welcome"] .enter-button {
   height: 40px; /* uniform control height */
   min-width: 78px; /* ensure the control doesn't shrink too small */
   white-space: nowrap; /* prevent enter label wrapping */
-  flex-shrink: 0; /* do not allow the button to shrink when space is tight */
 }
 
 body[data-page="welcome"] .enter-button:hover {
@@ -2175,10 +2174,10 @@ body[data-page="welcome"] .enter-circle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
+  width: 40px !important;
   height: 28px;
   border-radius: 50%;
-  background: linear-gradient(180deg, rgba(118,109,255,0.14), rgba(118,109,255,0.07));
+  background: linear-gradient(125deg, rgba(118,109,255,.14), rgba(118,109,255,0.07));
   color: white;
   font-size: 0.88rem;
   box-shadow: 0 3px 6px rgba(91,76,255,0.08);
@@ -2189,18 +2188,17 @@ body[data-page="welcome"] .enter-circle i { display: inline-block; line-height: 
 
 body[data-page="welcome"] .enter-label {
   font-size: 0.95rem; /* larger label font */
-  color: var(--color-text-primary);
+  color: #cfc7ffdb;
   text-transform: none;
-  letter-spacing: 0.02em;
   margin: 0;
   line-height: 1;
-  font-weight: 600;
+  font-weight: 400;
   order: 0; /* ensure label is left of icon */
 }
 body[data-page="welcome"] .enter-circle { order: 1; }
 
 /* Home menu dropdown */
-body[data-page="welcome"] .home-menu-slot { display: flex; align-items: center; gap: 0.5rem; position: relative; }
+body[data-page="welcome"] .home-menu-slot {display: flex;align-items: center;gap: 0.5rem;position: relative;margin-right: 4px;}
 body[data-page="welcome"] .menu-toggle {
   background: transparent;
   border: 1px solid rgba(128,138,189,0.12);
@@ -2255,16 +2253,11 @@ body[data-page="welcome"] .home-menu-item i { width: 16px; text-align: center; }
 
 /* Mobile tweaks: keep button compact and inline */
 @media (max-width: 520px) {
-  body[data-page="welcome"] #primary-header-row { grid-template-columns: auto 1fr auto; gap: 0.28rem; padding-left: 8px; padding-right: 8px; }
-  body[data-page="welcome"] .enter-button { min-width: 100px; height: 38px; padding: 0.2rem 0.85rem; gap: 0.6rem; flex-shrink: 0; }
-  body[data-page="welcome"] .enter-label { font-size: 0.95rem; }
-  body[data-page="welcome"] .enter-circle { 
-    width: 24px; 
-    height: 24px; 
-    font-size: 0.92rem; 
-    border: 1px solid #fff1;
-  }
-  body[data-page="welcome"] #usernameInput { font-size: 0.94rem; padding: 0.32rem 0.48rem; height: 38px; flex: 1 1 auto; }
+  body[data-page="welcome"] #primary-header-row { grid-template-columns: auto 1fr auto; gap: 0.4rem; padding-left: 8px; padding-right: 8px; }
+  body[data-page="welcome"] .enter-button {min-width: 104px;height: 38px;padding: 0.2rem 0.85rem;gap: 0.6rem;}
+  body[data-page="welcome"] .enter-label {font-size: 0.95rem;}
+  body[data-page="welcome"] .enter-circle {width: 24px !important;height: 24px;font-size: 0.92rem;border: 1px solid #fff1;}
+  body[data-page="welcome"] #usernameInput { font-size: 0.94rem; padding: 0.34rem 0.5rem; height: 38px; }
 }
 
     
@@ -2659,7 +2652,7 @@ body { min-height: 100%; }
 
 
 
-#usernameInput { font-size: 16px !important; }
+#usernameInput {font-size: 16px !important;}
 
 
 
