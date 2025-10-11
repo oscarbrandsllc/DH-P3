@@ -2040,11 +2040,12 @@ body[data-page="welcome"] .app-header {
 /* tighter grid: menu - username - enter */
 body[data-page="welcome"] #primary-header-row {
   width: 100%;
-  max-width: 1120px; /* allow the input to grow on wide screens */
+  max-width: 1120px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: auto minmax(420px, 1fr) auto;
-  gap: 0.5rem; /* tighter spacing between elements */
+  /* keep items close: menu | username (constrained) | enter */
+  grid-template-columns: auto minmax(220px, 520px) auto;
+  gap: 0.4rem;
   align-items: center;
 }
 
@@ -2054,10 +2055,10 @@ body[data-page="welcome"] #contextual-controls { display: none !important; }
 /* Username field sizing for home */
 body[data-page="welcome"] .username-area { min-width: 0; }
 body[data-page="welcome"] #usernameInput {
-  max-width: 920px; /* larger so the input dominates the header */
+  max-width: 520px; /* constrain width so it doesn't float away */
   width: 100%;
   font-size: 1rem;
-  padding: 0.5rem 0.9rem;
+  padding: 0.48rem 0.7rem;
   border-radius: 12px;
 }
 
@@ -2068,16 +2069,17 @@ body[data-page="welcome"] .enter-button {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.1rem;
-  padding: 0.18rem 0.28rem; /* reduce padding so the outer button wraps close to the circle */
-  background: rgba(13, 14, 35, 0.18);
-  border: 1px solid rgba(128, 138, 189, 0.14);
+  gap: 0.06rem;
+  padding: 0.08rem 0.12rem; /* minimal padding so outer button hugs the circle */
+  background: rgba(13, 14, 35, 0.12);
+  border: 1px solid rgba(128, 138, 189, 0.12);
   color: var(--color-text-secondary);
-  border-radius: 10px; /* match other nav buttons */
-  box-shadow: 0 6px 18px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.02);
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.02);
   cursor: pointer;
-  transition: transform 140ms ease, box-shadow 140ms ease, background 140ms ease;
+  transition: transform 110ms ease, box-shadow 110ms ease, background 110ms ease;
   align-self: center;
+  line-height: 1;
 }
 
 body[data-page="welcome"] .enter-button:hover {
@@ -2092,18 +2094,17 @@ body[data-page="welcome"] .enter-circle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
-  /* translucent circular chip so it reads as part of the button */
-  background: linear-gradient(180deg, rgba(118,109,255,0.18), rgba(118,109,255,0.10));
+  background: linear-gradient(180deg, rgba(118,109,255,0.16), rgba(118,109,255,0.08));
   color: white;
-  font-size: 0.95rem;
-  box-shadow: 0 6px 14px rgba(91,76,255,0.14);
+  font-size: 0.92rem;
+  box-shadow: 0 4px 10px rgba(91,76,255,0.12);
 }
 
-/* ensure icon rotation comes only from the HTML class so we don't double-rotate */
-body[data-page="welcome"] .enter-circle i { transform: none; display: inline-block; line-height: 1; }
+/* allow the Font Awesome rotation class to apply; keep inline-block for sizing */
+body[data-page="welcome"] .enter-circle i { display: inline-block; line-height: 1; }
 
 body[data-page="welcome"] .enter-label {
   font-size: 0.56rem;
@@ -2115,7 +2116,7 @@ body[data-page="welcome"] .enter-label {
 }
 
 /* Home menu dropdown */
-body[data-page="welcome"] .home-menu-slot { display: flex; align-items: center; gap: 0.5rem; }
+body[data-page="welcome"] .home-menu-slot { display: flex; align-items: center; gap: 0.5rem; position: relative; }
 body[data-page="welcome"] .menu-toggle {
   background: transparent;
   border: 1px solid rgba(128,138,189,0.12);
@@ -2132,21 +2133,23 @@ body[data-page="welcome"] .menu-toggle:hover { color: var(--color-text-primary);
 
 body[data-page="welcome"] .home-menu {
   position: absolute;
-  margin-top: 8px;
-  background: rgba(13,14,35,0.95);
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 200px;
+  background: rgba(13,14,35,0.98);
   border: 1px solid rgba(128,138,189,0.14);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
-  padding: 6px;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.6);
+  padding: 8px;
   border-radius: 8px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  right: auto;
-  left: 12px;
+  gap: 6px;
   z-index: 1200;
+  max-height: 60vh;
+  overflow: auto;
 }
 
-body[data-page="welcome"] .home-menu.hidden { display: none !important; }
+  body[data-page="welcome"] .home-menu.hidden { display: none !important; }
 
 body[data-page="welcome"] .home-menu-item {
   background: transparent;
