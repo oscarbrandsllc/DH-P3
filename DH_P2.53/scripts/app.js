@@ -4190,29 +4190,33 @@ const wrTeStatOrder = [
             if (label === 'AGE') {
                 const age = parseAgeValue(rawValue);
                 if (age === null) return null;
-                if (position === 'WR' || position === 'TE') {
-                    if (age < 22.5) return '#96f2cee9';
-                    if (age >= 22.5 && age < 26) return '#84e5fbff';
-                    if (age >= 26 && age < 29) return '#84b4fbff';
-                    if (age >= 29 && age < 31) return '#dfa3f7ff';
-                    if (age >= 31) return '#f397d8ef';
+                if (position === 'WR') {
+                    if (age < 26) return '#96F2CEE9';
+                    if (age >= 26 && age < 29) return '#84B8FBFF';
+                    if (age >= 29 && age < 31) return '#AB8BF5FF';
+                    if (age >= 31) return '#F7A3EBFF';
                 }
                 if (position === 'RB') {
-                    if (age < 22.5) return '#96f2cee9';
-                    if (age >= 22.5 && age < 25) return '#84e5fbff';
-                    if (age >= 25 && age < 27) return '#84b4fbff';
-                    if (age >= 27 && age < 29) return '#dfa3f7ff';
-                    if (age >= 29) return '#f397d8ef';
+                    if (age <= 24) return '#96F2CEE9';
+                    if (age > 24 && age < 25) return '#84B8FBFF';
+                    if (age >= 25 && age < 28) return '#AB8BF5FF';
+                    if (age >= 28) return '#F7A3EBFF';
+                }
+                if (position === 'TE') {
+                    if (age < 26) return '#96F2CEE9';
+                    if (age >= 26 && age < 29.5) return '#84B8FBFF';
+                    if (age >= 29.5 && age < 32) return '#AB8BF5FF';
+                    if (age >= 32) return '#F7A3EBFF';
                 }
                 if (position === 'QB') {
-                    if (age < 25.5) return '#96f2cee9';
-                    if (age >= 25.5 && age < 29) return '#84e5fbff';
-                    if (age >= 29 && age < 33) return '#84b4fbff';
-                    if (age >= 33 && age < 41) return '#dfa3f7ff';
-                    if (age >= 41) return '#f397d8ef';
+                    if (age < 28.5) return '#96F2CEE9';
+                    if (age >= 28.5 && age < 33) return '#84B8FBFF';
+                    if (age >= 33 && age < 41) return '#AB8BF5FF';
+                    if (age >= 41) return '#F7A3EBFF';
                 }
                 return null;
             }
+            
 
             if (label === 'WEIGHT') {
                 const w = parseWeightToLbs(rawValue);
