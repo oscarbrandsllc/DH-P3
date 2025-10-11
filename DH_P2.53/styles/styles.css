@@ -2088,8 +2088,8 @@ body[data-page="welcome"] .enter-button {
   flex-direction: row; /* label left of icon */
   align-items: center;
   justify-content: center;
-  gap: 0.45rem;
-  padding: 0 10px;
+  gap: 0.7rem; /* larger gap so label and circle don't butt up against each other */
+  padding: 0 14px; /* more horizontal breathing room */
   background: rgba(13, 14, 35, 0.10);
   border: 1px solid rgba(128, 138, 189, 0.10);
   color: var(--color-text-secondary);
@@ -2099,6 +2099,8 @@ body[data-page="welcome"] .enter-button {
   transition: transform 110ms ease, box-shadow 110ms ease, background 110ms ease;
   align-self: center;
   height: 40px; /* uniform control height */
+  min-width: 78px; /* ensure the control doesn't shrink too small */
+  white-space: nowrap; /* prevent enter label wrapping */
 }
 
 body[data-page="welcome"] .enter-button:hover {
@@ -2113,8 +2115,8 @@ body[data-page="welcome"] .enter-circle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background: linear-gradient(180deg, rgba(118,109,255,0.14), rgba(118,109,255,0.06));
   color: white;
@@ -2194,9 +2196,9 @@ body[data-page="welcome"] .home-menu-item i { width: 16px; text-align: center; }
 /* Mobile tweaks: keep button compact and inline */
 @media (max-width: 520px) {
   body[data-page="welcome"] #primary-header-row { grid-template-columns: auto 1fr auto; gap: 0.4rem; padding-left: 8px; padding-right: 8px; }
-  body[data-page="welcome"] .enter-button { min-width: 64px; height: 38px; padding: 0 10px; gap: 0.5rem; }
-  body[data-page="welcome"] .enter-label { font-size: 0.9rem; }
-  body[data-page="welcome"] .enter-circle { width: 28px; height: 28px; font-size: 0.86rem; }
+  body[data-page="welcome"] .enter-button { min-width: 84px; height: 38px; padding: 0 12px; gap: 0.7rem; }
+  body[data-page="welcome"] .enter-label { font-size: 0.98rem; }
+  body[data-page="welcome"] .enter-circle { width: 30px; height: 30px; font-size: 0.92rem; }
   body[data-page="welcome"] #usernameInput { font-size: 0.94rem; padding: 0.34rem 0.5rem; height: 38px; }
 }
 
