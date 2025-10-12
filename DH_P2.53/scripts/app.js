@@ -2468,6 +2468,15 @@ const wrTeStatOrder = [
             const container = document.createElement('div');
             container.className = 'player-comparison-container';
 
+            function escapeHtml(unsafe) {
+                return unsafe
+                     .replace(/&/g, "&amp;")
+                     .replace(/</g, "&lt;")
+                     .replace(/>/g, "&gt;")
+                     .replace(/"/g, "&quot;")
+                     .replace(/'/g, "&#039;");
+             }
+
             // Player Names Row
             const playerNamesRow = document.createElement('div');
             playerNamesRow.className = 'player-names-row';
@@ -2693,11 +2702,8 @@ const wrTeStatOrder = [
                 // reuse the same calculation logic used previously
                 const values = [];
                 const displayValues = [];
-                const rankAnnotations = [];
                 let bestValue = -Infinity;
                 let bestValueIndices = [];
-                let bestRank = Infinity;
-                let bestRankIndices = [];
 
                 for (let i = 0; i < players.length; i++) {
                     const player = players[i];
@@ -2726,10 +2732,6 @@ const wrTeStatOrder = [
                         else if (statKey === 'snp_pct' || statKey === 'prs_pct' || statKey === 'ts_per_rr') displayValue = formatPercentage(raw);
                         else displayValue = Number(raw).toFixed(2).replace(/\.00$/, '');
                     } else {
-                        // fallback to the large switch used earlier for many stats
-                        // Reuse the same cases: we'll call the existing logic by temporarily
-                        // injecting a small helper to compute the same outputs.
-                        // (For brevity, reuse the prior computations by invoking the same switch logic via a small function)
                         const computeStat = (() => {
                             let cv = 0, dv = '0';
                             switch (statKey) {
@@ -2783,37 +2785,36 @@ const wrTeStatOrder = [
                         calculatedValue = -1;
                     }
 
-                    const rankValue = getSeasonRankValue(player.id, statKey);
-                    const rankAnnotation = createRankAnnotation(rankValue);
-
                     values.push(calculatedValue);
                     displayValues.push(displayValue);
-                    rankAnnotations.push(rankAnnotation);
 
-                    if (typeof rankValue === 'number' && Number.isFinite(rankValue)) {
-                        if (rankValue < bestRank) { bestRank = rankValue; bestRankIndices = [i]; }
-                        else if (rankValue === bestRank) bestRankIndices.push(i);
-                    }
                     if (typeof calculatedValue === 'number' && Number.isFinite(calculatedValue)) {
                         if (calculatedValue > bestValue) { bestValue = calculatedValue; bestValueIndices = [i]; }
                         else if (calculatedValue === bestValue) bestValueIndices.push(i);
                     }
                 }
 
-                // Build a compact comparison row: left value, centered label, right value, and a shared progress bar
                 const leftVal = displayValues[0] || 'N/A';
                 const rightVal = displayValues[1] || 'N/A';
-                const numericLeft = (typeof values[0] === 'number' && values[0] > 0) ? values[0] : 0;
-                const numericRight = (typeof values[1] === 'number' && values[1] > 0) ? values[1] : 0;
+                const numericLeft = (typeof values[0] === 'number' && values[0] >= 0) ? values[0] : 0;
+                const numericRight = (typeof values[1] === 'number' && values[1] >= 0) ? values[1] : 0;
                 const total = numericLeft + numericRight;
                 let leftPct = 50, rightPct = 50, neutral = false;
                 if (total > 0) { leftPct = Math.round((numericLeft / total) * 100); rightPct = 100 - leftPct; }
-                else neutral = true;
+                else { neutral = true; }
 
                 const row = document.createElement('div');
                 row.className = 'comparison-row';
+
+                const leftValueDiv = document.createElement('div');
+                leftValueDiv.className = 'comparison-left';
+                leftValueDiv.textContent = escapeHtml(leftVal);
+
+                const rightValueDiv = document.createElement('div');
+                rightValueDiv.className = 'comparison-right';
+                rightValueDiv.textContent = escapeHtml(rightVal);
+
                 row.innerHTML = `
-                    <div class="comparison-left">${escapeHtml(leftVal)}</div>
                     <div class="comparison-center">
                         <div class="comparison-label">${escapeHtml(statLabels[statKey])}</div>
                         <div class="comparison-bar" role="img" aria-label="${escapeHtml(statLabels[statKey])} comparison">
@@ -2821,13 +2822,14 @@ const wrTeStatOrder = [
                             <div class="comparison-bar-right" style="width: ${rightPct}%;"></div>
                         </div>
                     </div>
-                    <div class="comparison-right">${escapeHtml(rightVal)}</div>
                 `;
 
-                // annotate best values
+                row.insertBefore(leftValueDiv, row.firstChild);
+                row.appendChild(rightValueDiv);
+
                 if (!neutral) {
-                    if (bestValueIndices.length === 1 && bestValueIndices[0] === 0) row.querySelector('.comparison-left').classList.add('best-stat');
-                    if (bestValueIndices.length === 1 && bestValueIndices[0] === 1) row.querySelector('.comparison-right').classList.add('best-stat');
+                    if (bestValueIndices.length === 1 && bestValueIndices[0] === 0) leftValueDiv.classList.add('best-stat');
+                    if (bestValueIndices.length === 1 && bestValueIndices[0] === 1) rightValueDiv.classList.add('best-stat');
                 }
 
                 listContainer.appendChild(row);
@@ -2844,7 +2846,6 @@ const wrTeStatOrder = [
             const keyContainer = document.getElementById('comparison-stats-key-container');
 
             if (footer && keyContainer) {
-                // Styles moved to CSS
                 footer.innerHTML = `
                     <div class="key-chip modal-info-btn">
                         <i class="fa-solid fa-key"></i>
@@ -2853,45 +2854,7 @@ const wrTeStatOrder = [
                 `;
 
                 const statDescriptions = {
-                    'fpts': 'Fantasy Points',
-                    'pass_att': 'Passing Attempts',
-                    'pass_cmp': 'Completions',
-                    'pass_yd': 'Passing Yards',
-                    'pass_td': 'Passing Touchdowns',
-                    'pass_fd': 'Passing First Downs',
-                    'imp_per_g': 'Impact per Game',
-                    'pass_rtg': 'Passer Rating',
-                    'pass_imp': 'Passing Impact',
-                    'pass_imp_per_att': 'Passing Impact per Attempt',
-                    'pass_int': 'Interceptions',
-                    'pass_sack': 'Sacks Taken',
-                    'rush_att': 'Carries',
-                    'rush_yd': 'Rushing Yards',
-                    'ypc': 'Yards Per Carry',
-                    'rush_td': 'Rushing Touchdowns',
-                    'rush_fd': 'Rushing First Downs',
-                    'ttt': 'Average Time to Throw',
-                    'prs_pct': 'Pressure Rate',
-                    'mtf': 'Missed Tackles Forced',
-                    'mtf_per_att': 'Missed Tackles Forced per Attempt',
-                    'elu': 'Elusiveness Rating',
-                    'rush_yac': 'Yards After Contact',
-                    'yco_per_att': 'Yards After Contact per Attempt',
-                    'rec_tgt': 'Targets',
-                    'rec': 'Receptions',
-                    'rec_yd': 'Receiving Yards',
-                    'rec_td': 'Receiving Touchdowns',
-                    'rec_fd': 'Receiving First Downs',
-                    'rec_yar': 'Yards After Catch',
-                    'yprr': 'Yards per Route Run',
-                    'first_down_rec_rate': 'First Down Reception Rate',
-                    'ts_per_rr': 'Targets per Route Run',
-                    'rr': 'Routes Run',
-                    'ypr': 'Yards per Reception',
-                    'fum': 'Fumbles Lost',
-                    'snp_pct': 'Snap Percentage',
-                    'yds_total': 'Total Yards (sheet provided)',
-                    'fpoe': 'Fantasy Points Over Expected',
+                    'fpts': 'Fantasy Points', 'pass_att': 'Passing Attempts', 'pass_cmp': 'Completions', 'pass_yd': 'Passing Yards', 'pass_td': 'Passing Touchdowns', 'pass_fd': 'Passing First Downs', 'imp_per_g': 'Impact per Game', 'pass_rtg': 'Passer Rating', 'pass_imp': 'Passing Impact', 'pass_imp_per_att': 'Passing Impact per Attempt', 'pass_int': 'Interceptions', 'pass_sack': 'Sacks Taken', 'rush_att': 'Carries', 'rush_yd': 'Rushing Yards', 'ypc': 'Yards Per Carry', 'rush_td': 'Rushing Touchdowns', 'rush_fd': 'Rushing First Downs', 'ttt': 'Average Time to Throw', 'prs_pct': 'Pressure Rate', 'mtf': 'Missed Tackles Forced', 'mtf_per_att': 'Missed Tackles Forced per Attempt', 'elu': 'Elusiveness Rating', 'rush_yac': 'Yards After Contact', 'yco_per_att': 'Yards After Contact per Attempt', 'rec_tgt': 'Targets', 'rec': 'Receptions', 'rec_yd': 'Receiving Yards', 'rec_td': 'Receiving Touchdowns', 'rec_fd': 'Receiving First Downs', 'rec_yar': 'Yards After Catch', 'yprr': 'Yards per Route Run', 'first_down_rec_rate': 'First Down Reception Rate', 'ts_per_rr': 'Targets per Route Run', 'rr': 'Routes Run', 'ypr': 'Yards per Reception', 'fum': 'Fumbles Lost', 'snp_pct': 'Snap Percentage', 'yds_total': 'Total Yards (sheet provided)', 'fpoe': 'Fantasy Points Over Expected',
                 };
 
                 let listHtml = '<h4>Player Comparison Stats Key<i class="fa-solid fa-square-xmark" id="close-comparison-key"></i></h4><ul>';
@@ -2905,15 +2868,11 @@ const wrTeStatOrder = [
 
                 const keyBtn = footer.querySelector('.modal-info-btn');
                 if (keyBtn) {
-                    keyBtn.addEventListener('click', () => {
-                        keyContainer.classList.toggle('hidden');
-                    });
+                    keyBtn.addEventListener('click', () => keyContainer.classList.toggle('hidden'));
                 }
                 const closeBtn = keyContainer.querySelector('#close-comparison-key');
                 if (closeBtn) {
-                    closeBtn.addEventListener('click', () => {
-                        keyContainer.classList.add('hidden');
-                    });
+                    closeBtn.addEventListener('click', () => keyContainer.classList.add('hidden'));
                 }
             }
         }
