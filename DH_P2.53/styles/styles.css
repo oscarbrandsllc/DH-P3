@@ -1587,7 +1587,7 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
           justify-content: center;
           gap: 0.125rem;                    /* no gap between icon & label */
           background: #1E1F3000;     /* keep your current look */
-          color: #545278;
+          color: #bec7ff99;
           font-size: 1rem;           /* base font size (affects icon if using font-size) */
           font-weight: 300;
           line-height: 1;            /* prevents extra inline spacing */
@@ -4274,7 +4274,8 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
         font: inherit;
         cursor: pointer;
         padding: 0;
-        text-decoration: none;
+        text-decoration: underline;
+        text-decoration-color: #def6;
         transition: color 0.2s ease, text-decoration-color 0.2s ease;
     }
 
