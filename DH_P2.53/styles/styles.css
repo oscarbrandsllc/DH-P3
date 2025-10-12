@@ -4697,13 +4697,13 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 
 /* Compact comparison list (replaces table view) */
 #player-comparison-modal .comparison-list-container {
-  padding: 0.6rem 0.6rem 1rem;
+  padding: 0.26rem 0.6rem 1rem;
 }
 
 #player-comparison-modal .comparison-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.15rem;
 }
 
 #player-comparison-modal .comparison-row {
@@ -4764,8 +4764,13 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 #player-comparison-modal .summary-chip { margin-bottom: 0.35rem; }
 
 @media (max-width: 520px) {
-  #player-comparison-modal .comparison-row { grid-template-columns: 56px 1fr 56px; padding: 0.36rem; }
-  #player-comparison-modal .comparison-left, #player-comparison-modal .comparison-right { font-size: 0.88rem; }
+  #player-comparison-modal .comparison-row { 
+    grid-template-columns: 56px 1fr 56px; 
+    padding: 0.13rem 0.36rem 0.36rem 0.36rem;
+   }
+  #player-comparison-modal .comparison-left, #player-comparison-modal .comparison-right { 
+    font-size: 0.88rem; 
+  }
   #player-comparison-modal .comparison-bar { height: 9px; }
 }
 
