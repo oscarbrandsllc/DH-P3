@@ -4430,7 +4430,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
         
         /* · · Summary Chips · · */
     #player-comparison-modal .summary-chip {
-        padding: 0.15rem 0.85rem; /* Further reduced padding */
+        padding: 0.05rem 0.85rem; /* Further reduced padding */
         text-align: center;
         min-width: auto;
         position: relative;
@@ -4704,7 +4704,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 #player-comparison-modal .comparison-list {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.14rem;
 }
 
 #player-comparison-modal .comparison-row {
@@ -4714,24 +4714,24 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
   gap: 0.4rem;
   padding: 0.4rem;
   border-radius: 8px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+  background: linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0.02), rgba(255,255,255,0.01));
   border: 1px solid rgba(128,138,189,0.1);
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.03), 0 4px 12px rgba(0,0,0,0.2);
 }
 
 #player-comparison-modal .comparison-left,
 #player-comparison-modal .comparison-right {
-  font-weight: 600;
+  font-weight: 400;
   font-size: 0.9rem;
   text-align: center;
-  color: var(--color-text-primary);
+  color: var(--color-text-secondary);
 }
 
 #player-comparison-modal .comparison-center {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.05rem;
 }
 
 #player-comparison-modal .comparison-label {
@@ -4751,11 +4751,11 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 }
 
 #player-comparison-modal .comparison-bar-left {
-  background: var(--color-accent-secondary);
+  background: #52c2FFe0;
 }
 
 #player-comparison-modal .comparison-bar-right {
-  background: var(--color-accent-trade-win);
+  background: #00e7c0d0;
 }
 
 #player-comparison-modal .best-stat {
@@ -4771,10 +4771,10 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 @media (max-width: 520px) {
   #player-comparison-modal .comparison-row {
       grid-template-columns: 50px 1fr 50px;
-      padding: 0.3rem;
+      padding: 0.01rem  0.13rem 0.23rem 0.13rem;
       gap: 0.3rem;
     }
-  #player-comparison-modal .comparison-left, #player-comparison-modal .comparison-right { font-size: 0.8rem; }
+  #player-comparison-modal .comparison-left, #player-comparison-modal .comparison-right {font-size: 0.65rem;}
   #player-comparison-modal .comparison-label { font-size: 0.7rem; }
   #player-comparison-modal .comparison-bar { height: 7px; }
 }
