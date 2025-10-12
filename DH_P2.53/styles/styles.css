@@ -554,7 +554,7 @@
     }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 700px) {
     .nav-buttons-container {
         gap: 1rem;
     }
