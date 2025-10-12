@@ -1555,6 +1555,17 @@ const SEASON_META_HEADERS = {
             return span;
         }
 
+        // Small HTML-escape helper used when inserting values into innerHTML templates
+        function escapeHtml(input) {
+            if (input === null || input === undefined) return '';
+            return String(input)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
         function computeSeasonRankings(seasonStats) {
             if (!seasonStats || typeof seasonStats !== 'object') return null;
 
@@ -2465,6 +2476,14 @@ const wrTeStatOrder = [
             const comparisonModalBody = document.getElementById('comparison-modal-body');
             comparisonModalBody.innerHTML = ''; // Clear existing content
 
+            // Defensive: require two players to compare
+            if (!Array.isArray(players) || players.length < 2) {
+                comparisonModalBody.innerHTML = '<div class="text-center p-4">Please select two players to compare.</div>';
+                return;
+            }
+
+            try {
+
             const container = document.createElement('div');
             container.className = 'player-comparison-container';
 
@@ -2839,6 +2858,12 @@ const wrTeStatOrder = [
 
             container.appendChild(tableContainer);
             comparisonModalBody.appendChild(container);
+
+            } catch (err) {
+                console.error('Error rendering player comparison:', err);
+                comparisonModalBody.innerHTML = `<div class="text-center p-4">Unable to render comparison: ${String(err.message || err)}</div>`;
+                return;
+            }
 
             const footer = playerComparisonModal.querySelector('.modal-footer');
             const keyContainer = document.getElementById('comparison-stats-key-container');
