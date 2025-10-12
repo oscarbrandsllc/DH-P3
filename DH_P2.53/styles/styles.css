@@ -4695,6 +4695,80 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     }
 }
 
+/* Compact comparison list (replaces table view) */
+#player-comparison-modal .comparison-list-container {
+  padding: 0.6rem 0.6rem 1rem;
+}
+
+#player-comparison-modal .comparison-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+#player-comparison-modal .comparison-row {
+  display: grid;
+  grid-template-columns: 72px 1fr 72px;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem;
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid rgba(128,138,189,0.06);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02), 0 6px 18px rgba(0,0,0,0.18);
+}
+
+#player-comparison-modal .comparison-left,
+#player-comparison-modal .comparison-right {
+  font-weight: 700;
+  color: var(--color-accent-primary);
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+#player-comparison-modal .comparison-right { color: var(--color-accent-trade-win); }
+
+#player-comparison-modal .comparison-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.32rem;
+}
+
+#player-comparison-modal .comparison-label {
+  font-size: 0.84rem;
+  color: var(--color-text-tertiary);
+  font-weight: 500;
+}
+
+#player-comparison-modal .comparison-bar {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.03);
+  display: flex;
+}
+
+#player-comparison-modal .comparison-bar-left {
+  background: linear-gradient(90deg, rgba(66,194,255,0.14), rgba(66,194,255,0.22));
+}
+
+#player-comparison-modal .comparison-bar-right {
+  background: linear-gradient(90deg, rgba(118,109,255,0.16), rgba(118,109,255,0.28));
+}
+
+#player-comparison-modal .best-stat { text-shadow: 0 0 6px rgba(118,109,255,0.22); color: var(--color-accent-primary) !important; }
+
+/* Keep summary chips and other modal chrome unchanged */
+#player-comparison-modal .summary-chip { margin-bottom: 0.35rem; }
+
+@media (max-width: 520px) {
+  #player-comparison-modal .comparison-row { grid-template-columns: 56px 1fr 56px; padding: 0.36rem; }
+  #player-comparison-modal .comparison-left, #player-comparison-modal .comparison-right { font-size: 0.88rem; }
+  #player-comparison-modal .comparison-bar { height: 9px; }
+}
+
 /*· · Team Logo Glow · · */
 
 /* === Team Logo (20px tag) === */
