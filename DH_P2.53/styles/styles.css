@@ -4697,14 +4697,14 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 
 /* Compact comparison list (replaces table view) */
 #player-comparison-modal .comparison-list-container {
-  padding: 0.5rem 0.5rem 0.8rem;
+  padding: 0.25rem 0.5rem 0.8rem;
   overflow-y: auto;
 }
 
 #player-comparison-modal .comparison-list {
   display: flex;
   flex-direction: column;
-  gap: 0.14rem;
+  gap: 0.1rem;
 }
 
 #player-comparison-modal .comparison-row {
