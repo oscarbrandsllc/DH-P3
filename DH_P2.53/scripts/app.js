@@ -1601,8 +1601,28 @@ const SEASON_META_HEADERS = {
                 // fallback
             }
 
+            // Generate ordinal suffix with superscript
+            if (display !== 'NA') {
+                const num = parseInt(display, 10);
+                if (Number.isFinite(num)) {
+                    const suffix = getOrdinalSuffix(num);
+                    span.innerHTML = `${num}<sup>${suffix}</sup>`;
+                    return span;
+                }
+            }
+
             span.textContent = wrapInParens ? `(${display})` : display;
             return span;
+        }
+
+        // Helper function to get ordinal suffix
+        function getOrdinalSuffix(num) {
+            const j = num % 10;
+            const k = num % 100;
+            if (j === 1 && k !== 11) return 'st';
+            if (j === 2 && k !== 12) return 'nd';
+            if (j === 3 && k !== 13) return 'rd';
+            return 'th';
         }
 
         // Replace enclosed/circled numerals in any display string with their ASCII digits
