@@ -2771,6 +2771,9 @@ const wrTeStatOrder = [
             const league = state.leagues.find(l => l.league_id === state.currentLeagueId);
             const scoringSettings = league?.scoring_settings || {};
 
+            // Constants for comparison styling
+            const dimmedOpacity = '0.45'; // Opacity for losing stat values
+
             for (const statKey of orderedStatKeys) {
                 if (!statLabels[statKey]) continue;
 
@@ -2987,6 +2990,7 @@ const wrTeStatOrder = [
                 }
 
                 // Highlight only the winning side's VALUE (keep bars showing both colors)
+                // Dim the losing side's value
                 if (numericLeft > numericRight) {
                     row.classList.add('left-win');
                     // Color ONLY the winning value
@@ -2994,11 +2998,19 @@ const wrTeStatOrder = [
                         leftValueEl.style.color = leftColor; 
                         leftValueEl.style.fontWeight = '700'; 
                     }
+                    // Dim the losing value
+                    if (rightValueEl) {
+                        rightValueEl.style.opacity = dimmedOpacity;
+                    }
                 } else if (numericRight > numericLeft) {
                     row.classList.add('right-win');
                     if (rightValueEl) { 
                         rightValueEl.style.color = rightColor; 
                         rightValueEl.style.fontWeight = '700'; 
+                    }
+                    // Dim the losing value
+                    if (leftValueEl) {
+                        leftValueEl.style.opacity = dimmedOpacity;
                     }
                 }
 
