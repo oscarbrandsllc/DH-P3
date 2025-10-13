@@ -2838,11 +2838,21 @@ const wrTeStatOrder = [
                     }
 
                     const rankValue = getSeasonRankValue(player.id, statKey);
-                    const rankAnnotation = createRankAnnotation(rankValue);
+                    // Produce a plain parenthesized rank string (e.g. "(14)") or null
+                    const rankText = (() => {
+                        if (rankValue === null || rankValue === undefined) return null;
+                        if (typeof rankValue === 'number' && Number.isFinite(rankValue)) return `(${rankValue})`;
+                        // Try normalize known enclosed forms
+                        const fromMap = normalizeRankString(rankValue);
+                        if (fromMap) return `(${fromMap})`;
+                        const display = getRankDisplayText(rankValue);
+                        if (display && display.toUpperCase() !== 'NA') return `(${display})`;
+                        return null;
+                    })();
 
                     values.push(calculatedValue);
                     displayValues.push(displayValue);
-                    rankAnnotations.push(rankAnnotation);
+                    rankAnnotations.push(rankText);
 
                     if (typeof rankValue === 'number' && Number.isFinite(rankValue)) {
                         if (rankValue < bestRank) { bestRank = rankValue; bestRankIndices = [i]; }
@@ -2892,50 +2902,10 @@ const wrTeStatOrder = [
                     if (bestValueIndices.length === 1 && bestValueIndices[0] === 1) rightCell.classList.add('best-stat');
                 }
 
-                // attach rank annotations as simple parenthesized text (smaller than stat)
+                // attach rank annotations as plain parenthesized strings (smaller than stat)
                 try {
-                    const leftRankNode = rankAnnotations[0];
-                    const rightRankNode = rankAnnotations[1];
-
-                    const extractPlainRank = (node) => {
-                        if (!node) return null;
-                        const raw = String(node.textContent || '').trim();
-                        // Try ASCII digits first
-                        const m = raw.match(/\d+/);
-                        if (m) return `(${m[0]})`;
-
-                        // Helper to map common enclosed/circled numeral ranges to digits
-                        const mapEnclosed = (ch) => {
-                            const code = ch.charCodeAt(0);
-                            // ①..⑳ (U+2460..U+2473) -> 1..20
-                            if (code >= 0x2460 && code <= 0x2473) return String(code - 0x245F);
-                            // ⓵..⓾ (U+24F5..U+24FE) rarely used
-                            if (code >= 0x24F5 && code <= 0x24FE) return String(code - 0x24F4);
-                            // dingbat circled numbers ❶..❿ (U+2776..U+277F) -> 1..10
-                            if (code >= 0x2776 && code <= 0x277F) return String(code - 0x2775);
-                            // parenthesized numbers ⑴..⒇ (U+2474..U+2487 / 0x2474..0x2487) approximate mapping
-                            if (code >= 0x2474 && code <= 0x2487) return String(code - 0x2473);
-                            // Fullwidth digits ０..９ (U+FF10..FF19)
-                            if (code >= 0xFF10 && code <= 0xFF19) return String(code - 0xFF10);
-                            return null;
-                        };
-
-                        let collected = '';
-                        for (const ch of raw) {
-                            const mapped = mapEnclosed(ch);
-                            if (mapped !== null) collected += mapped;
-                        }
-                        if (collected) return `(${collected})`;
-
-                        // Fallback: strip non-digit characters and wrap what's left
-                        const fallbackDigits = raw.replace(/[^0-9]/g, '').trim();
-                        if (fallbackDigits) return `(${fallbackDigits})`;
-
-                        return null;
-                    };
-
-                    const leftRankText = extractPlainRank(leftRankNode);
-                    const rightRankText = extractPlainRank(rightRankNode);
+                    const leftRankText = rankAnnotations[0];
+                    const rightRankText = rankAnnotations[1];
 
                     if (leftRankText) {
                         const span = document.createElement('span');

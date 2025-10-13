@@ -4736,18 +4736,16 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 
 #player-comparison-modal .comparison-right { color: var(--color-accent-trade-win); }
 
-#player-comparison-modal .comparison-value { line-height: 1; }
+#player-comparison-modal .comparison-value { line-height: 1; position: relative; display: inline-block; }
 #player-comparison-modal .comparison-rank-container { height: 0; }
 
-/* absolute-positioned rank so it doesn't affect row height; placed just below the value */
-#player-comparison-modal .comparison-rank-container .comparison-rank-annotation,
-#player-comparison-modal .comparison-left > .comparison-rank-container,
-#player-comparison-modal .comparison-right > .comparison-rank-container {
+/* place the rank absolutely relative to the value so it doesn't affect row height */
+#player-comparison-modal .comparison-value + .comparison-rank-container {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  top: 100%; /* place directly under the stat value */
-  margin-top: 2px;
+  top: 100%; /* directly under the value */
+  margin-top: 0px;
   line-height: 1;
   pointer-events: none;
 }
@@ -4778,12 +4776,14 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 /* subtle default tints (muted) */
 #player-comparison-modal .comparison-bar-left {
   /* Left side color (blue) */
-  background: linear-gradient(90deg, rgba(26,150,255,0.16), rgba(26,150,255,0.26));
+  background: linear-gradient(90deg, rgba(26,150,255,0.22), rgba(26,150,255,0.36));
+  min-width: 2px;
 }
 
 #player-comparison-modal .comparison-bar-right {
-  /* Right side color (green) */
-  background: linear-gradient(90deg, rgba(0,200,120,0.16), rgba(0,200,120,0.26));
+  /* Right side color (purple) */
+  background: linear-gradient(90deg, rgba(128,88,255,0.22), rgba(128,88,255,0.36));
+  min-width: 2px;
 }
 
 /* Winner-only emphasis: brighten winner, mute loser */
@@ -4841,6 +4841,10 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 #player-comparison-modal .comparison-row.left-win .comparison-right { color: rgba(255,255,255,0.62); }
 #player-comparison-modal .comparison-row.right-win .comparison-right { color: rgb(128,88,255); text-shadow: 0 0 8px rgba(128,88,255,0.12); }
 #player-comparison-modal .comparison-row.right-win .comparison-left { color: rgba(255,255,255,0.62); }
+
+/* numeric value uses side color when that side wins */
+#player-comparison-modal .comparison-row.left-win .comparison-value { color: rgb(26,150,255); }
+#player-comparison-modal .comparison-row.right-win .comparison-value { color: rgb(128,88,255); }
 
 #player-comparison-modal .best-stat { text-shadow: 0 0 6px rgba(118,109,255,0.22); color: var(--color-accent-primary) !important; }
 
