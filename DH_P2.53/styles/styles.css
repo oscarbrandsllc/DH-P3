@@ -4087,6 +4087,30 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
         margin-top: 1px;
     }
 
+/* · · Unplayed and Bye Week Row Styles · · */
+#modal-body tbody tr.unplayed-week-row {
+    opacity: 0.4;
+    font-style: italic;
+    height: 0.7em;
+}
+
+#modal-body tbody tr.unplayed-week-row td {
+    padding-top: 0.15rem;
+    padding-bottom: 0.15rem;
+    font-size: 0.85em;
+}
+
+#modal-body tbody tr.bye-week-row {
+    opacity: 0.3;
+    height: 0.6em;
+}
+
+#modal-body tbody tr.bye-week-row td {
+    padding-top: 0.1rem;
+    padding-bottom: 0.1rem;
+    font-size: 0.8em;
+}
+
 .modal-footer {
     display: flex;
     align-items: center;
@@ -4789,11 +4813,11 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 }
 
 #player-comparison-modal .comparison-bar-left {
-  background: #52c2FFe0;
+  background: linear-gradient(to right, #52c2FFe0, rgba(82, 194, 255, 0.6));
 }
 
 #player-comparison-modal .comparison-bar-right {
-  background: #00e7c0d0;
+  background: linear-gradient(to left, #00e7c0d0, rgba(0, 231, 192, 0.6));
 }
 
 #player-comparison-modal .comparison-bar-left.worse-stat-bar,

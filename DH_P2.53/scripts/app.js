@@ -331,7 +331,7 @@ if (pageType === 'welcome') {
 }
 
         // --- State ---
-        let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, calculatedRankCache: null };
+        let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, calculatedRankCache: null, playerProjectionWeeks: {} };
         const assignedLeagueColors = new Map();
         let nextColorIndex = 0;
         const assignedRyColors = new Map();
@@ -342,6 +342,8 @@ if (pageType === 'welcome') {
         const GOOGLE_SHEET_ID = '1MDTf1IouUIrm4qabQT9E5T0FsJhQtmaX55P32XK5c_0';
         const PLAYER_STATS_SHEET_ID = '1i-cKqSfYw0iFiV9S-wBw8lwZePwXZ7kcaWMdnaMTHDs';
         const PLAYER_STATS_SHEETS = { season: 'SZN', seasonRanks: 'SZN_RKs', weeks: { 1: 'WK1', 2: 'WK2', 3: 'WK3', 4: 'WK4', 5: 'WK5', 6: 'WK6' } };
+        // UPDATE THIS: Total number of weeks to display in game logs (including unplayed weeks with projections)
+        const MAX_DISPLAY_WEEKS = 8; // Currently showing weeks 1-8; increase as more week sheets are added
         const TAG_COLORS = { QB:"var(--pos-qb)", RB:"var(--pos-rb)", WR:"var(--pos-wr)", TE:"var(--pos-te)", BN:"var(--pos-bn)", TX:"var(--pos-tx)", FLX: "var(--pos-flx)", SFLX: "var(--pos-sflx)" };
         const STARTER_ORDER = ['QB', 'RB', 'WR', 'TE', 'FLEX', 'SUPER_FLEX'];
         const TEAM_COLORS = { ARI:"#97233F", ATL:"#A71930", BAL:"#241773", BUF:"#00338D", CAR:"#0085CA", CHI:"#1a2d4e", CIN:"#FB4F14", CLE:"#311D00", DAL:"#003594", DEN:"#FB4F14", DET:"#0076B6", GB:"#203731", HOU:"#03202F", IND:"#002C5F", JAX:"#006778", KC:"#E31837", LAC:"#0080C6", LAR:"#003594", LV:"#A5ACAF", MIA:"#008E97", MIN:"#4F2683", NE:"#002244", NO:"#D3BC8D", NYG:"#0B2265", NYJ:"#125740", PHI:"#004C54", PIT:"#FFB612", SEA:"#69BE28", SF:"#B3995D", TB:"#D50A0A", TEN:"#4B92DB", WAS:"#5A1414", FA: "#64748b" };
@@ -1171,22 +1173,45 @@ if (pageType === 'welcome') {
             try {
                 const seasonPromise = fetch(`https://docs.google.com/spreadsheets/d/${PLAYER_STATS_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${PLAYER_STATS_SHEETS.season}`).then(res => res.text());
                 const seasonRanksPromise = fetch(`https://docs.google.com/spreadsheets/d/${PLAYER_STATS_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${PLAYER_STATS_SHEETS.seasonRanks}`).then(res => res.text());
+                
+                // Fetch stats for completed weeks (from PLAYER_STATS_SHEETS.weeks)
                 const weeklyPromises = Object.entries(PLAYER_STATS_SHEETS.weeks).map(async ([week, sheetName]) => {
                     const csv = await fetch(`https://docs.google.com/spreadsheets/d/${PLAYER_STATS_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${sheetName}`).then(res => res.text());
-                    return { week: Number(week), csv };
+                    return { week: Number(week), csv, hasFullStats: true };
                 });
 
-                const [seasonCsv, seasonRanksCsv, ...weeklyCsvs] = await Promise.all([seasonPromise, seasonRanksPromise, ...weeklyPromises]);
+                // Fetch projection data for remaining weeks up to MAX_DISPLAY_WEEKS
+                const completedWeeks = Object.keys(PLAYER_STATS_SHEETS.weeks).map(Number);
+                const maxCompletedWeek = completedWeeks.length > 0 ? Math.max(...completedWeeks) : 0;
+                const projectionPromises = [];
+                for (let week = maxCompletedWeek + 1; week <= MAX_DISPLAY_WEEKS; week++) {
+                    const sheetName = `WK${week}`;
+                    projectionPromises.push(
+                        fetch(`https://docs.google.com/spreadsheets/d/${PLAYER_STATS_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${sheetName}`)
+                            .then(res => res.text())
+                            .then(csv => ({ week, csv, hasFullStats: false }))
+                            .catch(() => ({ week, csv: null, hasFullStats: false })) // Handle missing sheets gracefully
+                    );
+                }
+
+                const [seasonCsv, seasonRanksCsv, ...allWeeklyCsvs] = await Promise.all([seasonPromise, seasonRanksPromise, ...weeklyPromises, ...projectionPromises]);
 
                 state.playerSeasonStats = parseSeasonStatsCsv(seasonCsv);
                 state.playerSeasonRanks = parseSeasonRanksCsv(seasonRanksCsv);
                 state.seasonRankCache = computeSeasonRankings(state.playerSeasonStats);
                 const weeklyStats = {};
-                weeklyCsvs.forEach(({ week, csv }) => {
-                    weeklyStats[week] = parseWeeklyStatsCsv(csv);
+                const projectionWeeks = {};
+                allWeeklyCsvs.forEach(({ week, csv, hasFullStats }) => {
+                    if (csv) {
+                        weeklyStats[week] = parseWeeklyStatsCsv(csv);
+                        if (!hasFullStats) {
+                            projectionWeeks[week] = true; // Mark this week as projection-only
+                        }
+                    }
                 });
                 state.playerWeeklyStats = weeklyStats;
                 state.weeklyStats = weeklyStats;
+                state.playerProjectionWeeks = projectionWeeks;
                 state.statsSheetsLoaded = true;
                 state.liveStatsLoaded = false;
                 state.calculatedRankCache = null;
@@ -1197,6 +1222,7 @@ if (pageType === 'welcome') {
                 state.playerSeasonRanks = {};
                 state.playerWeeklyStats = {};
                 state.weeklyStats = {};
+                state.playerProjectionWeeks = {};
                 state.seasonRankCache = null;
                 state.statsSheetsLoaded = false;
                 state.liveWeeklyStats = {};
@@ -2159,7 +2185,12 @@ const wrTeStatOrder = [
             thead.appendChild(headerRow);
 
             const gameLogsWithData = [];
-            gameLogs.sort((a, b) => parseInt(a.week) - parseInt(b.week)).forEach(weekStats => {
+            
+            // Iterate through all weeks from 1 to MAX_DISPLAY_WEEKS
+            for (let week = 1; week <= MAX_DISPLAY_WEEKS; week++) {
+                const weekStats = gameLogs.find(log => parseInt(log.week) === week);
+                const isProjectionWeek = state.playerProjectionWeeks?.[player.id]?.[week] === true;
+                
                 let hasData = false;
                 const row = document.createElement('tr');
 
@@ -2168,37 +2199,78 @@ const wrTeStatOrder = [
 
                 const weekNumberSpan = document.createElement('span');
                 weekNumberSpan.className = 'week-number';
-                weekNumberSpan.textContent = weekStats.week;
+                weekNumberSpan.textContent = week;
                 weekTd.appendChild(weekNumberSpan);
-                const opponent = weekStats.stats?.opponent;
+                
+                const opponent = weekStats?.stats?.opponent;
+                const isByeWeek = opponent === 'BYE';
+                
+                // Apply row classes for unplayed/bye weeks
+                if (isByeWeek) {
+                    row.classList.add('bye-week-row');
+                } else if (isProjectionWeek) {
+                    row.classList.add('unplayed-week-row');
+                }
+                
                 if (opponent) {
                     const opponentSpan = document.createElement('span');
                     opponentSpan.className = 'week-opponent-label';
-                    opponentSpan.textContent = opponent;
-                    const color = getOpponentRankColor(weekStats.stats?.opponent_rank);
-                    if (color) opponentSpan.style.color = color;
+                    
+                    if (isByeWeek) {
+                        opponentSpan.textContent = 'BYE';
+                    } else {
+                        opponentSpan.textContent = opponent;
+                        const color = getOpponentRankColor(weekStats.stats?.opponent_rank);
+                        if (color) opponentSpan.style.color = color;
 
-                    const opponentRank = weekStats.stats?.opponent_rank;
-                    const opponentRankDisplay = getRankDisplayText(opponentRank);
-                    if (opponentRankDisplay !== 'NA') {
-                        opponentSpan.classList.add('has-rank-annotation');
-                        // Use default createRankAnnotation so the rank is wrapped in parentheses
-                        const rankAnnotation = createRankAnnotation(opponentRank);
-                        opponentSpan.appendChild(rankAnnotation);
+                        const opponentRank = weekStats.stats?.opponent_rank;
+                        const opponentRankDisplay = getRankDisplayText(opponentRank);
+                        if (opponentRankDisplay !== 'NA') {
+                            opponentSpan.classList.add('has-rank-annotation');
+                            const rankAnnotation = createRankAnnotation(opponentRank);
+                            opponentSpan.appendChild(rankAnnotation);
+                        }
                     }
-
                     weekTd.appendChild(opponentSpan);
                 }
                 row.appendChild(weekTd);
 
-                const isLiveWeek = weekStats.stats?.__live === true;
+                const isLiveWeek = weekStats?.stats?.__live === true;
 
                 for (const key of orderedStatKeys) {
                     if (!statLabels[key]) continue;
 
+                    const td = document.createElement('td');
+
+                    // Handle bye weeks - show "-" for all stats
+                    if (isByeWeek) {
+                        td.textContent = '-';
+                        row.appendChild(td);
+                        continue;
+                    }
+
+                    // Handle projection weeks - only show opponent info and PROJ
+                    if (isProjectionWeek) {
+                        if (key === 'proj') {
+                            const projValue = weekStats?.stats?.proj;
+                            td.textContent = (typeof projValue === 'number') ? projValue.toFixed(2).replace(/\.00$/, '') : '-';
+                        } else {
+                            td.textContent = '-';
+                        }
+                        row.appendChild(td);
+                        continue;
+                    }
+
+                    // Handle live weeks
                     if (isLiveWeek && key !== 'fpts') {
-                        const td = document.createElement('td');
                         td.textContent = 'N/A';
+                        row.appendChild(td);
+                        continue;
+                    }
+
+                    // Handle regular stats (only for completed weeks)
+                    if (!weekStats) {
+                        td.textContent = '-';
                         row.appendChild(td);
                         continue;
                     }
@@ -2267,16 +2339,16 @@ const wrTeStatOrder = [
                     else if (key === 'pass_imp_per_att' || key === 'prs_pct' || key === 'snp_pct' || key === 'ts_per_rr') displayValue = formatPercentage(value);
                     else displayValue = value.toFixed(2).replace(/\.00$/, '');
 
-                    const td = document.createElement('td');
                     td.textContent = displayValue;
                     row.appendChild(td);
                 }
 
-                if (hasData) {
-                    tbody.appendChild(row);
+                // Always append the row (for completed, projection, and bye weeks)
+                tbody.appendChild(row);
+                if (weekStats && hasData) {
                     gameLogsWithData.push(weekStats);
                 }
-            });
+            }
 
             table.appendChild(thead);
             table.appendChild(tbody);
