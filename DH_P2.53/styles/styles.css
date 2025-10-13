@@ -4714,7 +4714,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
   gap: 0.5rem;
   padding: 0.45rem;
   /* restored to previous radius */
-  border-radius: 10px;
+  border-radius: 8px;
   position: relative;
   background: rgba(0, 0, 0, 0.02);
   backdrop-filter: blur(1px) saturate(180%);
@@ -4816,7 +4816,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
   width: 100%;
   height: 100%;
   background: rgba(255, 255, 255, 0.01);
-  border-radius: 10px;
+  border-radius: 8px;
   backdrop-filter: blur(1px);
   box-shadow: inset 10px 12px 0px -8px rgba(255, 255, 255, .05), inset 0px 8px 0px -6px rgba(255, 255, 255, .051);
   opacity: 0.4;
@@ -4835,7 +4835,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
   line-height: 1;
   opacity: 0.98;
   padding: 0 0.02rem;
-  transform: translateY(0.5px);
+  transform: translateY(-2.5px);
 }
 /* default left/right text colors so sides are visually distinct */
 #player-comparison-modal .comparison-left .comparison-value, #player-comparison-modal .comparison-right .comparison-value { color: rgba(255,255,255,0.85); }
