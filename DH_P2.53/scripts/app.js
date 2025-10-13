@@ -2193,17 +2193,37 @@ const wrTeStatOrder = [
             const gameLogsWithData = [];
             const gameLogsByWeek = new Map(gameLogs.map(entry => [parseInt(entry.week, 10), entry]));
 
-            const getProjectionDisplayValue = statLine => {
-                if (!statLine || !Object.prototype.hasOwnProperty.call(statLine, 'proj')) {
-                    return null;
+            const getProjectionDisplayValue = (statLine, playerId, week) => {
+                // First try the provided statLine (for played weeks)
+                if (statLine && Object.prototype.hasOwnProperty.call(statLine, 'proj')) {
+                    const rawValue = statLine.proj;
+                    if (rawValue === undefined || rawValue === null) {
+                        // Fall back to weekly stats for this specific player/week
+                        const weeklyStat = state.playerWeeklyStats?.[week]?.[playerId];
+                        if (weeklyStat && Object.prototype.hasOwnProperty.call(weeklyStat, 'proj')) {
+                            const fallbackValue = weeklyStat.proj;
+                            if (fallbackValue !== undefined && fallbackValue !== null) {
+                                return typeof fallbackValue === 'string' ? fallbackValue : String(fallbackValue);
+                            }
+                        }
+                        return null;
+                    }
+                    if (typeof rawValue === 'string') return rawValue;
+                    if (Number.isFinite(rawValue)) return rawValue.toString();
+                    return String(rawValue);
                 }
-                const rawValue = statLine.proj;
-                if (rawValue === undefined || rawValue === null) return null;
-                if (typeof rawValue === 'string') return rawValue;
-                if (Number.isFinite(rawValue)) {
-                    return rawValue.toString();
+                
+                // For unplayed weeks, check weekly stats directly
+                const weeklyStat = state.playerWeeklyStats?.[week]?.[playerId];
+                if (weeklyStat && Object.prototype.hasOwnProperty.call(weeklyStat, 'proj')) {
+                    const rawValue = weeklyStat.proj;
+                    if (rawValue === undefined || rawValue === null) return null;
+                    if (typeof rawValue === 'string') return rawValue;
+                    if (Number.isFinite(rawValue)) return rawValue.toString();
+                    return String(rawValue);
                 }
-                return String(rawValue);
+                
+                return null;
             };
 
             for (let week = 1; week <= MAX_DISPLAY_WEEKS; week++) {
@@ -2271,7 +2291,7 @@ const wrTeStatOrder = [
 
                     if (isUnplayedWeek) {
                             if (key === 'proj') {
-                                const projValue = getProjectionDisplayValue(stats);
+                                const projValue = getProjectionDisplayValue(stats, player.id, week);
                                 // Show exactly what's in the sheet - text, number, or dash if truly missing
                                 if (projValue === null) {
                                     td.textContent = '-';
@@ -2298,7 +2318,7 @@ const wrTeStatOrder = [
                     }
 
                     if (key === 'proj') {
-                        const projValue = getProjectionDisplayValue(stats);
+                        const projValue = getProjectionDisplayValue(stats, player.id, week);
                         // Show exactly what's in the sheet - text, number, or dash if truly missing
                         if (projValue === null) {
                             td.textContent = '-';
