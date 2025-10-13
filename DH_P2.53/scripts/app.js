@@ -2843,10 +2843,30 @@ const wrTeStatOrder = [
                     <div class="comparison-right">${escapeHtml(rightVal)}</div>
                 `;
 
-                // annotate best values
+                // annotate best values and attach rank annotations
+                const leftCell = row.querySelector('.comparison-left');
+                const rightCell = row.querySelector('.comparison-right');
                 if (!neutral) {
-                    if (bestValueIndices.length === 1 && bestValueIndices[0] === 0) row.querySelector('.comparison-left').classList.add('best-stat');
-                    if (bestValueIndices.length === 1 && bestValueIndices[0] === 1) row.querySelector('.comparison-right').classList.add('best-stat');
+                    if (bestValueIndices.length === 1 && bestValueIndices[0] === 0) leftCell.classList.add('best-stat');
+                    if (bestValueIndices.length === 1 && bestValueIndices[0] === 1) rightCell.classList.add('best-stat');
+                }
+
+                // attach rank annotations (if present) next to values
+                try {
+                    const leftRank = rankAnnotations[0];
+                    const rightRank = rankAnnotations[1];
+                    if (leftRank) {
+                        const clone = leftRank.cloneNode(true);
+                        clone.classList.add('comparison-rank-annotation');
+                        leftCell.appendChild(clone);
+                    }
+                    if (rightRank) {
+                        const clone = rightRank.cloneNode(true);
+                        clone.classList.add('comparison-rank-annotation');
+                        rightCell.appendChild(clone);
+                    }
+                } catch (e) {
+                    /* non-fatal if cloning rank nodes fails */
                 }
 
                 listContainer.appendChild(row);
