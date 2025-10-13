@@ -2771,6 +2771,9 @@ const wrTeStatOrder = [
             const league = state.leagues.find(l => l.league_id === state.currentLeagueId);
             const scoringSettings = league?.scoring_settings || {};
 
+            // Constants for comparison styling
+            const dimmedOpacity = '0.45'; // Opacity for losing stat values
+
             for (const statKey of orderedStatKeys) {
                 if (!statLabels[statKey]) continue;
 
