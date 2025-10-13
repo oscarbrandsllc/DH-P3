@@ -3693,7 +3693,6 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
       font-size: 0.7rem;
       color: #bbc0e8;
       white-space:nowrap;
-      text-transform: none;
     }
 
     #modal-body tfoot tr {

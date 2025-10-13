@@ -1742,7 +1742,14 @@ const SEASON_META_HEADERS = {
 
                     const statKey = PLAYER_STAT_HEADER_MAP[header.toUpperCase()];
                     if (statKey) {
+                        // Debug PROJ parsing
+                        if (header === 'PROJ') {
+                            console.log(`Parsing PROJ: raw value = "${value}", type = ${typeof value}`);
+                        }
                         const parsedValue = parseStatValue(header, value);
+                        if (header === 'PROJ') {
+                            console.log(`Parsed PROJ: result = ${parsedValue}, type = ${typeof parsedValue}`);
+                        }
                         if (parsedValue !== null || statKey === 'proj') stats[statKey] = parsedValue;
                     }
                 });
@@ -2195,35 +2202,17 @@ const wrTeStatOrder = [
             const gameLogsByWeek = new Map(gameLogs.map(entry => [parseInt(entry.week, 10), entry]));
 
             const getProjectionDisplayValue = (statLine, playerId, week) => {
-                // First try the provided statLine (for played weeks)
+                // PROJ should come from weekly stats if available
                 if (statLine && Object.prototype.hasOwnProperty.call(statLine, 'proj')) {
                     const rawValue = statLine.proj;
-                    if (rawValue === undefined || rawValue === null) {
-                        // Fall back to season stats
-                        const seasonStat = state.playerSeasonStats?.[playerId];
-                        if (seasonStat && Object.prototype.hasOwnProperty.call(seasonStat, 'proj')) {
-                            const seasonValue = seasonStat.proj;
-                            if (seasonValue !== undefined && seasonValue !== null) {
-                                return typeof seasonValue === 'string' ? seasonValue : String(seasonValue);
-                            }
-                        }
-                        return null;
+                    console.log(`Week ${week} PROJ from statLine:`, rawValue, typeof rawValue);
+                    if (rawValue !== undefined && rawValue !== null && rawValue !== '') {
+                        return typeof rawValue === 'string' ? rawValue : String(rawValue);
                     }
-                    if (typeof rawValue === 'string') return rawValue;
-                    if (Number.isFinite(rawValue)) return rawValue.toString();
-                    return String(rawValue);
                 }
                 
-                // For unplayed weeks, check season stats
-                const seasonStat = state.playerSeasonStats?.[playerId];
-                if (seasonStat && Object.prototype.hasOwnProperty.call(seasonStat, 'proj')) {
-                    const rawValue = seasonStat.proj;
-                    if (rawValue === undefined || rawValue === null) return null;
-                    if (typeof rawValue === 'string') return rawValue;
-                    if (Number.isFinite(rawValue)) return rawValue.toString();
-                    return String(rawValue);
-                }
-                
+                // No PROJ in weekly stats? That's the issue - return null to show dash
+                console.log(`Week ${week} PROJ missing from weekly stats for player ${playerId}`);
                 return null;
             };
 
