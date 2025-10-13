@@ -1585,9 +1585,22 @@ const SEASON_META_HEADERS = {
         function createRankAnnotation(rank, { wrapInParens = true } = {}) {
             const span = document.createElement('span');
             span.className = 'stat-rank-annotation';
-            const raw = getRankDisplayText(rank);
-            const normalized = normalizeRankString(raw);
-            const display = normalized !== null ? normalized : raw;
+
+            // Ensure we always display plain ASCII digits (no enclosed glyphs).
+            // Prefer numeric input when available; otherwise sanitize strings.
+            let display = 'NA';
+            try {
+                if (typeof rank === 'number' && Number.isFinite(rank) && rank > 0) {
+                    display = String(Math.round(rank));
+                } else if (typeof rank === 'string' && rank.trim()) {
+                    const s = replaceEnclosedDigits(rank.trim());
+                    const m = s.match(/\d+/);
+                    if (m) display = m[0];
+                }
+            } catch (e) {
+                // fallback
+            }
+
             span.textContent = wrapInParens ? `(${display})` : display;
             return span;
         }
@@ -2873,14 +2886,12 @@ const wrTeStatOrder = [
                     }
 
                     const rankValue = getSeasonRankValue(player.id, statKey);
-                    // Since parseRankValue now sanitizes at source, rankValue is always a clean number
-                    const rankText = (rankValue !== null && rankValue !== undefined && Number.isFinite(rankValue))
-                        ? `(${Math.round(rankValue)})`
-                        : null;
 
+                    // Store the raw rankValue (number or string) so we can render
+                    // it using the same helper as game-logs (`createRankAnnotation`).
                     values.push(calculatedValue);
                     displayValues.push(displayValue);
-                    rankAnnotations.push(rankText);
+                    rankAnnotations.push(rankValue);
 
                     if (typeof rankValue === 'number' && Number.isFinite(rankValue)) {
                         if (rankValue < bestRank) { bestRank = rankValue; bestRankIndices = [i]; }
@@ -2950,33 +2961,21 @@ const wrTeStatOrder = [
                     const leftRankRaw = rankAnnotations[0];
                     const rightRankRaw = rankAnnotations[1];
 
-                    // helper: force plain numeric parentheses for the modal only
-                    const forceParenDigits = (raw) => {
-                        if (!raw) return null;
-                        // convert enclosed numerals if present, then extract first digit run
-                        const sanitized = replaceEnclosedDigits(String(raw));
-                        const m = sanitized.match(/\d+/);
-                        return m ? `(${m[0]})` : null;
-                    };
-
-                    const leftRankText = forceParenDigits(leftRankRaw);
-                    const rightRankText = forceParenDigits(rightRankRaw);
-
-                    if (leftRankText) {
-                        const span = document.createElement('span');
-                        span.className = 'comparison-rank-annotation';
-                        span.textContent = leftRankText;
+                    // Render ranks using the same helper as Game Logs so formatting
+                    // and normalization are identical across both modals.
+                    if (leftRankRaw !== null && leftRankRaw !== undefined) {
+                        const leftSpan = createRankAnnotation(leftRankRaw, { wrapInParens: true });
+                        leftSpan.className = 'comparison-rank-annotation';
                         const rc = leftCell.querySelector('.comparison-rank-container');
-                        if (rc) rc.appendChild(span);
-                        else leftCell.appendChild(span);
+                        if (rc) rc.appendChild(leftSpan);
+                        else leftCell.appendChild(leftSpan);
                     }
-                    if (rightRankText) {
-                        const span = document.createElement('span');
-                        span.className = 'comparison-rank-annotation';
-                        span.textContent = rightRankText;
-                        const rc = rightCell.querySelector('.comparison-rank-container');
-                        if (rc) rc.appendChild(span);
-                        else rightCell.appendChild(span);
+                    if (rightRankRaw !== null && rightRankRaw !== undefined) {
+                        const rightSpan = createRankAnnotation(rightRankRaw, { wrapInParens: true });
+                        rightSpan.className = 'comparison-rank-annotation';
+                        const rc2 = rightCell.querySelector('.comparison-rank-container');
+                        if (rc2) rc2.appendChild(rightSpan);
+                        else rightCell.appendChild(rightSpan);
                     }
                 } catch (e) {
                     /* non-fatal */
