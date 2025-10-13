@@ -2981,23 +2981,7 @@ const wrTeStatOrder = [
                     /* non-fatal */
                 }
 
-                // Debug: detect any remaining enclosed numerals in this row's text nodes
-                try {
-                    if (typeof window !== 'undefined' && window.__compareDebug) {
-                        console.log('renderPlayerComparison: raw ranks', { leftRankRaw, rightRankRaw, leftRankText, rightRankText });
-                        const walker = document.createTreeWalker(row, NodeFilter.SHOW_TEXT, null, false);
-                        let n = walker.nextNode();
-                        const matches = [];
-                        const re = /[\u2460-\u24FF\u2776-\u2793\u278A-\u2793]/g;
-                        while (n) {
-                            if (n.nodeValue && re.test(n.nodeValue)) matches.push(n.nodeValue);
-                            n = walker.nextNode();
-                        }
-                        console.log('renderPlayerComparison: enclosed numerals found in row text nodes', matches);
-                    }
-                } catch (e) {
-                    /* ignore */
-                }
+                
 
                 // Highlight only the winning side's VALUE (keep bars showing both colors)
                 // Dim the losing side's value
