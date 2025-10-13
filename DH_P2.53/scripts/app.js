@@ -2947,13 +2947,24 @@ const wrTeStatOrder = [
 
                 // attach rank annotations as plain parenthesized strings (smaller than stat)
                 try {
-                    const leftRankText = rankAnnotations[0];
-                    const rightRankText = rankAnnotations[1];
+                    const leftRankRaw = rankAnnotations[0];
+                    const rightRankRaw = rankAnnotations[1];
+
+                    // helper: force plain numeric parentheses for the modal only
+                    const forceParenDigits = (raw) => {
+                        if (!raw) return null;
+                        // convert enclosed numerals if present, then extract first digit run
+                        const sanitized = replaceEnclosedDigits(String(raw));
+                        const m = sanitized.match(/\d+/);
+                        return m ? `(${m[0]})` : null;
+                    };
+
+                    const leftRankText = forceParenDigits(leftRankRaw);
+                    const rightRankText = forceParenDigits(rightRankRaw);
 
                     if (leftRankText) {
                         const span = document.createElement('span');
                         span.className = 'comparison-rank-annotation';
-                        // rankText is already clean from above - just use it directly
                         span.textContent = leftRankText;
                         const rc = leftCell.querySelector('.comparison-rank-container');
                         if (rc) rc.appendChild(span);
@@ -2962,7 +2973,6 @@ const wrTeStatOrder = [
                     if (rightRankText) {
                         const span = document.createElement('span');
                         span.className = 'comparison-rank-annotation';
-                        // rankText is already clean from above - just use it directly
                         span.textContent = rightRankText;
                         const rc = rightCell.querySelector('.comparison-rank-container');
                         if (rc) rc.appendChild(span);
