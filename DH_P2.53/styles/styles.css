@@ -4836,19 +4836,24 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
   padding: 0 0.02rem;
   transform: translateY(0.5px);
 }
-/* Winner text emphasis / loser muted */
-/* Text colors to match bar hues when winner */
-#player-comparison-modal .comparison-row.left-win .comparison-left { color: rgb(26,150,255); text-shadow: 0 0 8px rgba(26,150,255,0.12); }
-#player-comparison-modal .comparison-row.left-win .comparison-right { color: rgba(255,255,255,0.62); }
-#player-comparison-modal .comparison-row.right-win .comparison-right { color: rgb(128,88,255); text-shadow: 0 0 8px rgba(128,88,255,0.12); }
-#player-comparison-modal .comparison-row.right-win .comparison-left { color: rgba(255,255,255,0.62); }
+/* Winner text emphasis / loser muted - target the specific .comparison-value elements
+   so only the winning side's numeric value receives the accent color. */
+#player-comparison-modal .comparison-left .comparison-value,
+#player-comparison-modal .comparison-right .comparison-value { color: rgba(255,255,255,0.85); }
 
-/* default left/right text colors so sides are visually distinct */
-#player-comparison-modal .comparison-left .comparison-value, #player-comparison-modal .comparison-right .comparison-value { color: rgba(255,255,255,0.85); }
+#player-comparison-modal .comparison-row.left-win .comparison-left .comparison-value {
+  color: #1AA6FF; text-shadow: 0 0 6px rgba(26,166,255,0.12); font-weight: 700;
+}
+#player-comparison-modal .comparison-row.left-win .comparison-right .comparison-value {
+  color: rgba(255,255,255,0.62);
+}
 
-/* numeric value uses side color when that side wins (stronger) */
-#player-comparison-modal .comparison-row.left-win .comparison-value { color: #1AA6FF; text-shadow: 0 0 6px rgba(26,166,255,0.12); }
-#player-comparison-modal .comparison-row.right-win .comparison-value { color: #B06CFF; text-shadow: 0 0 6px rgba(176,108,255,0.12); }
+#player-comparison-modal .comparison-row.right-win .comparison-right .comparison-value {
+  color: #B06CFF; text-shadow: 0 0 6px rgba(176,108,255,0.12); font-weight: 700;
+}
+#player-comparison-modal .comparison-row.right-win .comparison-left .comparison-value {
+  color: rgba(255,255,255,0.62);
+}
 
 #player-comparison-modal .best-stat { text-shadow: 0 0 6px rgba(118,109,255,0.22); color: var(--color-accent-primary) !important; }
 
