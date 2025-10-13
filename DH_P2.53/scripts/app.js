@@ -2988,6 +2988,7 @@ const wrTeStatOrder = [
 
                 // Highlight only the winning side's VALUE (keep bars showing both colors)
                 // Dim the losing side's value
+                const dimmedOpacity = '0.45'; // Opacity for losing stat values
                 if (numericLeft > numericRight) {
                     row.classList.add('left-win');
                     // Color ONLY the winning value
@@ -2997,7 +2998,7 @@ const wrTeStatOrder = [
                     }
                     // Dim the losing value
                     if (rightValueEl) {
-                        rightValueEl.style.opacity = '0.45';
+                        rightValueEl.style.opacity = dimmedOpacity;
                     }
                 } else if (numericRight > numericLeft) {
                     row.classList.add('right-win');
@@ -3007,7 +3008,7 @@ const wrTeStatOrder = [
                     }
                     // Dim the losing value
                     if (leftValueEl) {
-                        leftValueEl.style.opacity = '0.45';
+                        leftValueEl.style.opacity = dimmedOpacity;
                     }
                 }
 
