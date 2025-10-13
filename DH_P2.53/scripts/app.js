@@ -648,8 +648,8 @@ if (pageType === 'welcome') {
 
         function handleCompareClick() {
             state.isCompareMode = !state.isCompareMode;
-            rosterView.classList.toggle('is-trade-mode', state.isCompareMode);
-            rosterGrid.classList.toggle('is-preview-mode', state.isCompareMode);
+                rosterView.classList.toggle('is-trade-mode', state.isCompareMode);
+                rosterGrid.classList.toggle('is-preview-mode', state.isCompareMode);
             updateCompareButtonState();
             updateHeaderPreviewState(); // call before render
             if (!state.isCompareMode) {
@@ -669,7 +669,7 @@ if (pageType === 'welcome') {
             if (keepUserTeam && userTeamName && state.teamsToCompare.has(userTeamName)) {
                 teamsToKeep.add(userTeamName);
             }
-            state.teamsToCompare = teamsToKeep;
+                state.teamsToCompare = teamsToKeep;
 
             state.isCompareMode = false;
             rosterView.classList.remove('is-trade-mode');
@@ -2982,6 +2982,24 @@ const wrTeStatOrder = [
                     /* non-fatal */
                 }
 
+                // Debug: detect any remaining enclosed numerals in this row's text nodes
+                try {
+                    if (typeof window !== 'undefined' && window.__compareDebug) {
+                        console.log('renderPlayerComparison: raw ranks', { leftRankRaw, rightRankRaw, leftRankText, rightRankText });
+                        const walker = document.createTreeWalker(row, NodeFilter.SHOW_TEXT, null, false);
+                        let n = walker.nextNode();
+                        const matches = [];
+                        const re = /[\u2460-\u24FF\u2776-\u2793\u278A-\u2793]/g;
+                        while (n) {
+                            if (n.nodeValue && re.test(n.nodeValue)) matches.push(n.nodeValue);
+                            n = walker.nextNode();
+                        }
+                        console.log('renderPlayerComparison: enclosed numerals found in row text nodes', matches);
+                    }
+                } catch (e) {
+                    /* ignore */
+                }
+
                 // Highlight only the winning side's VALUE (keep bars showing both colors)
                 // Dim the losing side's value
                 if (numericLeft > numericRight) {
@@ -3007,24 +3025,7 @@ const wrTeStatOrder = [
                     }
                 }
 
-                // Final sanitize pass: replace any remaining enclosed numerals inside rank/value text nodes
-                try {
-                    const sanitizeNodeText = (node) => {
-                        if (!node) return;
-                        if (node.childNodes && node.childNodes.length) {
-                            node.childNodes.forEach(c => sanitizeNodeText(c));
-                        }
-                        if (node.nodeType === Node.TEXT_NODE) {
-                            node.textContent = replaceEnclosedDigits(node.textContent || '');
-                        }
-                    };
-                    const rankEls = row.querySelectorAll('.comparison-rank-annotation');
-                    rankEls.forEach(el => { el.textContent = replaceEnclosedDigits(el.textContent || ''); });
-                    const valEls = row.querySelectorAll('.comparison-value');
-                    valEls.forEach(el => { el.textContent = replaceEnclosedDigits(el.textContent || ''); });
-                } catch (e) {
-                    // non-fatal
-                }
+                // (sanitization already handled earlier and at data parse level)
 
                 listContainer.appendChild(row);
             }
