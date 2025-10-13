@@ -4766,7 +4766,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 }
 
 #player-comparison-modal .comparison-bar {
-  width: 100%;
+  width: 108%;
   height: 10px;
   /* pill-like but constrained to the row radius */
   border-radius: 8px;
@@ -4857,7 +4857,10 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
   #player-comparison-modal .comparison-left, #player-comparison-modal .comparison-right {
     font-size: 0.7rem;
   }
-  #player-comparison-modal .comparison-bar {height: 8px;}
+  #player-comparison-modal .comparison-bar {
+    height: 8px;
+    margin-bottom: 2px;
+  }
 }
 
 /*· · Team Logo Glow · · */
