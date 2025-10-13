@@ -2191,6 +2191,19 @@ const wrTeStatOrder = [
             const gameLogsWithData = [];
             const gameLogsByWeek = new Map(gameLogs.map(entry => [parseInt(entry.week, 10), entry]));
 
+            const getProjectionDisplayValue = statLine => {
+                if (!statLine || !Object.prototype.hasOwnProperty.call(statLine, 'proj')) {
+                    return null;
+                }
+                const rawValue = statLine.proj;
+                if (rawValue === undefined || rawValue === null) return null;
+                if (typeof rawValue === 'string') return rawValue;
+                if (Number.isFinite(rawValue)) {
+                    return rawValue.toString();
+                }
+                return String(rawValue);
+            };
+
             for (let week = 1; week <= MAX_DISPLAY_WEEKS; week++) {
                 const weekStatsEntry = gameLogsByWeek.get(week) || null;
                 const stats = weekStatsEntry?.stats || null;
@@ -2255,16 +2268,16 @@ const wrTeStatOrder = [
                     const td = document.createElement('td');
 
                     if (isUnplayedWeek) {
-                        if (key === 'proj') {
-                            const projValue = stats?.proj;
-                            if (projValue === undefined || projValue === null || (typeof projValue === 'string' && projValue.trim() === '')) {
-                                td.textContent = '-';
+                            if (key === 'proj') {
+                                const projValue = getProjectionDisplayValue(stats);
+                                if (projValue === null || (typeof projValue === 'string' && projValue.trim() === '')) {
+                                    td.textContent = '-';
+                                } else {
+                                    td.textContent = projValue;
+                                }
                             } else {
-                                td.textContent = String(projValue);
+                                td.textContent = '-';
                             }
-                        } else {
-                            td.textContent = '-';
-                        }
                         row.appendChild(td);
                         continue;
                     }
@@ -2282,11 +2295,11 @@ const wrTeStatOrder = [
                     }
 
                     if (key === 'proj') {
-                        const projValue = stats.proj;
-                        if (projValue === undefined || projValue === null || (typeof projValue === 'string' && projValue.trim() === '')) {
+                        const projValue = getProjectionDisplayValue(stats);
+                        if (projValue === null || (typeof projValue === 'string' && projValue.trim() === '')) {
                             td.textContent = '-';
                         } else {
-                            td.textContent = String(projValue);
+                            td.textContent = projValue;
                         }
                         row.appendChild(td);
                         continue;
