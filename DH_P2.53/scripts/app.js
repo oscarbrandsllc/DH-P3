@@ -2272,7 +2272,8 @@ const wrTeStatOrder = [
                     if (isUnplayedWeek) {
                             if (key === 'proj') {
                                 const projValue = getProjectionDisplayValue(stats);
-                                if (projValue === null || (typeof projValue === 'string' && projValue.trim() === '')) {
+                                // Show exactly what's in the sheet - text, number, or dash if truly missing
+                                if (projValue === null) {
                                     td.textContent = '-';
                                 } else {
                                     td.textContent = projValue;
@@ -2298,7 +2299,8 @@ const wrTeStatOrder = [
 
                     if (key === 'proj') {
                         const projValue = getProjectionDisplayValue(stats);
-                        if (projValue === null || (typeof projValue === 'string' && projValue.trim() === '')) {
+                        // Show exactly what's in the sheet - text, number, or dash if truly missing
+                        if (projValue === null) {
                             td.textContent = '-';
                         } else {
                             td.textContent = projValue;

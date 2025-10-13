@@ -4118,12 +4118,12 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 
 /* Reduce spacing when unplayed row is followed by a played row */
 #modal-body tbody tr.unplayed-week-row + tr:not(.unplayed-week-row):not(.bye-week-row) td {
-    padding-top: 0.05rem;
+    padding-top: 0.02rem;
 }
 
 /* Reduce spacing when played row is followed by an unplayed row */
 #modal-body tbody tr:not(.unplayed-week-row):not(.bye-week-row) + tr.unplayed-week-row td {
-    padding-top: 0.05rem;
+    padding-top: 0.02rem;
 }
 
 #modal-body tbody tr.bye-week-row {
