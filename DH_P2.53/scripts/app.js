@@ -1332,7 +1332,7 @@ if (pageType === 'welcome') {
             'FUM': 'fum',
             'SNP%': 'snp_pct',
             'YDS(t)': 'yds_total',
-            'FPOE': 'fpoe'
+            'FPOE': 'fpoe',
             'PROJ': 'proj'
         };
 
