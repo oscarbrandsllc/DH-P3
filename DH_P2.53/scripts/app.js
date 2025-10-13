@@ -2832,7 +2832,10 @@ const wrTeStatOrder = [
                 const row = document.createElement('div');
                 row.className = 'comparison-row';
                 row.innerHTML = `
-                    <div class="comparison-left">${escapeHtml(leftVal)}</div>
+                    <div class="comparison-left">
+                      <div class="comparison-value">${escapeHtml(leftVal)}</div>
+                      <div class="comparison-rank-container" aria-hidden="true"></div>
+                    </div>
                     <div class="comparison-center">
                         <div class="comparison-label">${escapeHtml(statLabels[statKey])}</div>
                         <div class="comparison-bar" role="img" aria-label="${escapeHtml(statLabels[statKey])} comparison">
@@ -2840,7 +2843,10 @@ const wrTeStatOrder = [
                             <div class="comparison-bar-right" style="width: ${rightPct}%;"></div>
                         </div>
                     </div>
-                    <div class="comparison-right">${escapeHtml(rightVal)}</div>
+                    <div class="comparison-right">
+                      <div class="comparison-value">${escapeHtml(rightVal)}</div>
+                      <div class="comparison-rank-container" aria-hidden="true"></div>
+                    </div>
                 `;
 
                 // annotate best values and attach rank annotations
@@ -2855,24 +2861,62 @@ const wrTeStatOrder = [
                 try {
                     const leftRankNode = rankAnnotations[0];
                     const rightRankNode = rankAnnotations[1];
-                    const makeRankText = (node) => {
+
+                    const extractPlainRank = (node) => {
                         if (!node) return null;
-                        const txt = String(node.textContent || '').trim().replace(/[()]/g, '').trim();
-                        return txt ? `(${txt})` : null;
+                        const raw = String(node.textContent || '').trim();
+                        // Try ASCII digits first
+                        const m = raw.match(/\d+/);
+                        if (m) return `(${m[0]})`;
+
+                        // Helper to map common enclosed/circled numeral ranges to digits
+                        const mapEnclosed = (ch) => {
+                            const code = ch.charCodeAt(0);
+                            // ①..⑳ (U+2460..U+2473) -> 1..20
+                            if (code >= 0x2460 && code <= 0x2473) return String(code - 0x245F);
+                            // ⓵..⓾ (U+24F5..U+24FE) rarely used
+                            if (code >= 0x24F5 && code <= 0x24FE) return String(code - 0x24F4);
+                            // dingbat circled numbers ❶..❿ (U+2776..U+277F) -> 1..10
+                            if (code >= 0x2776 && code <= 0x277F) return String(code - 0x2775);
+                            // parenthesized numbers ⑴..⒇ (U+2474..U+2487 / 0x2474..0x2487) approximate mapping
+                            if (code >= 0x2474 && code <= 0x2487) return String(code - 0x2473);
+                            // Fullwidth digits ０..９ (U+FF10..FF19)
+                            if (code >= 0xFF10 && code <= 0xFF19) return String(code - 0xFF10);
+                            return null;
+                        };
+
+                        let collected = '';
+                        for (const ch of raw) {
+                            const mapped = mapEnclosed(ch);
+                            if (mapped !== null) collected += mapped;
+                        }
+                        if (collected) return `(${collected})`;
+
+                        // Fallback: strip non-digit characters and wrap what's left
+                        const fallbackDigits = raw.replace(/[^0-9]/g, '').trim();
+                        if (fallbackDigits) return `(${fallbackDigits})`;
+
+                        return null;
                     };
-                    const leftRankText = makeRankText(leftRankNode);
-                    const rightRankText = makeRankText(rightRankNode);
+
+                    const leftRankText = extractPlainRank(leftRankNode);
+                    const rightRankText = extractPlainRank(rightRankNode);
+
                     if (leftRankText) {
                         const span = document.createElement('span');
                         span.className = 'comparison-rank-annotation';
                         span.textContent = leftRankText;
-                        leftCell.appendChild(span);
+                        const rc = leftCell.querySelector('.comparison-rank-container');
+                        if (rc) rc.appendChild(span);
+                        else leftCell.appendChild(span);
                     }
                     if (rightRankText) {
                         const span = document.createElement('span');
                         span.className = 'comparison-rank-annotation';
                         span.textContent = rightRankText;
-                        rightCell.appendChild(span);
+                        const rc = rightCell.querySelector('.comparison-rank-container');
+                        if (rc) rc.appendChild(span);
+                        else rightCell.appendChild(span);
                     }
                 } catch (e) {
                     /* non-fatal */
