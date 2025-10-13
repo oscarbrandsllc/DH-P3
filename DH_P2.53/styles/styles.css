@@ -4727,6 +4727,8 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
   color: var(--color-accent-primary);
   font-size: 0.95rem;
   text-align: center;
+  /* create a positioned context for absolutely-placed rank */
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -4735,7 +4737,18 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 #player-comparison-modal .comparison-right { color: var(--color-accent-trade-win); }
 
 #player-comparison-modal .comparison-value { line-height: 1; }
-#player-comparison-modal .comparison-rank-container { margin-top: 0.1rem; }
+#player-comparison-modal .comparison-rank-container { height: 0; }
+
+/* absolute-positioned rank so it doesn't affect row height */
+#player-comparison-modal .comparison-rank-container .comparison-rank-annotation,
+#player-comparison-modal .comparison-left > .comparison-rank-container,
+#player-comparison-modal .comparison-right > .comparison-rank-container {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 2px; /* tuck it slightly under the value */
+  line-height: 1;
+}
 
 #player-comparison-modal .comparison-center {
   display: flex;
@@ -4810,13 +4823,14 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 
 /* parenthesized rank annotation (smaller than the stat) */
 #player-comparison-modal .comparison-rank-annotation {
-  display: block;
-  font-size: 0.72rem;
-  color: var(--color-text-tertiary);
-  margin: 0.08rem 0 0 0;
+  display: inline-block;
+  font-size: 0.68rem;
+  color: rgba(255,255,255,0.75);
   font-weight: 500;
   text-align: center;
   line-height: 1;
+  opacity: 0.92;
+  padding: 0 0.06rem;
 }
 
 /* Winner text emphasis / loser muted */
