@@ -2705,46 +2705,37 @@ const wrTeStatOrder = [
                   ? getConditionalColorByRank(ppgPosRankNumber, player.pos)
                   : 'inherit';
 
-                                // Sanitize all values we interpolate into innerHTML to remove any
-                                // enclosed/circled numerals and prevent accidental HTML injection.
-                                const safeTotalPts = escapeHtml(replaceEnclosedDigits(player.total_pts ?? 'N/A'));
-                                const safePosRankDisplay = escapeHtml(replaceEnclosedDigits(String(posRankDisplay ?? 'NA')));
-                                const safeOverallRankDisplay = escapeHtml(replaceEnclosedDigits(String(overallRankDisplay ?? 'NA')));
-                                const safePpg = escapeHtml(replaceEnclosedDigits(player.ppg ?? 'N/A'));
-                                const safePpgPosRankDisplay = escapeHtml(replaceEnclosedDigits(String(ppgPosRankDisplay ?? 'NA')));
-                                const safePpgOverallRankDisplay = escapeHtml(replaceEnclosedDigits(String(ppgOverallRankDisplay ?? 'NA')));
+                summaryChipsContainer.innerHTML = `
+                  <div class="summary-chip">
+                    <h4>
+                      <span class="chip-header-value" style="color: ${posRankColor}">${player.total_pts}</span>
+                      <span class="chip-unit"> FPTS</span>
+                    </h4>
+                    <div class="chip-values">
+                      <span class="pos-rank-container">
+                        <span class="chip-pos-rank-label pos-color-${player.pos}">${player.pos}·</span>
+                        <span style="color: ${posRankColor}">${posRankDisplay}</span>
+                      </span>
+                      <span class="chip-separator">•</span>
+                      <span style="color: ${getRankColor(overallRankNumber)}">${overallRankDisplay}</span>
+                    </div>
+                  </div>
 
-                                summaryChipsContainer.innerHTML = `
-                                    <div class="summary-chip">
-                                        <h4>
-                                            <span class="chip-header-value" style="color: ${posRankColor}">${safeTotalPts}</span>
-                                            <span class="chip-unit"> FPTS</span>
-                                        </h4>
-                                        <div class="chip-values">
-                                            <span class="pos-rank-container">
-                                                <span class="chip-pos-rank-label pos-color-${player.pos}">${escapeHtml(player.pos || '')}·</span>
-                                                <span style="color: ${posRankColor}">${safePosRankDisplay}</span>
-                                            </span>
-                                            <span class="chip-separator">•</span>
-                                            <span style="color: ${getRankColor(overallRankNumber)}">${safeOverallRankDisplay}</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="summary-chip">
-                                        <h4>
-                                            <span class="chip-header-value" style="color: ${ppgPosRankColor}">${safePpg}</span>
-                                            <span class="chip-unit"> PPG</span>
-                                        </h4>
-                                        <div class="chip-values">
-                                            <span class="pos-rank-container">
-                                                <span class="chip-pos-rank-label pos-color-${player.pos}">${escapeHtml(player.pos || '')}·</span>
-                                                <span style="color: ${ppgPosRankColor}">${safePpgPosRankDisplay}</span>
-                                            </span>
-                                            <span class="chip-separator">•</span>
-                                            <span style="color: ${getRankColor(ppgOverallRankNumber)}">${safePpgOverallRankDisplay}</span>
-                                        </div>
-                                    </div>
-                                `;
+                  <div class="summary-chip">
+                    <h4>
+                      <span class="chip-header-value" style="color: ${ppgPosRankColor}">${player.ppg}</span>
+                      <span class="chip-unit"> PPG</span>
+                    </h4>
+                    <div class="chip-values">
+                      <span class="pos-rank-container">
+                        <span class="chip-pos-rank-label pos-color-${player.pos}">${player.pos}·</span>
+                        <span style="color: ${ppgPosRankColor}">${ppgPosRankDisplay}</span>
+                      </span>
+                      <span class="chip-separator">•</span>
+                      <span style="color: ${getRankColor(ppgOverallRankNumber)}">${ppgOverallRankDisplay}</span>
+                    </div>
+                  </div>
+                `;
                 summaryChipsContainer.insertBefore(compareVitals, summaryChipsContainer.firstChild);
                 summaryChipsRow.appendChild(summaryChipsContainer);
             });
@@ -2877,15 +2868,16 @@ const wrTeStatOrder = [
                     }
 
                     const rankValue = getSeasonRankValue(player.id, statKey);
-                    // Produce a plain parenthesized rank string (e.g. "(14)") or null
+                    // Produce a plain parenthesized rank string ONLY from numeric values
                     const rankText = (() => {
                         if (rankValue === null || rankValue === undefined) return null;
-                        if (typeof rankValue === 'number' && Number.isFinite(rankValue)) return `(${rankValue})`;
-                        // Try normalize known enclosed forms
-                        const fromMap = normalizeRankString(rankValue);
-                        if (fromMap) return `(${fromMap})`;
-                        const display = getRankDisplayText(rankValue);
-                        if (display && display.toUpperCase() !== 'NA') return `(${display})`;
+                        if (typeof rankValue === 'number' && Number.isFinite(rankValue)) {
+                            return `(${Math.round(rankValue)})`;
+                        }
+                        // If it's a string, try to extract digits only
+                        const stringValue = String(rankValue);
+                        const digits = stringValue.match(/\d+/);
+                        if (digits) return `(${digits[0]})`;
                         return null;
                     })();
 
@@ -2918,9 +2910,6 @@ const wrTeStatOrder = [
 
                 const row = document.createElement('div');
                 row.className = 'comparison-row';
-                // Use a single parent gradient so both colors are always visible.
-                // The left/right child elements act as clips (widths) but do not set
-                // their own backgrounds (to avoid CSS override issues).
                 row.innerHTML = `
                                         <div class="comparison-left">
                                             <div class="comparison-value">${escapeHtml(leftVal)}</div>
@@ -2928,7 +2917,7 @@ const wrTeStatOrder = [
                                         </div>
                     <div class="comparison-center">
                         <div class="comparison-label">${escapeHtml(statLabels[statKey])}</div>
-                        <div class="comparison-bar" role="img" aria-label="${escapeHtml(statLabels[statKey])} comparison" style="background: linear-gradient(90deg, ${leftBaseA} 0%, ${leftBaseA} ${leftPct}%, ${rightBaseA} ${leftPct}%, ${rightBaseA} 100%);">
+                        <div class="comparison-bar" role="img" aria-label="${escapeHtml(statLabels[statKey])} comparison">
                             <div class="comparison-bar-left" style="width: ${leftPct}%;"></div>
                             <div class="comparison-bar-right" style="width: ${rightPct}%;"></div>
                         </div>
@@ -2945,17 +2934,15 @@ const wrTeStatOrder = [
                 // grab value elements (we won't color them by default)
                 const leftValueEl = leftCell.querySelector('.comparison-value');
                 const rightValueEl = rightCell.querySelector('.comparison-value');
-                // set bar backgrounds inline so both halves always show their color
+                // set bar backgrounds inline so both halves ALWAYS show their distinct colors
                 const leftBarEl = row.querySelector('.comparison-bar-left');
                 const rightBarEl = row.querySelector('.comparison-bar-right');
                 // canonical colors: left blue, right purple
-                const leftBaseA = '#1AA6FF'; // blue
-                const leftBaseB = 'rgba(26,166,255,0.36)';
-                const rightBaseA = '#B06CFF'; // purple
-                const rightBaseB = 'rgba(176,108,255,0.36)';
-                // Clear child backgrounds to ensure the parent gradient shows both colors.
-                if (leftBarEl) { leftBarEl.style.background = 'transparent'; leftBarEl.style.minWidth = '2px'; }
-                if (rightBarEl) { rightBarEl.style.background = 'transparent'; rightBarEl.style.minWidth = '2px'; }
+                const leftColor = '#1AA6FF';
+                const rightColor = '#B06CFF';
+                // ALWAYS set both halves to show their colors - never hide them
+                if (leftBarEl) leftBarEl.style.background = `linear-gradient(90deg, ${leftColor}80, ${leftColor}CC)`;
+                if (rightBarEl) rightBarEl.style.background = `linear-gradient(90deg, ${rightColor}80, ${rightColor}CC)`;
                 if (!neutral) {
                     if (bestValueIndices.length === 1 && bestValueIndices[0] === 0) leftCell.classList.add('best-stat');
                     if (bestValueIndices.length === 1 && bestValueIndices[0] === 1) rightCell.classList.add('best-stat');
@@ -2990,17 +2977,20 @@ const wrTeStatOrder = [
                     /* non-fatal */
                 }
 
-                // Highlight only the winning side for stats (one side only)
+                // Highlight only the winning side's VALUE (keep bars showing both colors)
                 if (numericLeft > numericRight) {
                     row.classList.add('left-win');
-                    // emphasize winner inline
-                    // For winner emphasis, brighten parent gradient and mute loser by overlaying a low-opacity mask
-                    if (row.querySelector('.comparison-bar')) row.querySelector('.comparison-bar').style.background = `linear-gradient(90deg, ${leftBaseA}, ${leftBaseA} ${leftPct}%, ${rightBaseA} ${leftPct}%, ${rightBaseA} 100%)`;
-                    if (leftValueEl) { leftValueEl.style.color = leftBaseA; leftValueEl.style.fontWeight = '700'; }
+                    // Color ONLY the winning value
+                    if (leftValueEl) { 
+                        leftValueEl.style.color = leftColor; 
+                        leftValueEl.style.fontWeight = '700'; 
+                    }
                 } else if (numericRight > numericLeft) {
                     row.classList.add('right-win');
-                    if (row.querySelector('.comparison-bar')) row.querySelector('.comparison-bar').style.background = `linear-gradient(90deg, ${leftBaseA} 0%, ${leftBaseA} ${leftPct}%, ${rightBaseA} ${leftPct}%, ${rightBaseA} 100%)`;
-                    if (rightValueEl) { rightValueEl.style.color = rightBaseA; rightValueEl.style.fontWeight = '700'; }
+                    if (rightValueEl) { 
+                        rightValueEl.style.color = rightColor; 
+                        rightValueEl.style.fontWeight = '700'; 
+                    }
                 }
 
                 // Final sanitize pass: replace any remaining enclosed numerals inside rank/value text nodes
