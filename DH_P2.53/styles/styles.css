@@ -3787,7 +3787,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     
     
 
-    .player-vitals--compare {
+    #player-comparison-modal .player-vitals--compare {
       margin: 0.15rem auto 0.25rem;
       border-radius: 8px;
       border: 1px solid #fff2;
@@ -3801,14 +3801,14 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
       white-space: nowrap;
       margin-bottom:2px;
     }
-    .player-vitals--compare {
+    #player-comparison-modal .player-vitals--compare {
     position: relative;
     background: rgba(0, 0, 0, 0.02);
     backdrop-filter: blur(1px) saturate(180%);
     border: 1px solid rgba(250, 250, 250, 0.1);
     box-shadow: 0 8px 32px rgba(31, 38, 105, 0.1), inset 0 6px 20px rgba(255, 255, 255, 0.013);
     }
-    .player-vitals--compare::after {    
+    #player-comparison-modal .player-vitals--compare::after {    
         content: '';
         position: absolute;
         top: 0;
@@ -3827,16 +3827,16 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     }
 
 
-    .player-vitals--compare .player-vitals__label {
+    #player-comparison-modal .player-vitals--compare .player-vitals__label {
       font-size: 0.35rem;
       letter-spacing: 0.16em;
     }
 
-    .player-vitals--compare .player-vitals__item {
+    #player-comparison-modal .player-vitals--compare .player-vitals__item {
       flex: 0 1 auto;
     }
 
-    .player-vitals--compare .player-vitals__value {
+    #player-comparison-modal .player-vitals--compare .player-vitals__value {
       font-size: 0.63rem;
     }
     
@@ -4236,7 +4236,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
         flex-direction: column;
     }
     /*?*/
-    .player-comparison-container {
+    #player-comparison-modal .player-comparison-container {
         display: flex;
         flex-direction: column;
         gap: 0.2rem;
@@ -4244,17 +4244,17 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
         min-height: 0;
     }
     
-    .player-names-row {
+    #player-comparison-modal .player-names-row {
         display: flex;
         width: 100%;
     }
 
         /* · · Plyr Name Header · · */
-    .player-name-header-container {
+    #player-comparison-modal .player-name-header-container {
         flex: 1;
         text-align: center;
     }
-    .player-name-header {
+    #player-comparison-modal .player-name-header {
         font-size: 0.9rem;
         font-weight: 400;
         color: #aAaBC0;
@@ -4266,7 +4266,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
         margin-top: 1px;
     }
 
-    .player-name-header-link {
+    #player-comparison-modal .player-name-header-link {
         background: none;
         border: none;
         color: inherit;
@@ -4278,14 +4278,14 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
         transition: color 0.2s ease, text-decoration-color 0.2s ease;
     }
 
-    .player-name-header-link:hover,
-    .player-name-header-link:focus-visible {
+    #player-comparison-modal .player-name-header-link:hover,
+    #player-comparison-modal .player-name-header-link:focus-visible {
         color: var(--color-accent-primary);
         text-decoration: underline;
         outline: none;
     }
 
-    .player-header-tags {
+    #player-comparison-modal .player-header-tags {
         display: flex;
         justify-content: center;
         align-items: center;
@@ -4293,21 +4293,21 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
         margin-top: 0.1rem;
     }
 
-    .player-header-tags .modal-pos-tag {
+    #player-comparison-modal .player-header-tags .modal-pos-tag {
         font-size: 0.75rem;
         padding: 2px 6px;
         line-height: 0.85rem;
     }
 
-    .player-header-tags .modal-team-logo-chip {
+    #player-comparison-modal .player-header-tags .modal-team-logo-chip {
         padding: 0px 5px;
     }
 
-    .player-header-tags .modal-team-logo-chip span {
+    #player-comparison-modal .player-header-tags .modal-team-logo-chip span {
         font-size: 0.7rem;
     }
 
-    .player-header-tags .modal-team-logo-chip img.team-logo {
+    #player-comparison-modal .player-header-tags .modal-team-logo-chip img.team-logo {
         width: 17px;
         height: 17px;
     }
@@ -4326,7 +4326,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     }
     
     
-    .comparison-summary-chips-row {
+    #player-comparison-modal .comparison-summary-chips-row {
         display: flex;
         justify-content: space-around;
         gap: 0.75rem;
@@ -4357,7 +4357,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
         color: var(--color-text-secondary);
     }
     
-    .summary-chips-container {
+    #player-comparison-modal .summary-chips-container {
         display: flex;
         flex-direction: column;
         gap: 0.2rem;
@@ -4477,7 +4477,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     }
 
     /* · · Table Container · · */
-    .comparison-table-container {
+    #player-comparison-modal .comparison-table-container {
         overflow-x: hidden;
         overflow-y: auto;
         width: 100%;
