@@ -4376,6 +4376,16 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     white-space: nowrap;
   }
 
+  /* Restore compact inline annotation for general UI (player cards, tables) */
+  .has-rank-annotation .stat-rank-annotation {
+    display: inline-block;
+    font-size: 0.72em;
+    line-height: 1;
+    margin-left: 0.2em;
+    transform: translateY(-0.45em);
+    letter-spacing: 0.02em;
+  }
+
   /* For the comparison list, show the stat rank below the stat value and slightly larger */
   .comparison-list .has-rank-annotation {
     white-space: normal; /* allow the annotation to wrap below */
