@@ -2814,6 +2814,28 @@ const wrTeStatOrder = [
                 rightValueDiv.className = 'comparison-right';
                 rightValueDiv.textContent = escapeHtml(rightVal);
 
+                // Append positional rank annotation in parentheses next to each stat value
+                // Use getSeasonRankValue to find the player's seasonal/positional rank for this stat
+                try {
+                    const leftPlayer = players[0];
+                    const rightPlayer = players[1];
+                    const leftRankVal = getSeasonRankValue(leftPlayer.id, statKey);
+                    const rightRankVal = getSeasonRankValue(rightPlayer.id, statKey);
+
+                    if (leftRankVal !== null && leftRankVal !== undefined) {
+                        const leftAnnot = createRankAnnotation(leftRankVal);
+                        leftValueDiv.classList.add('has-rank-annotation');
+                        leftValueDiv.appendChild(leftAnnot);
+                    }
+                    if (rightRankVal !== null && rightRankVal !== undefined) {
+                        const rightAnnot = createRankAnnotation(rightRankVal);
+                        rightValueDiv.classList.add('has-rank-annotation');
+                        rightValueDiv.appendChild(rightAnnot);
+                    }
+                } catch (e) {
+                    // fail silently if rank lookup isn't available
+                }
+
                 row.innerHTML = `
                     <div class="comparison-center">
                         <div class="comparison-label">${escapeHtml(statLabels[statKey])}</div>
@@ -2972,7 +2994,13 @@ const wrTeStatOrder = [
                 if (!filterActive) return true;
 
                 const isStarActive = activePos.has('STAR');
-                const meetsStarCriteria = (player.ktc || 0) >= 3000 || (player.ppg || 0) >= 9;
+                // New logic: keep the existing KTC >= 3000 passthrough, but when
+                // PPG meets the threshold (>= 9) the player must ALSO have at
+                // least 2200 KTC to be considered a star. This prevents low-KTC
+                // high-PPG players from slipping through.
+                const playerKtc = (player.ktc || 0);
+                const playerPpg = (player.ppg || 0);
+                const meetsStarCriteria = (playerKtc >= 3000) || (playerPpg >= 9 && playerKtc >= 2200);
 
                 if (isStarActive && !meetsStarCriteria) {
                     return false;
@@ -3060,7 +3088,9 @@ const wrTeStatOrder = [
                     let filteredData = data;
                     if (isStarActive) {
                         filteredData = data.filter(player => {
-                            return (player.ktc || 0) >= 3000 || (player.ppg || 0) >= 9;
+                            const playerKtc = (player.ktc || 0);
+                            const playerPpg = (player.ppg || 0);
+                            return (playerKtc >= 3000) || (playerPpg >= 9 && playerKtc >= 2200);
                         });
                     }
 
