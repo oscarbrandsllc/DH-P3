@@ -3673,13 +3673,13 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     #modal-body table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       margin-bottom:2px;
     }
     
     #modal-body th,
     #modal-body td {
-      padding: 0.3rem 0.55rem;
+      padding: 0.3rem 0.35rem;
       text-align: center;
       /* border-bottom is removed from here to be more specific */
     }
@@ -3698,6 +3698,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     #modal-body tfoot tr {
       border-top: 1px solid var(--color-panel-border-glow);
       white-space:nowrap;
+      font-size: 0.7rem;
     }
 
     #modal-body tfoot th {
