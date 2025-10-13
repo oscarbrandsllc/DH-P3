@@ -1600,6 +1600,14 @@ const SEASON_META_HEADERS = {
                 if (code >= 0x24F5 && code <= 0x24FE) return String(code - 0x24F4); // ⓵..⓾
                 if (code >= 0x2776 && code <= 0x277F) return String(code - 0x2775); // ❶..❿
                 if (code >= 0x2474 && code <= 0x2487) return String(code - 0x2473);
+                // Dingbat negative circled numbers ➊..➓ (U+278A..U+2793)
+                if (code >= 0x278A && code <= 0x2793) return String(code - 0x2789);
+                // Additional circled numbers ❿ etc (cover nearby ranges)
+                if (code >= 0x2780 && code <= 0x2793) {
+                    // conservative fallback mapping to last digit
+                    const val = code - 0x277F;
+                    if (val >= 0 && val <= 99) return String(val);
+                }
                 if (code >= 0xFF10 && code <= 0xFF19) return String(code - 0xFF10); // fullwidth
                 if (code === 0x24EA) return '0'; // ⓪
                 return null;
@@ -2922,6 +2930,20 @@ const wrTeStatOrder = [
                 // annotate best values and attach rank annotations
                 const leftCell = row.querySelector('.comparison-left');
                 const rightCell = row.querySelector('.comparison-right');
+                // ensure numeric elements have distinct base colors (inline to guarantee)
+                const leftValueEl = leftCell.querySelector('.comparison-value');
+                const rightValueEl = rightCell.querySelector('.comparison-value');
+                if (leftValueEl) leftValueEl.style.color = 'rgba(26,150,255,0.9)';
+                if (rightValueEl) rightValueEl.style.color = 'rgba(128,88,255,0.9)';
+                // set bar backgrounds inline so both halves always show their color
+                const leftBarEl = row.querySelector('.comparison-bar-left');
+                const rightBarEl = row.querySelector('.comparison-bar-right');
+                const leftBaseA = '#1AA6FF'; // left base
+                const leftBaseB = 'rgba(26,150,255,0.36)';
+                const rightBaseA = '#2ED47A'; // right base (green)
+                const rightBaseB = 'rgba(128,88,255,0.36)';
+                if (leftBarEl) leftBarEl.style.background = `linear-gradient(90deg, ${leftBaseA}33, ${leftBaseB})`;
+                if (rightBarEl) rightBarEl.style.background = `linear-gradient(90deg, ${rightBaseA}33, ${rightBaseB})`;
                 if (!neutral) {
                     if (bestValueIndices.length === 1 && bestValueIndices[0] === 0) leftCell.classList.add('best-stat');
                     if (bestValueIndices.length === 1 && bestValueIndices[0] === 1) rightCell.classList.add('best-stat');
@@ -2935,7 +2957,9 @@ const wrTeStatOrder = [
                     if (leftRankText) {
                         const span = document.createElement('span');
                         span.className = 'comparison-rank-annotation';
-                        span.textContent = leftRankText;
+                        const sanitized = replaceEnclosedDigits(leftRankText || '');
+                        const digits = (sanitized || '').match(/\d+/);
+                        span.textContent = digits ? `(${digits[0]})` : sanitized.replace(/[^0-9()#\s]/g, '').trim();
                         const rc = leftCell.querySelector('.comparison-rank-container');
                         if (rc) rc.appendChild(span);
                         else leftCell.appendChild(span);
@@ -2943,7 +2967,9 @@ const wrTeStatOrder = [
                     if (rightRankText) {
                         const span = document.createElement('span');
                         span.className = 'comparison-rank-annotation';
-                        span.textContent = rightRankText;
+                        const sanitized = replaceEnclosedDigits(rightRankText || '');
+                        const digits = (sanitized || '').match(/\d+/);
+                        span.textContent = digits ? `(${digits[0]})` : sanitized.replace(/[^0-9()#\s]/g, '').trim();
                         const rc = rightCell.querySelector('.comparison-rank-container');
                         if (rc) rc.appendChild(span);
                         else rightCell.appendChild(span);
@@ -2955,8 +2981,34 @@ const wrTeStatOrder = [
                 // Highlight only the winning side for stats (one side only)
                 if (numericLeft > numericRight) {
                     row.classList.add('left-win');
+                    // emphasize winner inline
+                    if (leftBarEl) leftBarEl.style.background = `linear-gradient(90deg, ${leftBaseA}, ${leftBaseB})`;
+                    if (rightBarEl) { rightBarEl.style.background = 'rgba(255,255,255,0.03)'; rightBarEl.style.opacity = '0.45'; }
+                    if (leftValueEl) leftValueEl.style.color = leftBaseA;
                 } else if (numericRight > numericLeft) {
                     row.classList.add('right-win');
+                    if (rightBarEl) rightBarEl.style.background = `linear-gradient(90deg, ${rightBaseA}, ${rightBaseB})`;
+                    if (leftBarEl) { leftBarEl.style.background = 'rgba(255,255,255,0.03)'; leftBarEl.style.opacity = '0.45'; }
+                    if (rightValueEl) rightValueEl.style.color = rightBaseA;
+                }
+
+                // Final sanitize pass: replace any remaining enclosed numerals inside rank/value text nodes
+                try {
+                    const sanitizeNodeText = (node) => {
+                        if (!node) return;
+                        if (node.childNodes && node.childNodes.length) {
+                            node.childNodes.forEach(c => sanitizeNodeText(c));
+                        }
+                        if (node.nodeType === Node.TEXT_NODE) {
+                            node.textContent = replaceEnclosedDigits(node.textContent || '');
+                        }
+                    };
+                    const rankEls = row.querySelectorAll('.comparison-rank-annotation');
+                    rankEls.forEach(el => { el.textContent = replaceEnclosedDigits(el.textContent || ''); });
+                    const valEls = row.querySelectorAll('.comparison-value');
+                    valEls.forEach(el => { el.textContent = replaceEnclosedDigits(el.textContent || ''); });
+                } catch (e) {
+                    // non-fatal
                 }
 
                 listContainer.appendChild(row);

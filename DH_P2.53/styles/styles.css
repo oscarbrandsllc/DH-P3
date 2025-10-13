@@ -4736,7 +4736,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 
 #player-comparison-modal .comparison-right { color: var(--color-accent-trade-win); }
 
-#player-comparison-modal .comparison-value { line-height: 1; position: relative; display: inline-block; transform: translateY(-2px); }
+#player-comparison-modal .comparison-value { line-height: 1; position: relative; display: inline-block; transform: translateY(-4px); }
 #player-comparison-modal .comparison-rank-container { height: 0; }
 
 /* place the rank absolutely relative to the value so it doesn't affect row height */
@@ -4745,7 +4745,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
   left: 50%;
   transform: translateX(-50%);
   top: 100%; /* directly under the value */
-  margin-top: 0px;
+  margin-top: -2px;
   line-height: 1;
   pointer-events: none;
 }
@@ -4758,9 +4758,10 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 }
 
 #player-comparison-modal .comparison-label {
-  font-size: 0.74rem;
+  font-size: 0.72rem;
   color: var(--color-text-tertiary);
   font-weight: 500;
+  margin-bottom: 0.04rem;
 }
 
 #player-comparison-modal .comparison-bar {
