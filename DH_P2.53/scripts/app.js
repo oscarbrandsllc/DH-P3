@@ -2851,22 +2851,38 @@ const wrTeStatOrder = [
                     if (bestValueIndices.length === 1 && bestValueIndices[0] === 1) rightCell.classList.add('best-stat');
                 }
 
-                // attach rank annotations (if present) next to values
+                // attach rank annotations as simple parenthesized text (smaller than stat)
                 try {
-                    const leftRank = rankAnnotations[0];
-                    const rightRank = rankAnnotations[1];
-                    if (leftRank) {
-                        const clone = leftRank.cloneNode(true);
-                        clone.classList.add('comparison-rank-annotation');
-                        leftCell.appendChild(clone);
+                    const leftRankNode = rankAnnotations[0];
+                    const rightRankNode = rankAnnotations[1];
+                    const makeRankText = (node) => {
+                        if (!node) return null;
+                        const txt = String(node.textContent || '').trim().replace(/[()]/g, '').trim();
+                        return txt ? `(${txt})` : null;
+                    };
+                    const leftRankText = makeRankText(leftRankNode);
+                    const rightRankText = makeRankText(rightRankNode);
+                    if (leftRankText) {
+                        const span = document.createElement('span');
+                        span.className = 'comparison-rank-annotation';
+                        span.textContent = leftRankText;
+                        leftCell.appendChild(span);
                     }
-                    if (rightRank) {
-                        const clone = rightRank.cloneNode(true);
-                        clone.classList.add('comparison-rank-annotation');
-                        rightCell.appendChild(clone);
+                    if (rightRankText) {
+                        const span = document.createElement('span');
+                        span.className = 'comparison-rank-annotation';
+                        span.textContent = rightRankText;
+                        rightCell.appendChild(span);
                     }
                 } catch (e) {
-                    /* non-fatal if cloning rank nodes fails */
+                    /* non-fatal */
+                }
+
+                // Highlight only the winning side for stats (one side only)
+                if (numericLeft > numericRight) {
+                    row.classList.add('left-win');
+                } else if (numericRight > numericLeft) {
+                    row.classList.add('right-win');
                 }
 
                 listContainer.appendChild(row);

@@ -4712,7 +4712,8 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
   align-items: center;
   gap: 0.5rem;
   padding: 0.45rem;
-  border-radius: 13px;
+  /* restored to previous radius */
+  border-radius: 10px;
   position: relative;
   background: rgba(0, 0, 0, 0.02);
   backdrop-filter: blur(1px) saturate(180%);
@@ -4746,18 +4747,39 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 #player-comparison-modal .comparison-bar {
   width: 100%;
   height: 10px;
-  border-radius: 999px;
+  /* pill-like but constrained to the row radius */
+  border-radius: 8px;
   overflow: hidden;
   background: rgba(255,255,255,0.03);
   display: flex;
 }
 
+/* subtle default tints (muted) */
 #player-comparison-modal .comparison-bar-left {
-  background: linear-gradient(90deg, rgba(66,194,255,0.14), rgba(66,194,255,0.22));
+  background: linear-gradient(90deg, rgba(66,194,255,0.08), rgba(66,194,255,0.12));
 }
 
 #player-comparison-modal .comparison-bar-right {
-  background: linear-gradient(90deg, rgba(118,109,255,0.16), rgba(118,109,255,0.28));
+  background: linear-gradient(90deg, rgba(118,109,255,0.08), rgba(118,109,255,0.12));
+}
+
+/* Winner-only emphasis: brighten winner, mute loser */
+#player-comparison-modal .comparison-row.left-win .comparison-bar-left {
+  background: linear-gradient(90deg, rgba(66,194,255,0.34), rgba(66,194,255,0.48));
+  box-shadow: inset 0 -2px 6px rgba(66,194,255,0.06);
+}
+#player-comparison-modal .comparison-row.left-win .comparison-bar-right {
+  background: rgba(255,255,255,0.03);
+  opacity: 0.45;
+}
+
+#player-comparison-modal .comparison-row.right-win .comparison-bar-right {
+  background: linear-gradient(90deg, rgba(0,245,160,0.30), rgba(0,245,160,0.44));
+  box-shadow: inset 0 -2px 6px rgba(0,245,160,0.06);
+}
+#player-comparison-modal .comparison-row.right-win .comparison-bar-left {
+  background: rgba(255,255,255,0.03);
+  opacity: 0.45;
 }
 
 /* overlay for the glass look */
@@ -4769,7 +4791,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
   width: 100%;
   height: 100%;
   background: rgba(255, 255, 255, 0.01);
-  border-radius: 13px;
+  border-radius: 10px;
   backdrop-filter: blur(1px);
   box-shadow: inset 10px 12px 0px -8px rgba(255, 255, 255, .05), inset 0px 8px 0px -6px rgba(255, 255, 255, .051);
   opacity: 0.4;
@@ -4777,6 +4799,20 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
   filter: blur(1px) drop-shadow(10px 4px 6px black) brightness(100%);
   pointer-events: none;
 }
+
+/* parenthesized rank annotation (smaller than the stat) */
+#player-comparison-modal .comparison-rank-annotation {
+  font-size: 0.72rem;
+  color: var(--color-text-tertiary);
+  margin-left: 0.28rem;
+  font-weight: 500;
+}
+
+/* Winner text emphasis / loser muted */
+#player-comparison-modal .comparison-row.left-win .comparison-left { color: var(--color-accent-primary); text-shadow: 0 0 6px rgba(66,194,255,0.12); }
+#player-comparison-modal .comparison-row.left-win .comparison-right { color: rgba(255,255,255,0.62); }
+#player-comparison-modal .comparison-row.right-win .comparison-right { color: var(--color-accent-trade-win); text-shadow: 0 0 6px rgba(0,245,160,0.12); }
+#player-comparison-modal .comparison-row.right-win .comparison-left { color: rgba(255,255,255,0.62); }
 
 #player-comparison-modal .best-stat { text-shadow: 0 0 6px rgba(118,109,255,0.22); color: var(--color-accent-primary) !important; }
 
