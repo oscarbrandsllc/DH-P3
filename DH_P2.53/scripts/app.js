@@ -2869,17 +2869,28 @@ const wrTeStatOrder = [
 
                     const rankValue = getSeasonRankValue(player.id, statKey);
                     // Produce a plain parenthesized rank string ONLY from numeric values
-                    const rankText = (() => {
-                        if (rankValue === null || rankValue === undefined) return null;
+                    let rankText = null;
+                    if (rankValue !== null && rankValue !== undefined) {
+                        let numericRank = null;
+                        
                         if (typeof rankValue === 'number' && Number.isFinite(rankValue)) {
-                            return `(${Math.round(rankValue)})`;
+                            numericRank = Math.round(rankValue);
+                        } else {
+                            // If it's a string, extract digits only - NO enclosed numerals
+                            const stringValue = String(rankValue);
+                            // First, try to convert enclosed numerals to digits
+                            const sanitized = replaceEnclosedDigits(stringValue);
+                            const digits = sanitized.match(/\d+/);
+                            if (digits) {
+                                numericRank = parseInt(digits[0], 10);
+                            }
                         }
-                        // If it's a string, try to extract digits only
-                        const stringValue = String(rankValue);
-                        const digits = stringValue.match(/\d+/);
-                        if (digits) return `(${digits[0]})`;
-                        return null;
-                    })();
+                        
+                        // Only set rankText if we have a valid number
+                        if (numericRank !== null && !isNaN(numericRank)) {
+                            rankText = `(${numericRank})`;
+                        }
+                    }
 
                     values.push(calculatedValue);
                     displayValues.push(displayValue);
@@ -2956,9 +2967,8 @@ const wrTeStatOrder = [
                     if (leftRankText) {
                         const span = document.createElement('span');
                         span.className = 'comparison-rank-annotation';
-                        const sanitized = replaceEnclosedDigits(leftRankText || '');
-                        const digits = (sanitized || '').match(/\d+/);
-                        span.textContent = digits ? `(${digits[0]})` : sanitized.replace(/[^0-9()#\s]/g, '').trim();
+                        // rankText is already clean from above - just use it directly
+                        span.textContent = leftRankText;
                         const rc = leftCell.querySelector('.comparison-rank-container');
                         if (rc) rc.appendChild(span);
                         else leftCell.appendChild(span);
@@ -2966,9 +2976,8 @@ const wrTeStatOrder = [
                     if (rightRankText) {
                         const span = document.createElement('span');
                         span.className = 'comparison-rank-annotation';
-                        const sanitized = replaceEnclosedDigits(rightRankText || '');
-                        const digits = (sanitized || '').match(/\d+/);
-                        span.textContent = digits ? `(${digits[0]})` : sanitized.replace(/[^0-9()#\s]/g, '').trim();
+                        // rankText is already clean from above - just use it directly
+                        span.textContent = rightRankText;
                         const rc = rightCell.querySelector('.comparison-rank-container');
                         if (rc) rc.appendChild(span);
                         else rightCell.appendChild(span);
