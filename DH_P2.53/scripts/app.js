@@ -2930,18 +2930,17 @@ const wrTeStatOrder = [
                 // annotate best values and attach rank annotations
                 const leftCell = row.querySelector('.comparison-left');
                 const rightCell = row.querySelector('.comparison-right');
-                // ensure numeric elements have distinct base colors (inline to guarantee)
+                // grab value elements (we won't color them by default)
                 const leftValueEl = leftCell.querySelector('.comparison-value');
                 const rightValueEl = rightCell.querySelector('.comparison-value');
-                if (leftValueEl) leftValueEl.style.color = 'rgba(26,150,255,0.9)';
-                if (rightValueEl) rightValueEl.style.color = 'rgba(128,88,255,0.9)';
                 // set bar backgrounds inline so both halves always show their color
                 const leftBarEl = row.querySelector('.comparison-bar-left');
                 const rightBarEl = row.querySelector('.comparison-bar-right');
-                const leftBaseA = '#1AA6FF'; // left base
-                const leftBaseB = 'rgba(26,150,255,0.36)';
-                const rightBaseA = '#2ED47A'; // right base (green)
-                const rightBaseB = 'rgba(128,88,255,0.36)';
+                // canonical colors: left blue, right purple
+                const leftBaseA = '#1AA6FF'; // blue
+                const leftBaseB = 'rgba(26,166,255,0.36)';
+                const rightBaseA = '#B06CFF'; // purple
+                const rightBaseB = 'rgba(176,108,255,0.36)';
                 if (leftBarEl) leftBarEl.style.background = `linear-gradient(90deg, ${leftBaseA}33, ${leftBaseB})`;
                 if (rightBarEl) rightBarEl.style.background = `linear-gradient(90deg, ${rightBaseA}33, ${rightBaseB})`;
                 if (!neutral) {
@@ -2984,12 +2983,12 @@ const wrTeStatOrder = [
                     // emphasize winner inline
                     if (leftBarEl) leftBarEl.style.background = `linear-gradient(90deg, ${leftBaseA}, ${leftBaseB})`;
                     if (rightBarEl) { rightBarEl.style.background = 'rgba(255,255,255,0.03)'; rightBarEl.style.opacity = '0.45'; }
-                    if (leftValueEl) leftValueEl.style.color = leftBaseA;
+                    if (leftValueEl) { leftValueEl.style.color = leftBaseA; leftValueEl.style.fontWeight = '700'; }
                 } else if (numericRight > numericLeft) {
                     row.classList.add('right-win');
                     if (rightBarEl) rightBarEl.style.background = `linear-gradient(90deg, ${rightBaseA}, ${rightBaseB})`;
                     if (leftBarEl) { leftBarEl.style.background = 'rgba(255,255,255,0.03)'; leftBarEl.style.opacity = '0.45'; }
-                    if (rightValueEl) rightValueEl.style.color = rightBaseA;
+                    if (rightValueEl) { rightValueEl.style.color = rightBaseA; rightValueEl.style.fontWeight = '700'; }
                 }
 
                 // Final sanitize pass: replace any remaining enclosed numerals inside rank/value text nodes
