@@ -1547,7 +1547,7 @@ const SEASON_META_HEADERS = {
             return rankStr;
         }
 
-        function createRankAnnotation(rank, { wrapInParens = true } = {}) {
+    function createRankAnnotation(rank, { wrapInParens = true, ordinal = false } = {}) {
                     const span = document.createElement('span');
                     span.className = 'stat-rank-annotation';
 
@@ -1566,9 +1566,9 @@ const SEASON_META_HEADERS = {
                         return 'th';
                     };
 
-                    // If the rank is a numeric value, render the suffix as superscript
+                    // If ordinal rendering is requested and the rank is numeric, render the suffix as superscript
                     const asNumber = Number(displayText);
-                    if (displayText !== 'NA' && Number.isFinite(asNumber)) {
+                    if (ordinal && displayText !== 'NA' && Number.isFinite(asNumber)) {
                         // build nodes: optionally wrap in parentheses
                         if (wrapInParens) span.appendChild(document.createTextNode('('));
 
@@ -1585,7 +1585,7 @@ const SEASON_META_HEADERS = {
                         return span;
                     }
 
-                    // Fallback: non-numeric or NA
+                    // Fallback: non-numeric or NA, or ordinal not requested
                     span.textContent = wrapInParens ? `(${displayText})` : displayText;
                     return span;
         }
@@ -2858,12 +2858,12 @@ const wrTeStatOrder = [
                     const rightRankVal = getSeasonRankValue(rightPlayer.id, statKey);
 
                     if (leftRankVal !== null && leftRankVal !== undefined) {
-                        const leftAnnot = createRankAnnotation(leftRankVal);
+                        const leftAnnot = createRankAnnotation(leftRankVal, { ordinal: true });
                         leftValueDiv.classList.add('has-rank-annotation');
                         leftValueDiv.appendChild(leftAnnot);
                     }
                     if (rightRankVal !== null && rightRankVal !== undefined) {
-                        const rightAnnot = createRankAnnotation(rightRankVal);
+                        const rightAnnot = createRankAnnotation(rightRankVal, { ordinal: true });
                         rightValueDiv.classList.add('has-rank-annotation');
                         rightValueDiv.appendChild(rightAnnot);
                     }
