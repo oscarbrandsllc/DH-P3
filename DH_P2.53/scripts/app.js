@@ -1333,6 +1333,7 @@ if (pageType === 'welcome') {
             'SNP%': 'snp_pct',
             'YDS(t)': 'yds_total',
             'FPOE': 'fpoe'
+            'PROJ': 'proj'
         };
 
         const WEEKLY_META_HEADER_MAP = {
@@ -2056,6 +2057,7 @@ const SEASON_META_HEADERS = {
 
 const qbStatOrder = [
   'fpts',
+  'proj',
   'pass_rtg',
   'pass_yd',
   'pass_td',
@@ -2080,6 +2082,7 @@ const qbStatOrder = [
 
 const rbStatOrder = [
   'fpts',
+  'proj',
   'snp_pct',
   'rush_att',
   'rush_yd',
@@ -2105,6 +2108,7 @@ const rbStatOrder = [
 
 const wrTeStatOrder = [
   'fpts',
+  'proj',
   'snp_pct',
   'rec_tgt',
   'rec',
@@ -2709,9 +2713,9 @@ const wrTeStatOrder = [
             const otherPlayer = players[1];
 
             const getStatOrderForPosition = (pos) => {
-                const qbStatOrder = ['fpts','pass_rtg','pass_yd','pass_td','pass_att','pass_cmp','yds_total','rush_yd','rush_td','pass_fd','imp_per_g','pass_imp','pass_imp_per_att','rush_att','ypc','ttt','prs_pct','pass_sack','pass_int','fum','fpoe'];
-                const rbStatOrder = ['fpts','snp_pct','rush_att','rush_yd','ypc','rush_td','elu','rec','rec_tgt','yds_total','rec_yd','mtf_per_att','yco_per_att','mtf','rush_yac','rush_fd','rec_td','rec_fd','rec_yar','imp_per_g','fum','fpoe'];
-                const wrTeStatOrder = ['fpts','snp_pct','rec_tgt','rec','ts_per_rr','rec_yd','rec_td','yprr','rec_fd','first_down_rec_rate','rec_yar','ypr','imp_per_g','rr','fpoe','yds_total','rush_att','rush_yd','rush_td','ypc','fum'];
+                const qbStatOrder = ['fpts','proj','pass_rtg','pass_yd','pass_td','pass_att','pass_cmp','yds_total','rush_yd','rush_td','pass_fd','imp_per_g','pass_imp','pass_imp_per_att','rush_att','ypc','ttt','prs_pct','pass_sack','pass_int','fum','fpoe'];
+                const rbStatOrder = ['fpts','proj','snp_pct','rush_att','rush_yd','ypc','rush_td','elu','rec','rec_tgt','yds_total','rec_yd','mtf_per_att','yco_per_att','mtf','rush_yac','rush_fd','rec_td','rec_fd','rec_yar','imp_per_g','fum','fpoe'];
+                const wrTeStatOrder = ['fpts','proj','snp_pct','rec_tgt','rec','ts_per_rr','rec_yd','rec_td','yprr','rec_fd','first_down_rec_rate','rec_yar','ypr','imp_per_g','rr','fpoe','yds_total','rush_att','rush_yd','rush_td','ypc','fum'];
                 if (pos === 'QB') return qbStatOrder;
                 if (pos === 'RB') return rbStatOrder;
                 if (pos === 'WR' || pos === 'TE') return wrTeStatOrder;
