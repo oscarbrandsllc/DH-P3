@@ -1719,12 +1719,14 @@ const SEASON_META_HEADERS = {
 
                 normalizedHeaders.forEach((header, idx) => {
                     const value = columns[idx];
-                    if (!value) return;
-
+                    
                     if (header === 'SLPR_ID') {
-                        playerId = value.trim();
+                        if (value) playerId = value.trim();
                         return;
                     }
+
+                    // Allow PROJ through even if empty/whitespace so we can preserve text values
+                    if (header !== 'PROJ' && !value) return;
 
                     const metaKey = WEEKLY_META_HEADER_MAP[header];
                     if (metaKey) {
