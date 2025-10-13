@@ -1320,24 +1320,24 @@ if (pageType === 'welcome') {
         }
 
         const PLAYER_STAT_HEADER_MAP = {
-            'paATT': 'pass_att',
+            'PAATT': 'pass_att',
             'CMP': 'pass_cmp',
-            'paYDS': 'pass_yd',
-            'paTD': 'pass_td',
-            'pa1D': 'pass_fd',
+            'PAYDS': 'pass_yd',
+            'PATD': 'pass_td',
+            'PA1D': 'pass_fd',
             'IMP/G': 'imp_per_g',
-            'paRTG': 'pass_rtg',
-            'pIMP': 'pass_imp',
-            'pIMP/A': 'pass_imp_per_att',
+            'PARTG': 'pass_rtg',
+            'PIMP': 'pass_imp',
+            'PIMP/A': 'pass_imp_per_att',
             'INT': 'pass_int',
             'SAC': 'pass_sack',
             'TTT': 'ttt',
             'PRS%': 'prs_pct',
             'CAR': 'rush_att',
-            'ruYDS': 'rush_yd',
+            'RUYDS': 'rush_yd',
             'YPC': 'ypc',
-            'ruTD': 'rush_td',
-            'ru1D': 'rush_fd',
+            'RUTD': 'rush_td',
+            'RU1D': 'rush_fd',
             'MTF': 'mtf',
             'ELU': 'elu',
             'YCO': 'rush_yac',
@@ -1345,9 +1345,9 @@ if (pageType === 'welcome') {
             'MTF/A': 'mtf_per_att',
             'TGT': 'rec_tgt',
             'REC': 'rec',
-            'recYDS': 'rec_yd',
-            'recTD': 'rec_td',
-            'rec1D': 'rec_fd',
+            'RECYDS': 'rec_yd',
+            'RECTD': 'rec_td',
+            'REC1D': 'rec_fd',
             'YAC': 'rec_yar',
             'YPR': 'ypr',
             'RR': 'rr',
@@ -1357,14 +1357,14 @@ if (pageType === 'welcome') {
             'IMP': 'imp',
             'FUM': 'fum',
             'SNP%': 'snp_pct',
-            'YDS(t)': 'yds_total',
+            'YDS(T)': 'yds_total',
             'FPOE': 'fpoe',
             'PROJ': 'proj'
         };
 
         const WEEKLY_META_HEADER_MAP = {
             'VS': 'opponent',
-            'vsRK': 'opponent_rank'
+            'VSRK': 'opponent_rank'
         };
 
         
@@ -1374,9 +1374,9 @@ if (pageType === 'welcome') {
             for (const [header, key] of Object.entries(PLAYER_STAT_HEADER_MAP)) {
                 labels[key] = header;
             }
-            labels['fpts'] = 'FPTS'; // computed, not from sheet
-            labels['ppg'] = 'PPG';   // keep if used elsewhere
-            labels['ts_per_rr'] = 'TS%';
+            labels['fpts'] = 'fpts'; // computed, not from sheet
+            labels['ppg'] = 'ppg';   // keep if used elsewhere
+            labels['ts_per_rr'] = 'ts%';
             return labels;
         }
 
@@ -1420,10 +1420,10 @@ const SEASON_META_HEADERS = {
                         return;
                     }
 
-                    const statKey = PLAYER_STAT_HEADER_MAP[header];
+                    const statKey = PLAYER_STAT_HEADER_MAP[header.toUpperCase()];
                     if (statKey) {
                         const parsedValue = parseStatValue(header, value);
-                        if (parsedValue !== null) stats[statKey] = parsedValue;
+                        if (parsedValue !== null || statKey === 'proj') stats[statKey] = parsedValue;
                         return;
                     }
 
@@ -1473,7 +1473,7 @@ const SEASON_META_HEADERS = {
                         return;
                     }
 
-                    const statKey = PLAYER_STAT_HEADER_MAP[header] || SEASON_VALUE_HEADERS[header];
+                    const statKey = PLAYER_STAT_HEADER_MAP[header.toUpperCase()] || SEASON_VALUE_HEADERS[header];
                     if (!statKey) return;
 
                     const parsedRank = parseRankValue(value);
@@ -1728,7 +1728,7 @@ const SEASON_META_HEADERS = {
                     // Allow PROJ through even if empty/whitespace so we can preserve text values
                     if (header !== 'PROJ' && !value) return;
 
-                    const metaKey = WEEKLY_META_HEADER_MAP[header];
+                    const metaKey = WEEKLY_META_HEADER_MAP[header.toUpperCase()];
                     if (metaKey) {
                         if (metaKey === 'opponent_rank') {
                             const parsed = parseFloat(value.trim());
@@ -1740,10 +1740,10 @@ const SEASON_META_HEADERS = {
                         return;
                     }
 
-                    const statKey = PLAYER_STAT_HEADER_MAP[header];
+                    const statKey = PLAYER_STAT_HEADER_MAP[header.toUpperCase()];
                     if (statKey) {
                         const parsedValue = parseStatValue(header, value);
-                        if (parsedValue !== null) stats[statKey] = parsedValue;
+                        if (parsedValue !== null || statKey === 'proj') stats[statKey] = parsedValue;
                     }
                 });
 
@@ -1807,6 +1807,7 @@ const SEASON_META_HEADERS = {
             if (!trimmed || trimmed.toUpperCase() === 'NA') return null;
 
             if (header === 'PROJ') {
+                // Always return PROJ as plain text string, never convert to number
                 return trimmed;
             }
 
@@ -2198,12 +2199,12 @@ const wrTeStatOrder = [
                 if (statLine && Object.prototype.hasOwnProperty.call(statLine, 'proj')) {
                     const rawValue = statLine.proj;
                     if (rawValue === undefined || rawValue === null) {
-                        // Fall back to weekly stats for this specific player/week
-                        const weeklyStat = state.playerWeeklyStats?.[week]?.[playerId];
-                        if (weeklyStat && Object.prototype.hasOwnProperty.call(weeklyStat, 'proj')) {
-                            const fallbackValue = weeklyStat.proj;
-                            if (fallbackValue !== undefined && fallbackValue !== null) {
-                                return typeof fallbackValue === 'string' ? fallbackValue : String(fallbackValue);
+                        // Fall back to season stats
+                        const seasonStat = state.playerSeasonStats?.[playerId];
+                        if (seasonStat && Object.prototype.hasOwnProperty.call(seasonStat, 'proj')) {
+                            const seasonValue = seasonStat.proj;
+                            if (seasonValue !== undefined && seasonValue !== null) {
+                                return typeof seasonValue === 'string' ? seasonValue : String(seasonValue);
                             }
                         }
                         return null;
@@ -2213,10 +2214,10 @@ const wrTeStatOrder = [
                     return String(rawValue);
                 }
                 
-                // For unplayed weeks, check weekly stats directly
-                const weeklyStat = state.playerWeeklyStats?.[week]?.[playerId];
-                if (weeklyStat && Object.prototype.hasOwnProperty.call(weeklyStat, 'proj')) {
-                    const rawValue = weeklyStat.proj;
+                // For unplayed weeks, check season stats
+                const seasonStat = state.playerSeasonStats?.[playerId];
+                if (seasonStat && Object.prototype.hasOwnProperty.call(seasonStat, 'proj')) {
+                    const rawValue = seasonStat.proj;
                     if (rawValue === undefined || rawValue === null) return null;
                     if (typeof rawValue === 'string') return rawValue;
                     if (Number.isFinite(rawValue)) return rawValue.toString();
