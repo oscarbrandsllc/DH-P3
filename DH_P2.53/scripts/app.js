@@ -1742,8 +1742,13 @@ const SEASON_META_HEADERS = {
 
                     const statKey = PLAYER_STAT_HEADER_MAP[header];
                     if (statKey) {
-                        const parsedValue = parseStatValue(header, value);
-                        if (parsedValue !== null) stats[statKey] = parsedValue;
+                        if (header === 'PROJ') {
+                            // For PROJ, always store the raw value as a string, even if empty
+                            stats[statKey] = value || '';
+                        } else {
+                            const parsedValue = parseStatValue(header, value);
+                            if (parsedValue !== null) stats[statKey] = parsedValue;
+                        }
                     }
                 });
 
@@ -1758,9 +1763,9 @@ const SEASON_META_HEADERS = {
         function parseCsv(csvText) {
             const lines = csvText.split(/\r?\n/).filter(line => line.trim().length > 0);
             if (lines.length === 0) return { headers: [], rows: [] };
-            const headers = parseCsvLine(lines[0]).map(cell => cell.trim());
-            const rows = lines.slice(1).map(line => parseCsvLine(line).map(cell => cell.trim()))
-                .filter(columns => columns.some(col => col.trim().length > 0));
+            const headers = parseCsvLine(lines[0]);
+            const rows = lines.slice(1).map(line => parseCsvLine(line))
+                .filter(columns => columns.some(col => col.length > 0));
             return { headers, rows };
         }
 
@@ -1804,11 +1809,9 @@ const SEASON_META_HEADERS = {
 
         function parseStatValue(header, value) {
             const trimmed = value.trim();
+            
+            // For all non-PROJ columns, PROJ is handled separately
             if (!trimmed || trimmed.toUpperCase() === 'NA') return null;
-
-            if (header === 'PROJ') {
-                return trimmed;
-            }
 
             if (header === 'SNP%') {
                 const numericPortion = parseFloat(trimmed.replace('%', ''));
@@ -2197,19 +2200,7 @@ const wrTeStatOrder = [
                 // First try the provided statLine (for played weeks)
                 if (statLine && Object.prototype.hasOwnProperty.call(statLine, 'proj')) {
                     const rawValue = statLine.proj;
-                    if (rawValue === undefined || rawValue === null) {
-                        // Fall back to weekly stats for this specific player/week
-                        const weeklyStat = state.playerWeeklyStats?.[week]?.[playerId];
-                        if (weeklyStat && Object.prototype.hasOwnProperty.call(weeklyStat, 'proj')) {
-                            const fallbackValue = weeklyStat.proj;
-                            if (fallbackValue !== undefined && fallbackValue !== null) {
-                                return typeof fallbackValue === 'string' ? fallbackValue : String(fallbackValue);
-                            }
-                        }
-                        return null;
-                    }
-                    if (typeof rawValue === 'string') return rawValue;
-                    if (Number.isFinite(rawValue)) return rawValue.toString();
+                    // Always return as string, even empty strings
                     return String(rawValue);
                 }
                 
@@ -2217,13 +2208,11 @@ const wrTeStatOrder = [
                 const weeklyStat = state.playerWeeklyStats?.[week]?.[playerId];
                 if (weeklyStat && Object.prototype.hasOwnProperty.call(weeklyStat, 'proj')) {
                     const rawValue = weeklyStat.proj;
-                    if (rawValue === undefined || rawValue === null) return null;
-                    if (typeof rawValue === 'string') return rawValue;
-                    if (Number.isFinite(rawValue)) return rawValue.toString();
+                    // Always return as string, even empty strings
                     return String(rawValue);
                 }
                 
-                return null;
+                return '';
             };
 
             for (let week = 1; week <= MAX_DISPLAY_WEEKS; week++) {
@@ -2292,12 +2281,8 @@ const wrTeStatOrder = [
                     if (isUnplayedWeek) {
                             if (key === 'proj') {
                                 const projValue = getProjectionDisplayValue(stats, player.id, week);
-                                // Show exactly what's in the sheet - text, number, or dash if truly missing
-                                if (projValue === null) {
-                                    td.textContent = '-';
-                                } else {
-                                    td.textContent = projValue;
-                                }
+                                // Show whatever value is returned directly - no further transformations
+                                td.textContent = projValue;
                             } else {
                                 td.textContent = '-';
                             }
@@ -2319,12 +2304,8 @@ const wrTeStatOrder = [
 
                     if (key === 'proj') {
                         const projValue = getProjectionDisplayValue(stats, player.id, week);
-                        // Show exactly what's in the sheet - text, number, or dash if truly missing
-                        if (projValue === null) {
-                            td.textContent = '-';
-                        } else {
-                            td.textContent = projValue;
-                        }
+                        // Show whatever value is returned directly - no further transformations
+                        td.textContent = projValue;
                         row.appendChild(td);
                         continue;
                     }
