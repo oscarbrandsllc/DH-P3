@@ -1177,6 +1177,13 @@ if (pageType === 'welcome') {
                 // Fetch stats for completed weeks (from PLAYER_STATS_SHEETS.weeks)
                 const weeklyPromises = Object.entries(PLAYER_STATS_SHEETS.weeks).map(async ([week, sheetName]) => {
                     const csv = await fetch(`https://docs.google.com/spreadsheets/d/${PLAYER_STATS_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${sheetName}`).then(res => res.text());
+                    // Debug: Log CSV snippet for week 7
+                    if (week === '7') {
+                        console.log(`Week 7 CSV first 1000 chars:`, csv.substring(0, 1000));
+                        // Find Lamar Jackson row
+                        const lamarRow = csv.split('\n').find(line => line.includes('4881'));
+                        console.log(`Week 7 Lamar Jackson row:`, lamarRow);
+                    }
                     return { week: Number(week), csv, hasFullStats: true };
                 });
 
@@ -1374,9 +1381,9 @@ if (pageType === 'welcome') {
             for (const [header, key] of Object.entries(PLAYER_STAT_HEADER_MAP)) {
                 labels[key] = header;
             }
-            labels['fpts'] = 'fpts'; // computed, not from sheet
-            labels['ppg'] = 'ppg';   // keep if used elsewhere
-            labels['ts_per_rr'] = 'ts%';
+            labels['fpts'] = 'FPTS';
+            labels['ppg'] = 'PPG';
+            labels['ts_per_rr'] = 'TS%';
             return labels;
         }
 
@@ -1811,12 +1818,15 @@ const SEASON_META_HEADERS = {
 
         function parseStatValue(header, value) {
             const trimmed = value.trim();
-            if (!trimmed || trimmed.toUpperCase() === 'NA') return null;
-
+            
             if (header === 'PROJ') {
-                // Always return PROJ as plain text string, never convert to number
-                return trimmed;
+                // For PROJ, return the trimmed value as-is, even if empty
+                // Empty strings will be handled by the display logic
+                console.log(`parseStatValue PROJ: raw="${value}", trimmed="${trimmed}"`);
+                return trimmed || null;
             }
+            
+            if (!trimmed || trimmed.toUpperCase() === 'NA') return null;
 
             if (header === 'SNP%') {
                 const numericPortion = parseFloat(trimmed.replace('%', ''));
