@@ -1548,11 +1548,46 @@ const SEASON_META_HEADERS = {
         }
 
         function createRankAnnotation(rank, { wrapInParens = true } = {}) {
-            const span = document.createElement('span');
-            span.className = 'stat-rank-annotation';
-            const displayText = getRankDisplayText(rank);
-            span.textContent = wrapInParens ? `(${displayText})` : displayText;
-            return span;
+                    const span = document.createElement('span');
+                    span.className = 'stat-rank-annotation';
+
+                    const displayText = getRankDisplayText(rank);
+
+                    // Helper: return ordinal suffix for integer n
+                    const ordinalSuffix = (n) => {
+                        const num = Math.abs(Number(n));
+                        if (!Number.isFinite(num) || Math.floor(num) !== num) return '';
+                        const tens = num % 100;
+                        if (tens >= 11 && tens <= 13) return 'th';
+                        const ones = num % 10;
+                        if (ones === 1) return 'st';
+                        if (ones === 2) return 'nd';
+                        if (ones === 3) return 'rd';
+                        return 'th';
+                    };
+
+                    // If the rank is a numeric value, render the suffix as superscript
+                    const asNumber = Number(displayText);
+                    if (displayText !== 'NA' && Number.isFinite(asNumber)) {
+                        // build nodes: optionally wrap in parentheses
+                        if (wrapInParens) span.appendChild(document.createTextNode('('));
+
+                        const numNode = document.createElement('span');
+                        numNode.className = 'stat-rank-number';
+                        numNode.textContent = String(asNumber);
+                        span.appendChild(numNode);
+
+                        const sup = document.createElement('sup');
+                        sup.textContent = ordinalSuffix(asNumber);
+                        span.appendChild(sup);
+
+                        if (wrapInParens) span.appendChild(document.createTextNode(')'));
+                        return span;
+                    }
+
+                    // Fallback: non-numeric or NA
+                    span.textContent = wrapInParens ? `(${displayText})` : displayText;
+                    return span;
         }
 
         function computeSeasonRankings(seasonStats) {

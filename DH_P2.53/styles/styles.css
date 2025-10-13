@@ -4396,6 +4396,16 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     color: inherit;
     opacity: 0.95;
   }
+
+  /* Smaller, tighter superscript for rank ordinals in the comparison modal */
+  .comparison-list .stat-rank-annotation sup {
+    font-size: 0.6em;
+    line-height: 1;
+    margin-left: 0.08em;
+    vertical-align: baseline;
+    opacity: 0.95;
+    font-variant-numeric: ordinal;
+  }
     .player-comparison-table th, .player-comparison-table td {
         padding: 0.25rem;
         text-align: center;
