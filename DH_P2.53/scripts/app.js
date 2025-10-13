@@ -341,7 +341,7 @@ if (pageType === 'welcome') {
         const API_BASE = 'https://api.sleeper.app/v1';
         const GOOGLE_SHEET_ID = '1MDTf1IouUIrm4qabQT9E5T0FsJhQtmaX55P32XK5c_0';
         const PLAYER_STATS_SHEET_ID = '1i-cKqSfYw0iFiV9S-wBw8lwZePwXZ7kcaWMdnaMTHDs';
-        const PLAYER_STATS_SHEETS = { season: 'SZN', seasonRanks: 'SZN_RKs', weeks: { 1: 'WK1', 2: 'WK2', 3: 'WK3', 4: 'WK4', 5: 'WK5', 6: 'WK6',7: 'WK7' } };
+        const PLAYER_STATS_SHEETS = { season: 'SZN', seasonRanks: 'SZN_RKs', weeks: { 1: 'WK1', 2: 'WK2', 3: 'WK3', 4: 'WK4', 5: 'WK5', 6: 'WK6' } };
         const TAG_COLORS = { QB:"var(--pos-qb)", RB:"var(--pos-rb)", WR:"var(--pos-wr)", TE:"var(--pos-te)", BN:"var(--pos-bn)", TX:"var(--pos-tx)", FLX: "var(--pos-flx)", SFLX: "var(--pos-sflx)" };
         const STARTER_ORDER = ['QB', 'RB', 'WR', 'TE', 'FLEX', 'SUPER_FLEX'];
         const TEAM_COLORS = { ARI:"#97233F", ATL:"#A71930", BAL:"#241773", BUF:"#00338D", CAR:"#0085CA", CHI:"#1a2d4e", CIN:"#FB4F14", CLE:"#311D00", DAL:"#003594", DEN:"#FB4F14", DET:"#0076B6", GB:"#203731", HOU:"#03202F", IND:"#002C5F", JAX:"#006778", KC:"#E31837", LAC:"#0080C6", LAR:"#003594", LV:"#A5ACAF", MIA:"#008E97", MIN:"#4F2683", NE:"#002244", NO:"#D3BC8D", NYG:"#0B2265", NYJ:"#125740", PHI:"#004C54", PIT:"#FFB612", SEA:"#69BE28", SF:"#B3995D", TB:"#D50A0A", TEN:"#4B92DB", WAS:"#5A1414", FA: "#64748b" };
