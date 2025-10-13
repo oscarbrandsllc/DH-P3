@@ -1590,6 +1590,28 @@ const SEASON_META_HEADERS = {
             return span;
         }
 
+        // Replace enclosed/circled numerals in any display string with their ASCII digits
+        function replaceEnclosedDigits(str) {
+            if (str === null || str === undefined) return str;
+            const s = String(str);
+            const mapEnclosed = (ch) => {
+                const code = ch.charCodeAt(0);
+                if (code >= 0x2460 && code <= 0x2473) return String(code - 0x245F); // ①..⑳
+                if (code >= 0x24F5 && code <= 0x24FE) return String(code - 0x24F4); // ⓵..⓾
+                if (code >= 0x2776 && code <= 0x277F) return String(code - 0x2775); // ❶..❿
+                if (code >= 0x2474 && code <= 0x2487) return String(code - 0x2473);
+                if (code >= 0xFF10 && code <= 0xFF19) return String(code - 0xFF10); // fullwidth
+                if (code === 0x24EA) return '0'; // ⓪
+                return null;
+            };
+            let out = '';
+            for (const ch of s) {
+                const mapped = mapEnclosed(ch);
+                out += (mapped !== null) ? mapped : ch;
+            }
+            return out;
+        }
+
         // Small HTML-escape helper used when inserting values into innerHTML templates
         function escapeHtml(input) {
             if (input === null || input === undefined) return '';
@@ -2865,8 +2887,11 @@ const wrTeStatOrder = [
                 }
 
                 // Build a compact comparison row: left value, centered label, right value, and a shared progress bar
-                const leftVal = displayValues[0] || 'N/A';
-                const rightVal = displayValues[1] || 'N/A';
+                // sanitize any enclosed numerals in display text
+                const leftValRaw = displayValues[0] || 'N/A';
+                const rightValRaw = displayValues[1] || 'N/A';
+                const leftVal = replaceEnclosedDigits(leftValRaw);
+                const rightVal = replaceEnclosedDigits(rightValRaw);
                 const numericLeft = (typeof values[0] === 'number' && values[0] > 0) ? values[0] : 0;
                 const numericRight = (typeof values[1] === 'number' && values[1] > 0) ? values[1] : 0;
                 const total = numericLeft + numericRight;
@@ -2877,10 +2902,10 @@ const wrTeStatOrder = [
                 const row = document.createElement('div');
                 row.className = 'comparison-row';
                 row.innerHTML = `
-                    <div class="comparison-left">
-                      <div class="comparison-value">${escapeHtml(leftVal)}</div>
-                      <div class="comparison-rank-container" aria-hidden="true"></div>
-                    </div>
+                                        <div class="comparison-left">
+                                            <div class="comparison-value">${escapeHtml(leftVal)}</div>
+                                            <div class="comparison-rank-container" aria-hidden="true"></div>
+                                        </div>
                     <div class="comparison-center">
                         <div class="comparison-label">${escapeHtml(statLabels[statKey])}</div>
                         <div class="comparison-bar" role="img" aria-label="${escapeHtml(statLabels[statKey])} comparison">
@@ -2888,10 +2913,10 @@ const wrTeStatOrder = [
                             <div class="comparison-bar-right" style="width: ${rightPct}%;"></div>
                         </div>
                     </div>
-                    <div class="comparison-right">
-                      <div class="comparison-value">${escapeHtml(rightVal)}</div>
-                      <div class="comparison-rank-container" aria-hidden="true"></div>
-                    </div>
+                                        <div class="comparison-right">
+                                            <div class="comparison-value">${escapeHtml(rightVal)}</div>
+                                            <div class="comparison-rank-container" aria-hidden="true"></div>
+                                        </div>
                 `;
 
                 // annotate best values and attach rank annotations

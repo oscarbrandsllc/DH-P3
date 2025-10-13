@@ -4736,7 +4736,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 
 #player-comparison-modal .comparison-right { color: var(--color-accent-trade-win); }
 
-#player-comparison-modal .comparison-value { line-height: 1; position: relative; display: inline-block; }
+#player-comparison-modal .comparison-value { line-height: 1; position: relative; display: inline-block; transform: translateY(-2px); }
 #player-comparison-modal .comparison-rank-container { height: 0; }
 
 /* place the rank absolutely relative to the value so it doesn't affect row height */
@@ -4826,15 +4826,15 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 /* parenthesized rank annotation (smaller than the stat) */
 #player-comparison-modal .comparison-rank-annotation {
   display: inline-block;
-  font-size: 0.68rem;
-  color: rgba(255,255,255,0.75);
+  font-size: 0.58rem;
+  color: rgba(255,255,255,0.88);
   font-weight: 500;
   text-align: center;
   line-height: 1;
-  opacity: 0.92;
-  padding: 0 0.06rem;
+  opacity: 0.98;
+  padding: 0 0.02rem;
+  transform: translateY(0.5px);
 }
-
 /* Winner text emphasis / loser muted */
 /* Text colors to match bar hues when winner */
 #player-comparison-modal .comparison-row.left-win .comparison-left { color: rgb(26,150,255); text-shadow: 0 0 8px rgba(26,150,255,0.12); }
@@ -4842,9 +4842,13 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 #player-comparison-modal .comparison-row.right-win .comparison-right { color: rgb(128,88,255); text-shadow: 0 0 8px rgba(128,88,255,0.12); }
 #player-comparison-modal .comparison-row.right-win .comparison-left { color: rgba(255,255,255,0.62); }
 
-/* numeric value uses side color when that side wins */
-#player-comparison-modal .comparison-row.left-win .comparison-value { color: rgb(26,150,255); }
-#player-comparison-modal .comparison-row.right-win .comparison-value { color: rgb(128,88,255); }
+/* default left/right text colors so sides are visually distinct */
+#player-comparison-modal .comparison-left .comparison-value { color: rgba(26,150,255,0.9); }
+#player-comparison-modal .comparison-right .comparison-value { color: rgba(128,88,255,0.9); }
+
+/* numeric value uses side color when that side wins (stronger) */
+#player-comparison-modal .comparison-row.left-win .comparison-value { color: rgb(26,150,255); text-shadow: 0 0 6px rgba(26,150,255,0.12); }
+#player-comparison-modal .comparison-row.right-win .comparison-value { color: rgb(128,88,255); text-shadow: 0 0 6px rgba(128,88,255,0.12); }
 
 #player-comparison-modal .best-stat { text-shadow: 0 0 6px rgba(118,109,255,0.22); color: var(--color-accent-primary) !important; }
 
