@@ -3679,7 +3679,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     
     #modal-body th,
     #modal-body td {
-      padding: 0.3rem 0.35rem;
+      padding: 0.2rem 0.35rem;
       text-align: center;
       /* border-bottom is removed from here to be more specific */
     }
