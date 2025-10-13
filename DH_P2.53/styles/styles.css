@@ -1448,6 +1448,11 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
             color: var(--color-text-primary);
         }
 
+        /* Lower the rank annotation on player cards' KTC value line */
+        .player-value-line .has-rank-annotation .stat-rank-annotation {
+            transform: translateY(-0.15em);
+        }
+
         .pick-row {
             flex-direction: row;
             justify-content: space-between;
@@ -4789,6 +4794,11 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 
 #player-comparison-modal .comparison-bar-right {
   background: #00e7c0d0;
+}
+
+#player-comparison-modal .comparison-bar-left.worse-stat-bar,
+#player-comparison-modal .comparison-bar-right.worse-stat-bar {
+  opacity: 0.35;
 }
 
 #player-comparison-modal .best-stat {

@@ -2885,8 +2885,14 @@ const wrTeStatOrder = [
                 row.appendChild(rightValueDiv);
 
                 if (!neutral) {
-                    if (bestValueIndices.length === 1 && bestValueIndices[0] === 0) leftValueDiv.classList.add('best-stat');
-                    if (bestValueIndices.length === 1 && bestValueIndices[0] === 1) rightValueDiv.classList.add('best-stat');
+                    if (bestValueIndices.length === 1 && bestValueIndices[0] === 0) {
+                        leftValueDiv.classList.add('best-stat');
+                        row.querySelector('.comparison-bar-right')?.classList.add('worse-stat-bar');
+                    }
+                    if (bestValueIndices.length === 1 && bestValueIndices[0] === 1) {
+                        rightValueDiv.classList.add('best-stat');
+                        row.querySelector('.comparison-bar-left')?.classList.add('worse-stat-bar');
+                    }
                 }
 
                 listContainer.appendChild(row);
