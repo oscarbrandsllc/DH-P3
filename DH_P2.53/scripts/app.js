@@ -1804,6 +1804,10 @@ const SEASON_META_HEADERS = {
             const trimmed = value.trim();
             if (!trimmed || trimmed.toUpperCase() === 'NA') return null;
 
+            if (header === 'PROJ') {
+                return trimmed;
+            }
+
             if (header === 'SNP%') {
                 const numericPortion = parseFloat(trimmed.replace('%', ''));
                 if (Number.isNaN(numericPortion)) return null;
@@ -2185,14 +2189,32 @@ const wrTeStatOrder = [
             thead.appendChild(headerRow);
 
             const gameLogsWithData = [];
-            
-            // Iterate through all weeks from 1 to MAX_DISPLAY_WEEKS
+            const gameLogsByWeek = new Map(gameLogs.map(entry => [parseInt(entry.week, 10), entry]));
+
             for (let week = 1; week <= MAX_DISPLAY_WEEKS; week++) {
-                const weekStats = gameLogs.find(log => parseInt(log.week) === week);
-                const isProjectionWeek = state.playerProjectionWeeks?.[player.id]?.[week] === true;
-                
-                let hasData = false;
+                const weekStatsEntry = gameLogsByWeek.get(week) || null;
+                const stats = weekStatsEntry?.stats || null;
+                const isProjectionWeek = state.playerProjectionWeeks?.[week] === true;
+                const opponent = stats?.opponent || null;
+                const isByeWeek = opponent === 'BYE';
+                const snapPct = typeof stats?.snp_pct === 'number' ? stats.snp_pct : null;
+                const hasNonProjStat = stats
+                    ? orderedStatKeys.some(key => {
+                        if (!statLabels[key] || key === 'proj') return false;
+                        const val = stats[key];
+                        return typeof val === 'number' && val !== 0;
+                    })
+                    : false;
+                // Treat projection, bye, or zero-participation weeks as "unplayed" so we can dim them in the UI.
+                const hasParticipation = Boolean(stats) && (
+                    (typeof snapPct === 'number' && snapPct > 0) ||
+                    hasNonProjStat
+                );
+                const isUnplayedWeek = isProjectionWeek || isByeWeek || !hasParticipation;
+
                 const row = document.createElement('tr');
+                if (isUnplayedWeek) row.classList.add('unplayed-week-row');
+                if (isByeWeek) row.classList.add('bye-week-row');
 
                 const weekTd = document.createElement('td');
                 weekTd.classList.add('week-cell');
@@ -2201,59 +2223,45 @@ const wrTeStatOrder = [
                 weekNumberSpan.className = 'week-number';
                 weekNumberSpan.textContent = week;
                 weekTd.appendChild(weekNumberSpan);
-                
-                const opponent = weekStats?.stats?.opponent;
-                const isByeWeek = opponent === 'BYE';
-                
-                // Apply row classes for unplayed/bye weeks
-                if (isByeWeek) {
-                    row.classList.add('bye-week-row');
-                } else if (isProjectionWeek) {
-                    row.classList.add('unplayed-week-row');
-                }
-                
+
                 if (opponent) {
                     const opponentSpan = document.createElement('span');
                     opponentSpan.className = 'week-opponent-label';
-                    
+
                     if (isByeWeek) {
                         opponentSpan.textContent = 'BYE';
                     } else {
                         opponentSpan.textContent = opponent;
-                        const color = getOpponentRankColor(weekStats.stats?.opponent_rank);
+                        const color = getOpponentRankColor(stats?.opponent_rank);
                         if (color) opponentSpan.style.color = color;
 
-                        const opponentRank = weekStats.stats?.opponent_rank;
+                        const opponentRank = stats?.opponent_rank;
                         const opponentRankDisplay = getRankDisplayText(opponentRank);
                         if (opponentRankDisplay !== 'NA') {
                             opponentSpan.classList.add('has-rank-annotation');
-                            const rankAnnotation = createRankAnnotation(opponentRank);
-                            opponentSpan.appendChild(rankAnnotation);
+                            opponentSpan.appendChild(createRankAnnotation(opponentRank));
                         }
                     }
                     weekTd.appendChild(opponentSpan);
                 }
+
                 row.appendChild(weekTd);
 
-                const isLiveWeek = weekStats?.stats?.__live === true;
+                const isLiveWeek = stats?.__live === true;
 
                 for (const key of orderedStatKeys) {
                     if (!statLabels[key]) continue;
 
                     const td = document.createElement('td');
 
-                    // Handle bye weeks - show "-" for all stats
-                    if (isByeWeek) {
-                        td.textContent = '-';
-                        row.appendChild(td);
-                        continue;
-                    }
-
-                    // Handle projection weeks - only show opponent info and PROJ
-                    if (isProjectionWeek) {
+                    if (isUnplayedWeek) {
                         if (key === 'proj') {
-                            const projValue = weekStats?.stats?.proj;
-                            td.textContent = (typeof projValue === 'number') ? projValue.toFixed(2).replace(/\.00$/, '') : '-';
+                            const projValue = stats?.proj;
+                            if (projValue === undefined || projValue === null || (typeof projValue === 'string' && projValue.trim() === '')) {
+                                td.textContent = '-';
+                            } else {
+                                td.textContent = String(projValue);
+                            }
                         } else {
                             td.textContent = '-';
                         }
@@ -2261,76 +2269,83 @@ const wrTeStatOrder = [
                         continue;
                     }
 
-                    // Handle live weeks
                     if (isLiveWeek && key !== 'fpts') {
                         td.textContent = 'N/A';
                         row.appendChild(td);
                         continue;
                     }
 
-                    // Handle regular stats (only for completed weeks)
-                    if (!weekStats) {
+                    if (!weekStatsEntry || !stats) {
                         td.textContent = '-';
+                        row.appendChild(td);
+                        continue;
+                    }
+
+                    if (key === 'proj') {
+                        const projValue = stats.proj;
+                        if (projValue === undefined || projValue === null || (typeof projValue === 'string' && projValue.trim() === '')) {
+                            td.textContent = '-';
+                        } else {
+                            td.textContent = String(projValue);
+                        }
                         row.appendChild(td);
                         continue;
                     }
 
                     let value;
                     if (NO_FALLBACK_KEYS.has(key)) {
-                        const raw = weekStats.stats[key];
+                        const raw = stats[key];
                         value = (typeof raw === 'number') ? raw : null;
-                    } else if (key === 'fpts') value = calculateFantasyPoints(weekStats.stats, scoringSettings);
-                    else if (key === 'ypc') value = (weekStats.stats['rush_att'] || 0) > 0 ? ((weekStats.stats['rush_yd'] || 0) / weekStats.stats['rush_att']) : 0;
-                    else if (key === 'yco_per_att') value = (weekStats.stats['rush_att'] || 0) > 0 ? ((weekStats.stats['rush_yac'] || 0) / weekStats.stats['rush_att']) : 0;
-                    else if (key === 'mtf_per_att') value = (weekStats.stats['rush_att'] || 0) > 0 ? ((weekStats.stats['mtf'] || 0) / weekStats.stats['rush_att']) : 0;
+                    } else if (key === 'fpts') value = calculateFantasyPoints(stats, scoringSettings);
+                    else if (key === 'ypc') value = (stats['rush_att'] || 0) > 0 ? ((stats['rush_yd'] || 0) / stats['rush_att']) : 0;
+                    else if (key === 'yco_per_att') value = (stats['rush_att'] || 0) > 0 ? ((stats['rush_yac'] || 0) / stats['rush_att']) : 0;
+                    else if (key === 'mtf_per_att') value = (stats['rush_att'] || 0) > 0 ? ((stats['mtf'] || 0) / stats['rush_att']) : 0;
                     else if (key === 'pass_imp_per_att') {
-                        const passImp = weekStats.stats['pass_imp'];
-                        const passAtt = weekStats.stats['pass_att'];
-                        if (typeof weekStats.stats[key] === 'number') value = weekStats.stats[key];
+                        const passImp = stats['pass_imp'];
+                        const passAtt = stats['pass_att'];
+                        if (typeof stats[key] === 'number') value = stats[key];
                         else if (typeof passImp === 'number' && typeof passAtt === 'number' && passAtt > 0) value = (passImp / passAtt) * 100;
                         else value = 0;
                     }
                     else if (key === 'ts_per_rr') {
-                        if (typeof weekStats.stats[key] === 'number') value = weekStats.stats[key];
+                        if (typeof stats[key] === 'number') value = stats[key];
                         else {
-                            const routes = weekStats.stats['rr'] || 0;
-                            const targets = weekStats.stats['rec_tgt'] || 0;
+                            const routes = stats['rr'] || 0;
+                            const targets = stats['rec_tgt'] || 0;
                             value = routes > 0 ? (targets / routes) * 100 : 0;
                         }
                     }
                     else if (key === 'yprr') {
-                        if (typeof weekStats.stats[key] === 'number') value = weekStats.stats[key];
+                        if (typeof stats[key] === 'number') value = stats[key];
                         else {
-                            const routes = weekStats.stats['rr'] || 0;
-                            const yards = weekStats.stats['rec_yd'] || 0;
+                            const routes = stats['rr'] || 0;
+                            const yards = stats['rec_yd'] || 0;
                             value = routes > 0 ? yards / routes : 0;
                         }
                     }
                     else if (key === 'ypr') {
-                        if (typeof weekStats.stats[key] === 'number') value = weekStats.stats[key];
+                        if (typeof stats[key] === 'number') value = stats[key];
                         else {
-                            const receptions = weekStats.stats['rec'] || 0;
-                            const yards = weekStats.stats['rec_yd'] || 0;
+                            const receptions = stats['rec'] || 0;
+                            const yards = stats['rec_yd'] || 0;
                             value = receptions > 0 ? yards / receptions : 0;
                         }
                     }
                     else if (key === 'first_down_rec_rate') {
-                        if (typeof weekStats.stats[key] === 'number') value = weekStats.stats[key];
+                        if (typeof stats[key] === 'number') value = stats[key];
                         else {
-                            const rec_fd = weekStats.stats['rec_fd'] || 0;
-                            const rec = weekStats.stats['rec'] || 0;
+                            const rec_fd = stats['rec_fd'] || 0;
+                            const rec = stats['rec'] || 0;
                             value = rec > 0 ? (rec_fd / rec) : 0;
                         }
                     }
                     else if (key === 'imp_per_g') {
-                        if (typeof weekStats.stats[key] === 'number') value = weekStats.stats[key];
-                        else value = weekStats.stats['imp'] || 0;
+                        if (typeof stats[key] === 'number') value = stats[key];
+                        else value = stats['imp'] || 0;
                     }
-                    else if (key === 'prs_pct' || key === 'snp_pct') value = typeof weekStats.stats[key] === 'number' ? weekStats.stats[key] : 0;
-                    else if (key === 'ttt') value = typeof weekStats.stats[key] === 'number' ? weekStats.stats[key] : 0;
-                    else value = weekStats.stats[key] || 0;
-
-                    if (value > 0) hasData = true;
+                    else if (key === 'prs_pct' || key === 'snp_pct') value = typeof stats[key] === 'number' ? stats[key] : 0;
+                    else if (key === 'ttt') value = typeof stats[key] === 'number' ? stats[key] : 0;
+                    else value = stats[key] || 0;
 
                     let displayValue;
                     if (value === null || typeof value !== 'number') displayValue = 'N/A';
@@ -2343,10 +2358,9 @@ const wrTeStatOrder = [
                     row.appendChild(td);
                 }
 
-                // Always append the row (for completed, projection, and bye weeks)
                 tbody.appendChild(row);
-                if (weekStats && hasData) {
-                    gameLogsWithData.push(weekStats);
+                if (!isUnplayedWeek && weekStatsEntry) {
+                    gameLogsWithData.push(weekStatsEntry);
                 }
             }
 
@@ -2385,6 +2399,11 @@ const wrTeStatOrder = [
                     if (!statLabels[key]) continue;
 
                     const td = document.createElement('td');
+                    if (key === 'proj') {
+                        td.textContent = '-';
+                        footerRow.appendChild(td);
+                        continue;
+                    }
                     let displayValue;
                     if (NO_FALLBACK_KEYS.has(key)) {
                         const raw = (seasonTotals && typeof seasonTotals[key] === 'number') ? seasonTotals[key] : null;

@@ -4089,26 +4089,38 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 
 /* · · Unplayed and Bye Week Row Styles · · */
 #modal-body tbody tr.unplayed-week-row {
-    opacity: 0.4;
-    font-style: italic;
-    height: 0.7em;
+  opacity: 0.5;
+  font-style: italic;
 }
 
 #modal-body tbody tr.unplayed-week-row td {
-    padding-top: 0.15rem;
-    padding-bottom: 0.15rem;
-    font-size: 0.85em;
+  padding-top: 0.08rem;
+  padding-bottom: 0.08rem;
+  font-size: 0.82em;
+  line-height: 1.05;
+  color: var(--color-text-tertiary);
+}
+
+#modal-body tbody tr.unplayed-week-row .week-cell {
+  color: inherit;
+}
+
+#modal-body tbody tr.unplayed-week-row .week-number {
+  font-size: 0.85em;
+}
+
+#modal-body tbody tr.unplayed-week-row .week-opponent-label {
+  font-size: 0.48rem;
 }
 
 #modal-body tbody tr.bye-week-row {
-    opacity: 0.3;
-    height: 0.6em;
+  opacity: 0.4;
 }
 
 #modal-body tbody tr.bye-week-row td {
-    padding-top: 0.1rem;
-    padding-bottom: 0.1rem;
-    font-size: 0.8em;
+  padding-top: 0.06rem;
+  padding-bottom: 0.06rem;
+  font-size: 0.78em;
 }
 
 .modal-footer {
