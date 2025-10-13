@@ -1480,7 +1480,9 @@ const SEASON_META_HEADERS = {
             const upper = trimmed.toUpperCase();
             if (upper === 'NA' || upper === 'N/A') return null;
 
-            const numVal = parseFloat(trimmed);
+            // Convert any enclosed numerals to plain digits BEFORE parsing
+            const sanitized = replaceEnclosedDigits(trimmed);
+            const numVal = parseFloat(sanitized);
             return Number.isNaN(numVal) ? null : numVal;
         }
 
@@ -2772,7 +2774,7 @@ const wrTeStatOrder = [
             const scoringSettings = league?.scoring_settings || {};
 
             // Constants for comparison styling
-            const dimmedOpacity = '0.45'; // Opacity for losing stat values
+            const dimmedColor = '#74778c'; // Color for losing stat values
 
             for (const statKey of orderedStatKeys) {
                 if (!statLabels[statKey]) continue;
@@ -2871,29 +2873,10 @@ const wrTeStatOrder = [
                     }
 
                     const rankValue = getSeasonRankValue(player.id, statKey);
-                    // Produce a plain parenthesized rank string ONLY from numeric values
-                    let rankText = null;
-                    if (rankValue !== null && rankValue !== undefined) {
-                        let numericRank = null;
-                        
-                        if (typeof rankValue === 'number' && Number.isFinite(rankValue)) {
-                            numericRank = Math.round(rankValue);
-                        } else {
-                            // If it's a string, extract digits only - NO enclosed numerals
-                            const stringValue = String(rankValue);
-                            // First, try to convert enclosed numerals to digits
-                            const sanitized = replaceEnclosedDigits(stringValue);
-                            const digits = sanitized.match(/\d+/);
-                            if (digits) {
-                                numericRank = parseInt(digits[0], 10);
-                            }
-                        }
-                        
-                        // Only set rankText if we have a valid number
-                        if (numericRank !== null && !isNaN(numericRank)) {
-                            rankText = `(${numericRank})`;
-                        }
-                    }
+                    // Since parseRankValue now sanitizes at source, rankValue is always a clean number
+                    const rankText = (rankValue !== null && rankValue !== undefined && Number.isFinite(rankValue))
+                        ? `(${Math.round(rankValue)})`
+                        : null;
 
                     values.push(calculatedValue);
                     displayValues.push(displayValue);
@@ -3000,7 +2983,7 @@ const wrTeStatOrder = [
                     }
                     // Dim the losing value
                     if (rightValueEl) {
-                        rightValueEl.style.opacity = dimmedOpacity;
+                        rightValueEl.style.color = dimmedColor;
                     }
                 } else if (numericRight > numericLeft) {
                     row.classList.add('right-win');
@@ -3010,7 +2993,7 @@ const wrTeStatOrder = [
                     }
                     // Dim the losing value
                     if (leftValueEl) {
-                        leftValueEl.style.opacity = dimmedOpacity;
+                        leftValueEl.style.color = dimmedColor;
                     }
                 }
 
