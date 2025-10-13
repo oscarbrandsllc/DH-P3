@@ -4739,15 +4739,17 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 #player-comparison-modal .comparison-value { line-height: 1; }
 #player-comparison-modal .comparison-rank-container { height: 0; }
 
-/* absolute-positioned rank so it doesn't affect row height */
+/* absolute-positioned rank so it doesn't affect row height; placed just below the value */
 #player-comparison-modal .comparison-rank-container .comparison-rank-annotation,
 #player-comparison-modal .comparison-left > .comparison-rank-container,
 #player-comparison-modal .comparison-right > .comparison-rank-container {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  bottom: 2px; /* tuck it slightly under the value */
+  top: 100%; /* place directly under the stat value */
+  margin-top: 2px;
   line-height: 1;
+  pointer-events: none;
 }
 
 #player-comparison-modal .comparison-center {

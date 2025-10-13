@@ -1547,11 +1547,46 @@ const SEASON_META_HEADERS = {
             return rankStr;
         }
 
+        // Normalize various rank formats (digits, enclosed/circled numbers) into plain digits
+        function normalizeRankString(value) {
+            if (value === null || value === undefined) return null;
+            if (typeof value === 'number') return String(value);
+            let s = String(value).trim();
+            if (!s) return null;
+            // If contains ASCII digits, return the first continuous digit run
+            const m = s.match(/\d+/);
+            if (m) return m[0];
+
+            // Map common enclosed/circled numeral ranges to digits
+            const mapEnclosed = (ch) => {
+                const code = ch.charCodeAt(0);
+                if (code >= 0x2460 && code <= 0x2473) return String(code - 0x245F); // ①..⑳
+                if (code >= 0x24F5 && code <= 0x24FE) return String(code - 0x24F4); // ⓵..⓾
+                if (code >= 0x2776 && code <= 0x277F) return String(code - 0x2775); // ❶..❿
+                if (code >= 0x2474 && code <= 0x2487) return String(code - 0x2473); // parenthesized approx
+                if (code >= 0xFF10 && code <= 0xFF19) return String(code - 0xFF10); // fullwidth digits
+                return null;
+            };
+
+            let collected = '';
+            for (const ch of s) {
+                const mapped = mapEnclosed(ch);
+                if (mapped !== null) collected += mapped;
+            }
+            if (collected) return collected;
+
+            // final fallback: strip non-digits
+            const fallback = s.replace(/[^0-9]/g, '');
+            return fallback || null;
+        }
+
         function createRankAnnotation(rank, { wrapInParens = true } = {}) {
             const span = document.createElement('span');
             span.className = 'stat-rank-annotation';
-            const displayText = getRankDisplayText(rank);
-            span.textContent = wrapInParens ? `(${displayText})` : displayText;
+            const raw = getRankDisplayText(rank);
+            const normalized = normalizeRankString(raw);
+            const display = normalized !== null ? normalized : raw;
+            span.textContent = wrapInParens ? `(${display})` : display;
             return span;
         }
 
