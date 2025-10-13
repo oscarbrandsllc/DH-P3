@@ -2771,6 +2771,9 @@ const wrTeStatOrder = [
             const league = state.leagues.find(l => l.league_id === state.currentLeagueId);
             const scoringSettings = league?.scoring_settings || {};
 
+            // Constants for comparison styling
+            const dimmedOpacity = '0.45'; // Opacity for losing stat values
+
             for (const statKey of orderedStatKeys) {
                 if (!statLabels[statKey]) continue;
 
@@ -2988,7 +2991,6 @@ const wrTeStatOrder = [
 
                 // Highlight only the winning side's VALUE (keep bars showing both colors)
                 // Dim the losing side's value
-                const dimmedOpacity = '0.45'; // Opacity for losing stat values
                 if (numericLeft > numericRight) {
                     row.classList.add('left-win');
                     // Color ONLY the winning value
