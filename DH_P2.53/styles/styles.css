@@ -4087,8 +4087,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
    font-size: 0.5rem !important;
    line-height: 1;
    margin-left: 0.12em !important;
-   transform: none !important; /* ensure no upward offset */
-   letter-spacing: 0.02em;
+   transform: translateY(-0.15em) !important; /* ensure no upward offset */
    font-weight: 400 !important;
   }
 
@@ -4114,18 +4113,17 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 
 /* · · Unplayed and Bye Week Row Styles · · */
 #modal-body tbody tr.unplayed-week-row {
-    opacity: 0.52;
-    font-style: italic;
+    opacity: 0.62;
 }
 
 #modal-body tbody tr.unplayed-week-row td {
     padding-top: 0.08rem;
     padding-bottom: 0.08rem;
-    padding-left: 0.35rem;
+    padding-left: 0.5rem;
     padding-right: 0.35rem;
     font-size: 0.82em;
     line-height: 1.1;
-    color: var(--color-text-tertiary);
+    color: #8a92c1;
 }
 
 #modal-body tbody tr.unplayed-week-row .week-cell {
@@ -4133,7 +4131,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 }
 
 #modal-body tbody tr.unplayed-week-row .week-number {
-    font-size: 0.85em;
+    font-size: 1.1em;
 }
 
 #modal-body tbody tr.unplayed-week-row .week-opponent-label {
@@ -4458,8 +4456,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     font-size: 0.8em;
     line-height: 1;
     margin-left: 0.1em;
-    transform: translateY(-0.45em);
-    letter-spacing: 0.02em;
+    transform: translateY(-0.25em);
   }
 
   /* For the comparison list, show the stat rank below the stat value and slightly larger */
