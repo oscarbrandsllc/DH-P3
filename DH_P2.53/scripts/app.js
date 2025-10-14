@@ -1594,7 +1594,7 @@ const SEASON_META_HEADERS = {
                         return 'th';
                     };
 
-                    // Always render numeric ranks with a <sup> suffix so suffixes can be styled independently.
+                    // Render numeric ranks; when ordinal=true, include <sup> suffix; otherwise plain number
                     const asNumber = Number(displayText);
                     if (displayText !== 'NA' && Number.isFinite(asNumber)) {
                         // Optionally wrap with parentheses
@@ -1605,10 +1605,12 @@ const SEASON_META_HEADERS = {
                         numNode.textContent = String(asNumber);
                         span.appendChild(numNode);
 
-                        const sup = document.createElement('sup');
-                        sup.className = `stat-rank-suffix stat-rank-suffix-${variant}`;
-                        sup.textContent = ordinalSuffix(asNumber);
-                        span.appendChild(sup);
+                        if (ordinal) {
+                            const sup = document.createElement('sup');
+                            sup.className = `stat-rank-suffix stat-rank-suffix-${variant}`;
+                            sup.textContent = ordinalSuffix(asNumber);
+                            span.appendChild(sup);
+                        }
 
                         if (wrapInParens) span.appendChild(document.createTextNode(')'));
                         return span;
@@ -2217,6 +2219,11 @@ const wrTeStatOrder = [
                 return '';
             };
 
+            // Determine last completed week based on configured sheets
+            const completedWeeks = Object.keys(PLAYER_STATS_SHEETS.weeks || {}).map(Number).filter(Number.isFinite);
+            const lastCompletedWeek = completedWeeks.length > 0 ? Math.max(...completedWeeks) : 0;
+            const totalColumns = 1 + orderedStatKeys.filter(key => Boolean(statLabels[key])).length;
+
             for (let week = 1; week <= MAX_DISPLAY_WEEKS; week++) {
                 const weekStatsEntry = gameLogsByWeek.get(week) || null;
                 const stats = weekStatsEntry?.stats || null;
@@ -2265,7 +2272,8 @@ const wrTeStatOrder = [
                         const opponentRankDisplay = getRankDisplayText(opponentRank);
                         if (opponentRankDisplay !== 'NA') {
                             opponentSpan.classList.add('has-rank-annotation');
-                            opponentSpan.appendChild(createRankAnnotation(opponentRank, { wrapInParens: true, ordinal: true, variant: 'gamelogs-opponent' }));
+                            // No suffix for opponent ranking
+                            opponentSpan.appendChild(createRankAnnotation(opponentRank, { wrapInParens: true, ordinal: false, variant: 'gamelogs-opponent' }));
                         }
                     }
                     weekTd.appendChild(opponentSpan);
@@ -2379,6 +2387,16 @@ const wrTeStatOrder = [
                 }
 
                 tbody.appendChild(row);
+
+                // Insert a faint divider line after the last completed week if there are upcoming weeks
+                if (week === lastCompletedWeek && lastCompletedWeek < MAX_DISPLAY_WEEKS) {
+                    const dividerRow = document.createElement('tr');
+                    dividerRow.className = 'week-divider-row';
+                    const dividerTd = document.createElement('td');
+                    dividerTd.colSpan = totalColumns;
+                    dividerRow.appendChild(dividerTd);
+                    tbody.appendChild(dividerRow);
+                }
                 if (!isUnplayedWeek && weekStatsEntry) {
                     gameLogsWithData.push(weekStatsEntry);
                 }
@@ -2540,7 +2558,12 @@ const wrTeStatOrder = [
                     }
                     const rankValue = getSeasonRankValue(player.id, key);
                     const rankAnnotation = createRankAnnotation(rankValue, { wrapInParens: true, ordinal: true, variant: 'gamelogs-footer' });
-                    td.textContent = displayValue;
+                    // Stack value on first line and rank annotation below with minimal spacing
+                    td.textContent = '';
+                    const valueSpan = document.createElement('span');
+                    valueSpan.className = 'stat-value';
+                    valueSpan.textContent = displayValue;
+                    td.appendChild(valueSpan);
                     td.appendChild(rankAnnotation);
                     td.classList.add('has-rank-annotation');
                     td.style.color = getConditionalColorByRank(rankValue, player.pos);
@@ -3402,7 +3425,8 @@ const wrTeStatOrder = [
             const ktcWrapper = row.querySelector('.player-ktc-wrapper');
             if (ktcWrapper) {
                 ktcWrapper.classList.add('has-rank-annotation');
-                ktcWrapper.appendChild(createRankAnnotation(typeof ktcPosRankNumber === 'number' ? ktcPosRankNumber : 'NA', { wrapInParens: true, ordinal: true, variant: 'ktc' }));
+                // No suffix for KTC rank in player cards
+                ktcWrapper.appendChild(createRankAnnotation(typeof ktcPosRankNumber === 'number' ? ktcPosRankNumber : 'NA', { wrapInParens: true, ordinal: false, variant: 'ktc' }));
             }
 
             const playerNameClickableEl = row.querySelector('.player-name-clickable');

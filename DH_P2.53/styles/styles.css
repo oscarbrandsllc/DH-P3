@@ -4113,29 +4113,29 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 
 /* · · Unplayed and Bye Week Row Styles · · */
 #modal-body tbody tr.unplayed-week-row {
-    opacity: 0.62;
+  opacity: 0.82;
 }
 
 #modal-body tbody tr.unplayed-week-row td {
-    padding-top: 0.08rem;
-    padding-bottom: 0.08rem;
-    padding-left: 0.5rem;
-    padding-right: 0.35rem;
-    font-size: 0.82em;
-    line-height: 1.1;
-    color: #8a92c1;
+  padding-top: 0.12rem;
+  padding-bottom: 0.12rem;
+  padding-left: 0.5rem;
+  padding-right: 0.35rem;
+  font-size: inherit;
+  line-height: inherit;
+  color: #a3a9cf;
 }
 
 #modal-body tbody tr.unplayed-week-row .week-cell {
-    color: inherit;
+  color: inherit;
 }
 
 #modal-body tbody tr.unplayed-week-row .week-number {
-    font-size: 1.1em;
+  font-size: inherit;
 }
 
 #modal-body tbody tr.unplayed-week-row .week-opponent-label {
-    font-size: 0.48rem;
+  font-size: inherit;
 }
 
 /* Reduce spacing when unplayed row is followed by a played row */
@@ -4153,10 +4153,21 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 }
 
 #modal-body tbody tr.bye-week-row td {
-    padding-top: 0.06rem;
-    padding-bottom: 0.06rem;
-    font-size: 0.78em;
-}.modal-footer {
+  padding-top: 0.06rem;
+  padding-bottom: 0.06rem;
+  font-size: 0.78em;
+}
+
+/* Footer stat: stack rank annotation directly below value with minimal spacing */
+#game-logs-modal tfoot td.has-rank-annotation { vertical-align: top; }
+#game-logs-modal tfoot td.has-rank-annotation .stat-value { display: block; line-height: 1.05; margin-bottom: 0.05rem; }
+#game-logs-modal tfoot td.has-rank-annotation .stat-rank-annotation { display: block; line-height: 1; margin-top: -0.05rem; }
+
+/* Divider between completed and upcoming weeks */
+#game-logs-modal tbody tr.week-divider-row td { padding: 0.25rem 0; }
+#game-logs-modal tbody tr.week-divider-row td::before { content: ""; display: block; height: 1px; background: linear-gradient(to right, transparent, rgba(160, 170, 210, 0.25), transparent); }
+
+.modal-footer {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -4723,7 +4734,6 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
           display: block;
           margin: 0;
           line-height: 1;
-          vertical-align: middle;
         }
         
         /* Label — pulled up to touch icon */
@@ -7367,7 +7377,6 @@ body[data-page="analyzer"] #leagueSelect {
 
 
 /* === Loading Overlay + Orbit Ring (uses existing theme colors) === */
-#loading { /* inherit original panel styles */ }
 #loading.hidden { display: none; }
 
 #loading .loading-overlay {
