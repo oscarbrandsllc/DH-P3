@@ -1574,9 +1574,10 @@ const SEASON_META_HEADERS = {
             return rankStr;
         }
 
-    function createRankAnnotation(rank, { wrapInParens = true, ordinal = false } = {}) {
+    function createRankAnnotation(rank, { wrapInParens = true, ordinal = false, variant = 'default' } = {}) {
                     const span = document.createElement('span');
-                    span.className = 'stat-rank-annotation';
+                    // base class plus variant-specific class so CSS can target per-context
+                    span.className = `stat-rank-annotation stat-rank-variant-${variant}`;
 
                     const displayText = getRankDisplayText(rank);
 
@@ -1593,10 +1594,10 @@ const SEASON_META_HEADERS = {
                         return 'th';
                     };
 
-                    // If ordinal rendering is requested and the rank is numeric, render the suffix as superscript
+                    // Always render numeric ranks with a <sup> suffix so suffixes can be styled independently.
                     const asNumber = Number(displayText);
-                    if (ordinal && displayText !== 'NA' && Number.isFinite(asNumber)) {
-                        // build nodes: optionally wrap in parentheses
+                    if (displayText !== 'NA' && Number.isFinite(asNumber)) {
+                        // Optionally wrap with parentheses
                         if (wrapInParens) span.appendChild(document.createTextNode('('));
 
                         const numNode = document.createElement('span');
@@ -1605,6 +1606,7 @@ const SEASON_META_HEADERS = {
                         span.appendChild(numNode);
 
                         const sup = document.createElement('sup');
+                        sup.className = `stat-rank-suffix stat-rank-suffix-${variant}`;
                         sup.textContent = ordinalSuffix(asNumber);
                         span.appendChild(sup);
 
@@ -1612,7 +1614,7 @@ const SEASON_META_HEADERS = {
                         return span;
                     }
 
-                    // Fallback: non-numeric or NA, or ordinal not requested
+                    // Fallback for non-numeric or NA values: plain text (optionally parenthesized)
                     span.textContent = wrapInParens ? `(${displayText})` : displayText;
                     return span;
         }
@@ -2263,7 +2265,7 @@ const wrTeStatOrder = [
                         const opponentRankDisplay = getRankDisplayText(opponentRank);
                         if (opponentRankDisplay !== 'NA') {
                             opponentSpan.classList.add('has-rank-annotation');
-                            opponentSpan.appendChild(createRankAnnotation(opponentRank));
+                            opponentSpan.appendChild(createRankAnnotation(opponentRank, { wrapInParens: true, ordinal: true, variant: 'gamelogs-opponent' }));
                         }
                     }
                     weekTd.appendChild(opponentSpan);
@@ -2537,7 +2539,7 @@ const wrTeStatOrder = [
                         displayValue = Number.isInteger(totalValue) ? String(totalValue) : Number(totalValue || 0).toFixed(2).replace(/\.00$/, '');
                     }
                     const rankValue = getSeasonRankValue(player.id, key);
-                    const rankAnnotation = createRankAnnotation(rankValue);
+                    const rankAnnotation = createRankAnnotation(rankValue, { wrapInParens: true, ordinal: true, variant: 'gamelogs-footer' });
                     td.textContent = displayValue;
                     td.appendChild(rankAnnotation);
                     td.classList.add('has-rank-annotation');
@@ -2971,12 +2973,12 @@ const wrTeStatOrder = [
                     const rightRankVal = getSeasonRankValue(rightPlayer.id, statKey);
 
                     if (leftRankVal !== null && leftRankVal !== undefined) {
-                        const leftAnnot = createRankAnnotation(leftRankVal, { ordinal: true });
+                        const leftAnnot = createRankAnnotation(leftRankVal, { ordinal: true, variant: 'compare' });
                         leftValueDiv.classList.add('has-rank-annotation');
                         leftValueDiv.appendChild(leftAnnot);
                     }
                     if (rightRankVal !== null && rightRankVal !== undefined) {
-                        const rightAnnot = createRankAnnotation(rightRankVal, { ordinal: true });
+                        const rightAnnot = createRankAnnotation(rightRankVal, { ordinal: true, variant: 'compare' });
                         rightValueDiv.classList.add('has-rank-annotation');
                         rightValueDiv.appendChild(rightAnnot);
                     }
@@ -3400,7 +3402,7 @@ const wrTeStatOrder = [
             const ktcWrapper = row.querySelector('.player-ktc-wrapper');
             if (ktcWrapper) {
                 ktcWrapper.classList.add('has-rank-annotation');
-                ktcWrapper.appendChild(createRankAnnotation(typeof ktcPosRankNumber === 'number' ? ktcPosRankNumber : 'NA'));
+                ktcWrapper.appendChild(createRankAnnotation(typeof ktcPosRankNumber === 'number' ? ktcPosRankNumber : 'NA', { wrapInParens: true, ordinal: true, variant: 'ktc' }));
             }
 
             const playerNameClickableEl = row.querySelector('.player-name-clickable');

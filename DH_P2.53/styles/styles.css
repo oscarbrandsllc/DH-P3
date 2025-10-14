@@ -1,3 +1,27 @@
+/* Rank suffix variant styling - allow per-context tuning */
+/* Player comparison modal: small sup offset */
+#player-comparison-modal .stat-rank-variant-compare sup.stat-rank-suffix-compare,
+#player-comparison-modal .comparison-rank-annotation sup {
+  top: 0em !important;
+  font-size: 0.5rem !important;
+}
+/* Game logs modal: footer rank suffixes */
+#game-logs-modal .stat-rank-variant-gamelogs-footer sup.stat-rank-suffix-gamelogs-footer,
+#game-logs-modal tfoot td.has-rank-annotation span.stat-rank-annotation sup {
+  top: 0em !important;
+  font-size: 0.5rem !important;
+}
+/* Game logs modal: opponent rank suffixes (first column) */
+#game-logs-modal .stat-rank-variant-gamelogs-opponent sup.stat-rank-suffix-gamelogs-opponent,
+#game-logs-modal tbody td:first-child span.stat-rank-annotation sup {
+  top: 0em !important;
+  font-size: 0.5rem !important;
+}
+/* KTC rank in player cards */
+.stat-rank-variant-ktc sup.stat-rank-suffix-ktc {
+  top: 0.0em !important;
+  font-size: 0.55rem !important;
+}
 /* ⬇︎  VARIABLES, THEME, & FOUNDATION  ⬇︎ */
       :root {
         --font-sans: 'Product Sans', 'Google Sans', 'Quicksand', sans-serif;
