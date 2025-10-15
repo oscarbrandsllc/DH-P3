@@ -4159,9 +4159,9 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 }
 
 /* Footer stat: stack rank annotation directly below value with minimal spacing */
-#game-logs-modal tfoot td.has-rank-annotation { vertical-align: top; }
+#game-logs-modal tfoot td.has-rank-annotation { vertical-align: bottom; }
 #game-logs-modal tfoot td.has-rank-annotation .stat-value { display: block; line-height: 1.05; margin-bottom: 0.05rem; }
-#game-logs-modal tfoot td.has-rank-annotation .stat-rank-annotation { display: block; line-height: 1; margin-top: -0.05rem; }
+#game-logs-modal tfoot td.has-rank-annotation .stat-rank-annotation { display: block; line-height: 1; margin-top: 0.1rem; }
 
 /* Divider between completed and upcoming weeks */
 #game-logs-modal tbody tr.week-divider-row td { padding: 0.25rem 0; }
