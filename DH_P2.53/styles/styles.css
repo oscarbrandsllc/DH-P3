@@ -1489,7 +1489,7 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
             background-color: var(--color-accent-primary);
             box-shadow: 0 0 var(--glow-strength) var(--color-accent-primary-glow);
         }
-        .team-compare-checkbox.selected::after {
+    .team-compare-checkbox.selected::after {
             content: '✔';
             position: absolute;
             color: var(--color-bg);
@@ -1498,7 +1498,29 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-        }
+  }
+
+/* · · Global player tag baseline · · */
+.player-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.18rem 0.55rem;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: .28px;
+  color: var(--color-text-primary, #eaebf0);
+  background-color: var(--player-tag-bg, rgba(13, 14, 35, 0.26));
+  border: 1px solid rgba(250, 250, 250, 0.12);
+  -webkit-backdrop-filter: blur(4px) saturate(110%) brightness(112%);
+  backdrop-filter: blur(4px) saturate(110%) brightness(112%);
+  box-shadow: inset 0 0 3px rgba(255, 255, 255, 0.1), 0 6px 18px rgba(0, 0, 0, 0.28);
+  position: relative;
+  white-space: nowrap;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+}
 
 		
 /* ⬇︎  TRADE PREVIEW  ⬇︎ */
@@ -3424,6 +3446,10 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     #game-logs-modal.hidden {
       display: none;
     }
+
+    #player-comparison-modal.hidden {
+      display: none !important;
+    }
     
     .modal-overlay {
       position: absolute;
@@ -3552,7 +3578,8 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
      }
 
     /* · · Pos Tags · · */
-    .modal-pos-tag {
+  .modal-pos-tag {
+    position: relative;
         line-height: 0.9rem;
         font-size: 0.9rem;
         padding: 4px 8px;

@@ -4423,6 +4423,7 @@ const wrTeStatOrder = [
                 }
 
                 playerComparisonModal.classList.remove('hidden');
+                playerComparisonModal.style.display = 'block';
                 if (comparisonBackgroundOverlay) {
                     comparisonBackgroundOverlay.classList.remove('hidden');
                 }
@@ -4441,6 +4442,7 @@ const wrTeStatOrder = [
                     modalContent.style.bottom = '';
                 }
                 playerComparisonModal.classList.add('hidden');
+                playerComparisonModal.style.display = 'none';
                 if (comparisonBackgroundOverlay) {
                     comparisonBackgroundOverlay.classList.add('hidden');
                 }
