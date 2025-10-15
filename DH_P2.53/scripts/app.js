@@ -2381,6 +2381,7 @@ const wrTeStatOrder = [
                     else if (key === 'yco_per_att') displayValue = value.toFixed(2);
                     else if (key === 'mtf_per_att' || key === 'ypc' || key === 'ttt' || key === 'ypr' || key === 'yprr' || key === 'first_down_rec_rate') displayValue = value.toFixed(2);
                     else if (key === 'pass_imp_per_att' || key === 'prs_pct' || key === 'snp_pct' || key === 'ts_per_rr') displayValue = formatPercentage(value);
+                    else if (key === 'pass_rtg' || key === 'fpts') displayValue = value.toFixed(1);
                     else displayValue = value.toFixed(2).replace(/\.00$/, '');
 
                     td.textContent = displayValue;
@@ -2456,7 +2457,7 @@ const wrTeStatOrder = [
                         }
                     } else if (key === 'fpts') {
                         const totalPoints = gameLogsWithData.reduce((sum, week) => sum + calculateFantasyPoints(week.stats, scoringSettings), 0);
-                        displayValue = totalPoints.toFixed(2).replace(/\.00$/, '');
+                        displayValue = totalPoints.toFixed(1);
                     } else if (key === 'ypc') {
                         const totalYards = seasonTotals && typeof seasonTotals.rush_yd === 'number' ? seasonTotals.rush_yd : (aggregatedTotals['rush_yd'] || 0);
                         const totalCarries = seasonTotals && typeof seasonTotals.rush_att === 'number' ? seasonTotals.rush_att : (aggregatedTotals['rush_att'] || 0);
@@ -2475,12 +2476,12 @@ const wrTeStatOrder = [
                     } else if (key === 'pass_rtg') {
                         if (seasonTotals && typeof seasonTotals.pass_rtg === 'number') {
                             const rating = seasonTotals.pass_rtg;
-                            displayValue = Number.isInteger(rating) ? String(rating) : rating.toFixed(2).replace(/\.00$/, '');
+                            displayValue = Number.isInteger(rating) ? String(rating) : rating.toFixed(1);
                         } else {
                             const totalPassRtg = aggregatedTotals['pass_rtg'] || 0;
                             const gamesWithPassAttempts = gameLogsWithData.filter(w => (w.stats['pass_att'] || 0) > 0).length;
                             const avgPassRtg = gamesWithPassAttempts > 0 ? totalPassRtg / gamesWithPassAttempts : 0;
-                            displayValue = avgPassRtg.toFixed(2).replace(/\.00$/, '');
+                            displayValue = avgPassRtg.toFixed(1);
                         }
                     } else if (key === 'pass_imp_per_att') {
                         let pctValue = seasonTotals && typeof seasonTotals.pass_imp_per_att === 'number' ? seasonTotals.pass_imp_per_att : null;
@@ -2921,7 +2922,7 @@ const wrTeStatOrder = [
                             switch (statKey) {
                                 case 'fpts':
                                     cv = player.gameLogs.reduce((sum, week) => sum + calculateFantasyPoints(week.stats, scoringSettings), 0);
-                                    dv = cv.toFixed(2).replace(/\.00$/, '');
+                                    dv = cv.toFixed(1);
                                     break;
                                 case 'ypc': {
                                     const totalYards = seasonTotals && typeof seasonTotals.rush_yd === 'number' ? seasonTotals.rush_yd : (aggregatedTotals['rush_yd'] || 0);
@@ -2951,6 +2952,9 @@ const wrTeStatOrder = [
                                     const total = aggregatedTotals['prs_pct'] || 0;
                                     const count = statValueCounts['prs_pct'] || 0;
                                     cv = count > 0 ? total / count : 0; dv = formatPercentage(cv); break;
+                                }
+                                case 'pass_rtg': {
+                                    cv = totalValue; dv = totalValue.toFixed(1); break;
                                 }
                                 default: {
                                     const totalValue = seasonTotals && typeof seasonTotals[statKey] === 'number' ? seasonTotals[statKey] : (aggregatedTotals[statKey] || 0);
