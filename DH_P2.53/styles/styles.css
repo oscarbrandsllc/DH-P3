@@ -3714,7 +3714,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 
     #modal-body th {
       font-weight: 600;
-      font-size: 0.7rem;
+      font-size: 0.6rem;
       color: #bbc0e8;
       white-space:nowrap;
     }
@@ -4129,8 +4129,8 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 }
 
 /* Footer stat: stack rank annotation directly below value with minimal spacing */
-#game-logs-modal tfoot td.has-rank-annotation { vertical-align: top; }
-#game-logs-modal tfoot td.has-rank-annotation .stat-value { display: block; line-height: 1.08; margin-bottom: 0.05rem; }
+#game-logs-modal tfoot td.has-rank-annotation { vertical-align: bottom; }
+#game-logs-modal tfoot td.has-rank-annotation .stat-value { display: block; line-height: 1.08; margin-bottom: 0.2rem; }
 #game-logs-modal td.proj-cell {
   color: rgba(175, 181, 211, 0.68);
   font-style: italic;
