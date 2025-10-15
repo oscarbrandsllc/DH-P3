@@ -2297,7 +2297,7 @@ const wrTeStatOrder = [
                             rankNumber.textContent = opponentRank;
                             rankSpan.appendChild(rankNumber);
 
-                            const suffix = document.createElement('sub');
+                            const suffix = document.createElement('span');
                             suffix.className = 'week-tag-rank-suffix';
                             const j = opponentRank % 10;
                             const k = opponentRank % 100;

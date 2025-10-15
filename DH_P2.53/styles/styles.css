@@ -4067,7 +4067,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 
   /* Bottom line: opponent • rank */
   .week-tag-opponent {
-    font-size: 0.65rem;
+    font-size: 0.5rem;
     font-weight: 600;
     display: flex;
     align-items: center;
@@ -4087,7 +4087,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 
   .week-tag-rank {
     display: inline-block;
-    font-size: 0.6rem;
+    font-size: 0.5rem;
   }
 
   .week-tag-rank-number {
@@ -4095,9 +4095,9 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
   }
 
   .week-tag-rank-suffix {
-    font-size: 0.5rem;
-    vertical-align: sub;
+    font-size: 0.45rem;
     line-height: 0;
+    transform: translateY(-1em) !important;
   }
 
   .week-cell .week-number,
