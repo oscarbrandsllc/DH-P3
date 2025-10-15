@@ -4125,14 +4125,16 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 }
 
 #modal-body tbody tr.bye-week-row td {
-  padding-top: 0.06rem;
-  padding-bottom: 0.06rem;
-  font-size: 0.78em;
+  color: #a3a9cf;
 }
 
 /* Footer stat: stack rank annotation directly below value with minimal spacing */
 #game-logs-modal tfoot td.has-rank-annotation { vertical-align: bottom; }
 #game-logs-modal tfoot td.has-rank-annotation .stat-value { display: block; line-height: 1.05; margin-bottom: 0.04rem; }
+#game-logs-modal td.proj-cell {
+  color: rgba(175, 181, 211, 0.68);
+  font-style: italic;
+}
 #game-logs-modal tfoot td.has-rank-annotation .stat-rank-annotation {
   display: inline-block;
   line-height: 1;

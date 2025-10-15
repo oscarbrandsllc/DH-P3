@@ -2287,6 +2287,7 @@ const wrTeStatOrder = [
                     if (!statLabels[key]) continue;
 
                     const td = document.createElement('td');
+                    if (key === 'proj') td.classList.add('proj-cell');
 
                     if (isUnplayedWeek) {
                             if (key === 'proj') {
@@ -2437,6 +2438,7 @@ const wrTeStatOrder = [
                     if (!statLabels[key]) continue;
 
                     const td = document.createElement('td');
+                    if (key === 'proj') td.classList.add('proj-cell');
                     if (key === 'proj') {
                         td.textContent = '-';
                         footerRow.appendChild(td);
