@@ -2557,7 +2557,16 @@ const wrTeStatOrder = [
                         displayValue = Number.isInteger(totalValue) ? String(totalValue) : Number(totalValue || 0).toFixed(2).replace(/\.00$/, '');
                     }
                     const rankValue = getSeasonRankValue(player.id, key);
-                    const rankAnnotation = createRankAnnotation(rankValue, { wrapInParens: true, ordinal: true, variant: 'gamelogs-footer' });
+                    const rankAnnotation = createRankAnnotation(rankValue, { wrapInParens: false, ordinal: true, variant: 'gamelogs-footer' });
+                    rankAnnotation.classList.add('stat-rank-annotation--bulleted');
+                    const bulletPrefix = document.createElement('span');
+                    bulletPrefix.className = 'stat-rank-bullet';
+                    bulletPrefix.textContent = '•';
+                    const bulletSuffix = document.createElement('span');
+                    bulletSuffix.className = 'stat-rank-bullet';
+                    bulletSuffix.textContent = '•';
+                    rankAnnotation.insertBefore(bulletPrefix, rankAnnotation.firstChild);
+                    rankAnnotation.appendChild(bulletSuffix);
                     // Stack value on first line and rank annotation below with minimal spacing
                     td.textContent = '';
                     const valueSpan = document.createElement('span');

@@ -4117,35 +4117,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 }
 
 #modal-body tbody tr.unplayed-week-row td {
-  padding-top: 0.12rem;
-  padding-bottom: 0.12rem;
-  padding-left: 0.5rem;
-  padding-right: 0.35rem;
-  font-size: inherit;
-  line-height: inherit;
   color: #a3a9cf;
-}
-
-#modal-body tbody tr.unplayed-week-row .week-cell {
-  color: inherit;
-}
-
-#modal-body tbody tr.unplayed-week-row .week-number {
-  font-size: inherit;
-}
-
-#modal-body tbody tr.unplayed-week-row .week-opponent-label {
-  font-size: inherit;
-}
-
-/* Reduce spacing when unplayed row is followed by a played row */
-#modal-body tbody tr.unplayed-week-row + tr:not(.unplayed-week-row):not(.bye-week-row) td {
-    padding-top: 0.02rem;
-}
-
-/* Reduce spacing when played row is followed by an unplayed row */
-#modal-body tbody tr:not(.unplayed-week-row):not(.bye-week-row) + tr.unplayed-week-row td {
-    padding-top: 0.02rem;
 }
 
 #modal-body tbody tr.bye-week-row {
@@ -4160,12 +4132,31 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 
 /* Footer stat: stack rank annotation directly below value with minimal spacing */
 #game-logs-modal tfoot td.has-rank-annotation { vertical-align: bottom; }
-#game-logs-modal tfoot td.has-rank-annotation .stat-value { display: block; line-height: 1.05; margin-bottom: 0.05rem; }
-#game-logs-modal tfoot td.has-rank-annotation .stat-rank-annotation { display: block; line-height: 1; margin-top: 0.1rem; }
+#game-logs-modal tfoot td.has-rank-annotation .stat-value { display: block; line-height: 1.05; margin-bottom: 0.04rem; }
+#game-logs-modal tfoot td.has-rank-annotation .stat-rank-annotation {
+  display: inline-block;
+  line-height: 1;
+  margin-top: 0.02rem;
+  white-space: nowrap;
+}
+#game-logs-modal tfoot td.has-rank-annotation .stat-rank-annotation--bulleted {
+  text-align: center;
+}
+#game-logs-modal tfoot td.has-rank-annotation .stat-rank-annotation .stat-rank-bullet {
+  display: inline-block;
+  font-size: 0.75em;
+  opacity: 0.7;
+  margin: 0 0.2rem;
+}
 
 /* Divider between completed and upcoming weeks */
-#game-logs-modal tbody tr.week-divider-row td { padding: 0.25rem 0; }
-#game-logs-modal tbody tr.week-divider-row td::before { content: ""; display: block; height: 1px; background: linear-gradient(to right, transparent, rgba(160, 170, 210, 0.25), transparent); }
+#game-logs-modal tbody tr.week-divider-row td { padding: 0.05rem 0; }
+#game-logs-modal tbody tr.week-divider-row td::before {
+  content: "";
+  display: block;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 2%, rgba(160, 170, 210, 0.35) 50%, transparent 98%);
+}
 
 .modal-footer {
     display: flex;
