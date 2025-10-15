@@ -2254,25 +2254,25 @@ const wrTeStatOrder = [
 
                 // Create tag container
                 const weekTag = document.createElement('div');
-                weekTag.className = 'week-tag';
+                weekTag.className = 'gamelog-week-tag';
 
                 // Top line: WK-#
                 const weekNumberLine = document.createElement('div');
-                weekNumberLine.className = 'week-tag-number';
+                weekNumberLine.className = 'gamelog-week-tag-number';
                 weekNumberLine.textContent = `WK-${week}`;
                 weekTag.appendChild(weekNumberLine);
 
                 // Bottom line: opponent • rank
                 if (opponent) {
                     const opponentLine = document.createElement('div');
-                    opponentLine.className = 'week-tag-opponent';
+                    opponentLine.className = 'gamelog-week-tag-opponent';
 
                     if (isByeWeek) {
                         opponentLine.textContent = 'BYE';
                     } else {
                         // Create opponent text (already has vs or @)
                         const opponentText = document.createElement('span');
-                        opponentText.className = 'week-tag-opponent-text';
+                        opponentText.className = 'gamelog-week-tag-opponent-text';
                         opponentText.textContent = opponent;
                         const color = getOpponentRankColor(stats?.opponent_rank);
                         if (color) opponentText.style.color = color;
@@ -2283,22 +2283,22 @@ const wrTeStatOrder = [
                         if (opponentRankDisplay !== 'NA') {
                             // Add separator
                             const separator = document.createElement('span');
-                            separator.className = 'week-tag-separator';
+                            separator.className = 'gamelog-week-tag-separator';
                             separator.textContent = ' • ';
                             opponentLine.appendChild(separator);
 
                             // Add rank with ordinal suffix
                             const rankSpan = document.createElement('span');
-                            rankSpan.className = 'week-tag-rank';
+                            rankSpan.className = 'gamelog-week-tag-rank';
                             rankSpan.style.color = color;
                             
                             const rankNumber = document.createElement('span');
-                            rankNumber.className = 'week-tag-rank-number';
+                            rankNumber.className = 'gamelog-week-tag-rank-number';
                             rankNumber.textContent = opponentRank;
                             rankSpan.appendChild(rankNumber);
 
                             const suffix = document.createElement('span');
-                            suffix.className = 'week-tag-rank-suffix';
+                            suffix.className = 'gamelog-week-tag-rank-suffix';
                             const j = opponentRank % 10;
                             const k = opponentRank % 100;
                             if (j === 1 && k !== 11) suffix.textContent = 'st';
