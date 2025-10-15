@@ -3727,8 +3727,8 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 
     #modal-body tfoot th {
         color: var(--color-accent-primary);
-    white-space:nowrap;
-    }
+        white-space:nowrap;
+        padding: 0.25rem 0rem 0.08rem 0.02rem;    }
     
     #modal-body .no-logs {
         text-align: center;
@@ -4108,7 +4108,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
         font-size: 0.85em;
         color: var(--color-text-tertiary);
         display: block;
-        margin-top: 1px;
+        margin-top: 2px;
     }
 
 /* · · Unplayed and Bye Week Row Styles · · */
@@ -4129,7 +4129,11 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 }
 
 /* Footer stat: stack rank annotation directly below value with minimal spacing */
-#game-logs-modal tfoot td.has-rank-annotation { vertical-align: bottom; }
+#game-logs-modal tfoot td.has-rank-annotation { 
+  vertical-align: bottom;
+  padding-bottom: 0rem;
+  padding-top: 0.25rem;
+ }
 #game-logs-modal tfoot td.has-rank-annotation .stat-value { display: block; line-height: 1.08; margin-bottom: 0.2rem; }
 #game-logs-modal td.proj-cell {
   color: rgba(175, 181, 211, 0.68);

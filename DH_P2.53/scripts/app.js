@@ -2577,7 +2577,7 @@ const wrTeStatOrder = [
                     td.appendChild(valueSpan);
                     td.appendChild(rankAnnotation);
                     td.classList.add('has-rank-annotation');
-                    td.style.color = getConditionalColorByRank(rankValue, player.pos);
+                    rankAnnotation.style.color = getConditionalColorByRank(rankValue, player.pos);
                     footerRow.appendChild(td);
                 }
                 tfoot.appendChild(footerRow);
