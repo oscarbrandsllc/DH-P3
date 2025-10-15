@@ -2252,33 +2252,68 @@ const wrTeStatOrder = [
                 const weekTd = document.createElement('td');
                 weekTd.classList.add('week-cell');
 
-                const weekNumberSpan = document.createElement('span');
-                weekNumberSpan.className = 'week-number';
-                weekNumberSpan.textContent = week;
-                weekTd.appendChild(weekNumberSpan);
+                // Create tag container
+                const weekTag = document.createElement('div');
+                weekTag.className = 'week-tag';
 
+                // Top line: WK-#
+                const weekNumberLine = document.createElement('div');
+                weekNumberLine.className = 'week-tag-number';
+                weekNumberLine.textContent = `WK-${week}`;
+                weekTag.appendChild(weekNumberLine);
+
+                // Bottom line: opponent • rank
                 if (opponent) {
-                    const opponentSpan = document.createElement('span');
-                    opponentSpan.className = 'week-opponent-label';
+                    const opponentLine = document.createElement('div');
+                    opponentLine.className = 'week-tag-opponent';
 
                     if (isByeWeek) {
-                        opponentSpan.textContent = 'BYE';
+                        opponentLine.textContent = 'BYE';
                     } else {
-                        opponentSpan.textContent = opponent;
+                        // Create opponent text (already has vs or @)
+                        const opponentText = document.createElement('span');
+                        opponentText.className = 'week-tag-opponent-text';
+                        opponentText.textContent = opponent;
                         const color = getOpponentRankColor(stats?.opponent_rank);
-                        if (color) opponentSpan.style.color = color;
+                        if (color) opponentText.style.color = color;
+                        opponentLine.appendChild(opponentText);
 
                         const opponentRank = stats?.opponent_rank;
                         const opponentRankDisplay = getRankDisplayText(opponentRank);
                         if (opponentRankDisplay !== 'NA') {
-                            opponentSpan.classList.add('has-rank-annotation');
-                            // No suffix for opponent ranking
-                            opponentSpan.appendChild(createRankAnnotation(opponentRank, { wrapInParens: true, ordinal: false, variant: 'gamelogs-opponent' }));
+                            // Add separator
+                            const separator = document.createElement('span');
+                            separator.className = 'week-tag-separator';
+                            separator.textContent = ' • ';
+                            opponentLine.appendChild(separator);
+
+                            // Add rank with ordinal suffix
+                            const rankSpan = document.createElement('span');
+                            rankSpan.className = 'week-tag-rank';
+                            rankSpan.style.color = color;
+                            
+                            const rankNumber = document.createElement('span');
+                            rankNumber.className = 'week-tag-rank-number';
+                            rankNumber.textContent = opponentRank;
+                            rankSpan.appendChild(rankNumber);
+
+                            const suffix = document.createElement('sub');
+                            suffix.className = 'week-tag-rank-suffix';
+                            const j = opponentRank % 10;
+                            const k = opponentRank % 100;
+                            if (j === 1 && k !== 11) suffix.textContent = 'st';
+                            else if (j === 2 && k !== 12) suffix.textContent = 'nd';
+                            else if (j === 3 && k !== 13) suffix.textContent = 'rd';
+                            else suffix.textContent = 'th';
+                            rankSpan.appendChild(suffix);
+
+                            opponentLine.appendChild(rankSpan);
                         }
                     }
-                    weekTd.appendChild(opponentSpan);
+                    weekTag.appendChild(opponentLine);
                 }
 
+                weekTd.appendChild(weekTag);
                 row.appendChild(weekTd);
 
                 const isLiveWeek = stats?.__live === true;
