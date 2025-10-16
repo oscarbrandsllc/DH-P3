@@ -4119,7 +4119,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     font-size: 0.5rem; /* smaller than WK line */
     font-weight: 600;
     display: inline-flex;
-    align-items: center;
+    align-items: baseline;
     justify-content: center;
     gap: 0.05rem;
     margin: 0; /* no extra vertical space */
