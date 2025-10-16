@@ -4132,7 +4132,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
   #game-logs-modal .gamelog-week-tag-separator {
     color: #8f93ab;
     opacity: 0.6;
-    margin: 0;
+    margin: 0px 1px;
   }
 
   #game-logs-modal .gamelog-week-tag-rank {
@@ -4142,7 +4142,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
   }
 
   #game-logs-modal .gamelog-week-tag-rank-number {
-    font-size: 1em; /* explicit for clarity */
+    font-size: 0.95em; /* explicit for clarity */
     font-weight: 400;
   }
 
@@ -4234,9 +4234,15 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 #game-logs-modal tfoot td.has-rank-annotation { 
   vertical-align: bottom;
   padding-bottom: 0rem;
-  padding-top: 0.25rem;
+  padding-top: 0.2rem;
  }
-#game-logs-modal tfoot td.has-rank-annotation .stat-value { display: block; line-height: 1.08; margin-bottom: 0.2rem; }
+#game-logs-modal tfoot td.has-rank-annotation .stat-value { 
+  display: block; 
+  line-height: 1.08; 
+  margin-bottom: 0.2rem;
+  font-size: 0.72rem;
+  font-weight: 500; 
+}
 #game-logs-modal td.proj-cell {
   color: rgba(175, 181, 211, 0.68);
   font-style: italic;
@@ -4247,6 +4253,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
   line-height: 1;
   margin-top: 0.02rem;
   white-space: nowrap;
+  font-size: 0.6rem;
   text-align: center;
 }
 #game-logs-modal tfoot td.has-rank-annotation .stat-rank-annotation--bulleted {
