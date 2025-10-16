@@ -465,6 +465,8 @@
 
     if (initialUsername) {
       elements.usernameInput.value = initialUsername;
+      // If arriving via nav with username in query, blur to avoid mobile keyboard
+      setTimeout(() => { try { elements.usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {} }, 50);
       handleFetchData(initialLeagueId);
     }
 
