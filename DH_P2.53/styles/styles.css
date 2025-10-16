@@ -4142,8 +4142,6 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
   }
 
   #game-logs-modal .gamelog-week-tag-rank-number {
-    display: block;
-    line-height: 1; /* ensure consistent box for bottom alignment */
     font-size: 1em; /* explicit for clarity */
     font-weight: 400;
   }
