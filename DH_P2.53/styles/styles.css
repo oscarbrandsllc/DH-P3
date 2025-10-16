@@ -35,7 +35,7 @@
   font-weight: 600;
   color: var(--color-text-tertiary);
   line-height: 1;
-  margin: 0 0.06rem; /* small breathing room around the middot */
+  margin: 0 0.01rem; /* small breathing room around the middot */
 }
 .stat-rank-variant-ktc .stat-rank-number {
   margin: 0; /* keep number tight to suffix */
@@ -4153,9 +4153,8 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
   #game-logs-modal .gamelog-week-tag-rank-suffix {
     display: block;
     font-size: 0.9em; /* relative to number (0.9 of 0.5rem = 0.45rem) */
-    line-height: 1; /* match number for reliable alignment */
+    line-height: 1.01; /* match number for reliable alignment */
     transform: translateY(-0.03em) !important; /* slight upward nudge for visual baseline alignment */
-    margin-left: 0.02em;
     font-weight: 400;
 
   }
@@ -4268,12 +4267,15 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 }
 
 /* Divider between completed and upcoming weeks */
-#game-logs-modal tbody tr.week-divider-row td { padding: 0.05rem 0; }
+#game-logs-modal tbody tr.week-divider-row td { 
+padding: 0.15rem 0rem 0rem 0rem;
+}
 #game-logs-modal tbody tr.week-divider-row td::before {
   content: "";
   display: block;
   height: 1px;
-  background: linear-gradient(90deg, transparent 2%, rgba(160, 170, 210, 0.35) 50%, transparent 98%);
+      background: linear-gradient(90deg, rgba(160, 170, 210, 0.04), rgba(160, 170, 210, 0.1), rgba(160, 170, 210, 0.05), rgba(160, 170, 210, 0.1), rgba(160, 170, 210, 0.07));
+
 }
 
 .modal-footer {
