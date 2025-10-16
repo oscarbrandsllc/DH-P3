@@ -2252,33 +2252,68 @@ const wrTeStatOrder = [
                 const weekTd = document.createElement('td');
                 weekTd.classList.add('week-cell');
 
-                const weekNumberSpan = document.createElement('span');
-                weekNumberSpan.className = 'week-number';
-                weekNumberSpan.textContent = week;
-                weekTd.appendChild(weekNumberSpan);
+                // Create tag container
+                const weekTag = document.createElement('div');
+                weekTag.className = 'gamelog-week-tag';
 
+                // Top line: WK-#
+                const weekNumberLine = document.createElement('div');
+                weekNumberLine.className = 'gamelog-week-tag-number';
+                weekNumberLine.textContent = `WK-${week}`;
+                weekTag.appendChild(weekNumberLine);
+
+                // Bottom line: opponent • rank
                 if (opponent) {
-                    const opponentSpan = document.createElement('span');
-                    opponentSpan.className = 'week-opponent-label';
+                    const opponentLine = document.createElement('div');
+                    opponentLine.className = 'gamelog-week-tag-opponent';
 
                     if (isByeWeek) {
-                        opponentSpan.textContent = 'BYE';
+                        opponentLine.textContent = 'BYE';
                     } else {
-                        opponentSpan.textContent = opponent;
+                        // Create opponent text (already has vs or @)
+                        const opponentText = document.createElement('span');
+                        opponentText.className = 'gamelog-week-tag-opponent-text';
+                        opponentText.textContent = opponent;
                         const color = getOpponentRankColor(stats?.opponent_rank);
-                        if (color) opponentSpan.style.color = color;
+                        if (color) opponentText.style.color = color;
+                        opponentLine.appendChild(opponentText);
 
                         const opponentRank = stats?.opponent_rank;
                         const opponentRankDisplay = getRankDisplayText(opponentRank);
                         if (opponentRankDisplay !== 'NA') {
-                            opponentSpan.classList.add('has-rank-annotation');
-                            // No suffix for opponent ranking
-                            opponentSpan.appendChild(createRankAnnotation(opponentRank, { wrapInParens: true, ordinal: false, variant: 'gamelogs-opponent' }));
+                            // Add separator
+                            const separator = document.createElement('span');
+                            separator.className = 'gamelog-week-tag-separator';
+                            separator.textContent = ' • ';
+                            opponentLine.appendChild(separator);
+
+                            // Add rank with ordinal suffix
+                            const rankSpan = document.createElement('span');
+                            rankSpan.className = 'gamelog-week-tag-rank';
+                            rankSpan.style.color = color;
+                            
+                            const rankNumber = document.createElement('span');
+                            rankNumber.className = 'gamelog-week-tag-rank-number';
+                            rankNumber.textContent = opponentRank;
+                            rankSpan.appendChild(rankNumber);
+
+                            const suffix = document.createElement('span');
+                            suffix.className = 'gamelog-week-tag-rank-suffix';
+                            const j = opponentRank % 10;
+                            const k = opponentRank % 100;
+                            if (j === 1 && k !== 11) suffix.textContent = 'st';
+                            else if (j === 2 && k !== 12) suffix.textContent = 'nd';
+                            else if (j === 3 && k !== 13) suffix.textContent = 'rd';
+                            else suffix.textContent = 'th';
+                            rankSpan.appendChild(suffix);
+
+                            opponentLine.appendChild(rankSpan);
                         }
                     }
-                    weekTd.appendChild(opponentSpan);
+                    weekTag.appendChild(opponentLine);
                 }
 
+                weekTd.appendChild(weekTag);
                 row.appendChild(weekTd);
 
                 const isLiveWeek = stats?.__live === true;
@@ -2654,12 +2689,12 @@ const wrTeStatOrder = [
             container.className = 'player-comparison-container';
 
             function escapeHtml(unsafe) {
-                return String(unsafe ?? '')
-                    .replace(/&/g, "&amp;")
-                    .replace(/</g, "&lt;")
-                    .replace(/>/g, "&gt;")
-                    .replace(/"/g, "&quot;")
-                    .replace(/'/g, "&#039;");
+                return unsafe
+                     .replace(/&/g, "&amp;")
+                     .replace(/</g, "&lt;")
+                     .replace(/>/g, "&gt;")
+                     .replace(/"/g, "&quot;")
+                     .replace(/'/g, "&#039;");
              }
 
             // Player Names Row
@@ -2954,17 +2989,7 @@ const wrTeStatOrder = [
                                     cv = count > 0 ? total / count : 0; dv = formatPercentage(cv); break;
                                 }
                                 case 'pass_rtg': {
-                                    let rating = null;
-                                    if (seasonTotals && typeof seasonTotals.pass_rtg === 'number') {
-                                        rating = seasonTotals.pass_rtg;
-                                    } else {
-                                        const totalPassRtg = aggregatedTotals['pass_rtg'] || 0;
-                                        const gamesWithPassAttempts = player.gameLogs.filter(week => (week.stats?.pass_att || 0) > 0).length;
-                                        rating = gamesWithPassAttempts > 0 ? totalPassRtg / gamesWithPassAttempts : 0;
-                                    }
-                                    cv = rating ?? 0;
-                                    dv = Number.isInteger(cv) ? String(cv) : Number(cv || 0).toFixed(1);
-                                    break;
+                                    cv = totalValue; dv = totalValue.toFixed(1); break;
                                 }
                                 default: {
                                     const totalValue = seasonTotals && typeof seasonTotals[statKey] === 'number' ? seasonTotals[statKey] : (aggregatedTotals[statKey] || 0);
