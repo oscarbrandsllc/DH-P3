@@ -4137,10 +4137,8 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 
   #game-logs-modal .gamelog-week-tag-rank {
     display: inline-flex;
-    align-items: flex-end; /* bottom-align number and suffix */
+    align-items: baseline; /* bottom-align number and suffix */
     font-size: 0.5rem;
-    line-height: 1;
-    height: 1em; /* normalize container for consistent baseline alignment */
   }
 
   #game-logs-modal .gamelog-week-tag-rank-number {
@@ -4151,10 +4149,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
   }
 
   #game-logs-modal .gamelog-week-tag-rank-suffix {
-    display: block;
     font-size: 0.9em; /* relative to number (0.9 of 0.5rem = 0.45rem) */
-    line-height: 1.01; /* match number for reliable alignment */
-    transform: translateY(-0.03em) !important; /* slight upward nudge for visual baseline alignment */
     font-weight: 400;
 
   }
