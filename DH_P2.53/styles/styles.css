@@ -3443,7 +3443,8 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
       transition: opacity 0.2s ease-in-out;
     }
     
-    #game-logs-modal.hidden {
+    #game-logs-modal.hidden,
+    #player-comparison-modal.hidden {
       display: none;
     }
     
