@@ -16,7 +16,12 @@
 #game-logs-modal tbody td:first-child span.stat-rank-annotation sup {
   top: 0em !important;
   font-size: 0.5rem !important;
+  display: inline-block !important;
+  vertical-align: baseline !important; /* ensure suffix aligns with text baseline on mobile */
+  line-height: 1 !important;
+  transform: none !important;
 }
+/* KTC rank in player cards */
 /* KTC rank in player cards */
 .stat-rank-variant-ktc {
   display: inline-flex;
