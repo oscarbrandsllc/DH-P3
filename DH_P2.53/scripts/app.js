@@ -2689,13 +2689,15 @@ const wrTeStatOrder = [
             container.className = 'player-comparison-container';
 
             function escapeHtml(unsafe) {
-                return unsafe
-                     .replace(/&/g, "&amp;")
-                     .replace(/</g, "&lt;")
-                     .replace(/>/g, "&gt;")
-                     .replace(/"/g, "&quot;")
-                     .replace(/'/g, "&#039;");
-             }
+                if (unsafe === null || unsafe === undefined) return '';
+                const str = typeof unsafe === 'string' ? unsafe : String(unsafe);
+                return str
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
 
             // Player Names Row
             const playerNamesRow = document.createElement('div');
@@ -2989,7 +2991,52 @@ const wrTeStatOrder = [
                                     cv = count > 0 ? total / count : 0; dv = formatPercentage(cv); break;
                                 }
                                 case 'pass_rtg': {
-                                    cv = totalValue; dv = totalValue.toFixed(1); break;
+                                    const takeNumeric = (value) => {
+                                        if (typeof value === 'number' && Number.isFinite(value)) return value;
+                                        const parsed = Number(value);
+                                        return Number.isFinite(parsed) ? parsed : null;
+                                    };
+
+                                    const computePasserRating = (cmp, att, td, ints, yds) => {
+                                        if (!att || att <= 0) return null;
+                                        const clamp = (val) => Math.max(0, Math.min(2.375, val));
+                                        const a = clamp(((cmp || 0) / att - 0.3) * 5);
+                                        const b = clamp(((yds || 0) / att - 3) * 0.25);
+                                        const c = clamp(((td || 0) / att) * 20);
+                                        const d = clamp(2.375 - (((ints || 0) / att) * 25));
+                                        const rating = ((a + b + c + d) / 6) * 100;
+                                        return Number.isFinite(rating) ? Number(rating.toFixed(1)) : null;
+                                    };
+
+                                    let rating = null;
+                                    const seasonPassRating = takeNumeric(seasonTotals?.pass_rtg);
+                                    if (seasonPassRating !== null) {
+                                        rating = seasonPassRating;
+                                    }
+
+                                    if (rating === null) {
+                                        const attempts = takeNumeric(seasonTotals?.pass_att) ?? takeNumeric(aggregatedTotals['pass_att']);
+                                        const completions = takeNumeric(seasonTotals?.pass_cmp) ?? takeNumeric(aggregatedTotals['pass_cmp']);
+                                        const touchdowns = takeNumeric(seasonTotals?.pass_td) ?? takeNumeric(aggregatedTotals['pass_td']);
+                                        const interceptions = takeNumeric(seasonTotals?.pass_int) ?? takeNumeric(aggregatedTotals['pass_int']);
+                                        const yards = takeNumeric(seasonTotals?.pass_yd) ?? takeNumeric(aggregatedTotals['pass_yd']);
+                                        rating = computePasserRating(completions, attempts, touchdowns, interceptions, yards);
+                                    }
+
+                                    if (rating === null && statValueCounts['pass_rtg']) {
+                                        const totalPassRtg = aggregatedTotals['pass_rtg'] || 0;
+                                        const avg = totalPassRtg / statValueCounts['pass_rtg'];
+                                        if (Number.isFinite(avg)) rating = Number(avg.toFixed(1));
+                                    }
+
+                                    if (rating === null) {
+                                        cv = -1;
+                                        dv = 'N/A';
+                                    } else {
+                                        cv = rating;
+                                        dv = rating.toFixed(1);
+                                    }
+                                    break;
                                 }
                                 default: {
                                     const totalValue = seasonTotals && typeof seasonTotals[statKey] === 'number' ? seasonTotals[statKey] : (aggregatedTotals[statKey] || 0);
