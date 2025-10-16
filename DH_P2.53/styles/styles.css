@@ -42,7 +42,7 @@
   padding: 0;
 }
 .stat-rank-variant-ktc .stat-rank-suffix-ktc {
-  font-size: 0.75em !important; /* slightly smaller inline suffix */
+  font-size: 0.85em !important; /* slightly smaller inline suffix */
   line-height: 1;
   margin-left: 0; /* no gap between number and suffix */
   padding-left: 0;
@@ -1440,7 +1440,7 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
         }
     .player-name { 
             font-weight: 400; 
-            font-size: 0.78rem; 
+            font-size: 0.75rem; 
             color: #d0d1ee;
             line-height: 1.2;
             white-space: nowrap !important;
@@ -1484,21 +1484,22 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 0.62rem;
+            font-size: 0.57rem;
+            font-weight: 500;
             color: var(--color-text-secondary);
             background: #1d223faa;
             border-radius: 6px;
-            padding: 0.0rem 0.1rem;
+            padding: 0.0rem 0.07rem;
         }
         .player-value-line .value {
             font-weight: 600;
-            font-size: 0.66rem;
+            font-size: 0.63rem;
             color: var(--color-text-primary);
         }
 
         /* Lower the rank annotation on player cards' KTC value line */
         .player-value-line .has-rank-annotation .stat-rank-annotation {
-            transform: translateY(-0.1em);
+            transform: translateY(0.0rem);
         }
 
         .pick-row {
@@ -4575,7 +4576,7 @@ padding: 0.15rem 0rem 0rem 0rem;
   /* Restore compact inline annotation for general UI (player cards, tables) */
   .has-rank-annotation .stat-rank-annotation {
     display: inline-block;
-    font-size: 0.9em;
+    font-size: 1em;
     line-height: 1;
     margin-left: 0.1em;
     transform: translateY(-0.25em);
