@@ -1455,6 +1455,7 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
             border-radius: 4px;
             line-height: 1;
         }
+
         .player-value-line {
             display: flex;
             justify-content: space-between;
@@ -3574,8 +3575,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
      }
 
     /* · · Pos Tags · · */
-  .modal-pos-tag {
-    position: relative;
+    .modal-pos-tag {
         line-height: 0.9rem;
         font-size: 0.9rem;
         padding: 4px 8px;
@@ -4044,95 +4044,60 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     text-align: center;
     white-space: nowrap;
     vertical-align: middle;
-    padding: 0.05rem 0.2rem; /* tighter rows */
+    padding: 0.25rem 0.5rem;
   }
 
-  /* Game log week tag container */
-  #game-logs-modal .gamelog-week-tag {
-    --week-tag-w: 56px;
-    --week-tag-h: 25px; /* reduced to keep compact with smaller inter-line gap */
-    position: relative;
-    display: inline-grid;
-    grid-template-rows: 1fr 1fr;
-    row-gap: 0.02rem; /* minimal separation between WK and opponent lines */
-    align-items: center;
-    justify-items: center;
-    width: var(--week-tag-w);
-    min-width: var(--week-tag-w);
-    height: var(--week-tag-h);
-    min-height: var(--week-tag-h);
-    padding: 0 0.25rem; /* almost no vertical padding */
-    line-height: 1; /* normalize to avoid extra vertical space */
+  /* Week tag container */
+  .week-tag {
+    display: inline-block;
+    background: rgba(143, 147, 171, 0.12);
+    border: 1px solid rgba(143, 147, 171, 0.25);
     border-radius: 4px;
-    background: rgba(0, 0, 0, 0.02);
-    -webkit-backdrop-filter: blur(1px) saturate(180%);
-    backdrop-filter: blur(1px) saturate(180%);
-    border: 1px solid rgba(250, 250, 250, 0.1);
-    box-shadow: 0 8px 32px rgba(31, 38, 105, 0.10), inset 0 6px 20px rgba(255, 255, 255, 0.013);
-  }
-  #game-logs-modal .gamelog-week-tag::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.01);
-    backdrop-filter: blur(1px);
-    box-shadow: inset 10px 12px 0px -8px rgba(255, 255, 255, .05),
-                inset 0px 8px 0px -6px rgba(255, 255, 255, .051);
-    opacity: 0.4;
-    z-index: -1;
-    pointer-events: none;
+    padding: 0.1rem 0.25rem;
+    line-height: 1.2;
   }
 
   /* Top line: WK-# */
-  #game-logs-modal .gamelog-week-tag-number {
-    font-size: 0.6rem; /* touch smaller but larger than opponent */
+  .week-tag-number {
+    font-size: 0.7rem;
     font-weight: 700;
     color: #8f93ab;
-    margin: 0;
+    margin-bottom: 0.05rem;
   }
 
   /* Bottom line: opponent • rank */
-  #game-logs-modal .gamelog-week-tag-opponent {
-    font-size: 0.5rem; /* smaller than WK line */
+  .week-tag-opponent {
+    font-size: 0.65rem;
     font-weight: 600;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.1rem;
-    margin: 0; /* no extra vertical space */
+    gap: 0;
   }
 
-  #game-logs-modal .gamelog-week-tag-opponent-text {
+  .week-tag-opponent-text {
     display: inline-block;
   }
 
-  #game-logs-modal .gamelog-week-tag-separator {
+  .week-tag-separator {
     color: #8f93ab;
     opacity: 0.6;
     margin: 0;
   }
 
-  #game-logs-modal .gamelog-week-tag-rank {
-    display: inline-flex;
-    align-items: flex-end; /* bottom-align number and suffix */
+  .week-tag-rank {
+    display: inline-block;
+    font-size: 0.6rem;
+  }
+
+  .week-tag-rank-number {
+    display: inline;
+  }
+
+  .week-tag-rank-suffix {
     font-size: 0.5rem;
-    line-height: 1;
-    height: 1em; /* normalize container for consistent baseline alignment */
-  }
-
-  #game-logs-modal .gamelog-week-tag-rank-number {
-    display: block;
-    line-height: 1; /* ensure consistent box for bottom alignment */
-    font-size: 1em; /* explicit for clarity */
-  }
-
-  #game-logs-modal .gamelog-week-tag-rank-suffix {
-    display: block;
-    font-size: 0.9em; /* relative to number (0.9 of 0.5rem = 0.45rem) */
-    line-height: 1; /* match number for reliable alignment */
-    transform: translateY(-0.03em) !important; /* slight upward nudge for visual baseline alignment */
-    margin-left: 0.02em;
+    vertical-align: sub;
+    line-height: 0;
   }
 
   .week-cell .week-number,
