@@ -3703,7 +3703,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     
     #modal-body th,
     #modal-body td {
-      padding: 0.2rem 0.35rem;
+      padding: 0.2rem 0.25rem;
       text-align: center;
       /* border-bottom is removed from here to be more specific */
     }
@@ -4036,7 +4036,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     #modal-body tfoot .week-column-header {
         color: #8f93ab;
         padding-right: 1px;
-        padding-left: 7px;
+        padding-left: 1px;
     }
 
   #modal-body tbody .week-cell {
@@ -4122,6 +4122,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     display: block;
     line-height: 1; /* ensure consistent box for bottom alignment */
     font-size: 1em; /* explicit for clarity */
+    font-weight: 400;
   }
 
   #game-logs-modal .gamelog-week-tag-rank-suffix {
@@ -4130,6 +4131,8 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     line-height: 1; /* match number for reliable alignment */
     transform: translateY(-0.03em) !important; /* slight upward nudge for visual baseline alignment */
     margin-left: 0.02em;
+    font-weight: 400;
+
   }
 
   .week-cell .week-number,
