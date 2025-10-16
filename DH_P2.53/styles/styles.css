@@ -4049,19 +4049,16 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 
   /* Game log week tag container */
   #game-logs-modal .gamelog-week-tag {
-    --week-tag-w: 56px;
-    --week-tag-h: 25px; /* reduced to keep compact with smaller inter-line gap */
+    --week-tag-w: 57px;
+    --week-tag-h: 26px; /* reduced to keep compact with smaller inter-line gap */
     position: relative;
     display: inline-grid;
-    grid-template-rows: 1fr 1fr;
-    row-gap: 0.02rem; /* minimal separation between WK and opponent lines */
     align-items: center;
     justify-items: center;
     width: var(--week-tag-w);
     min-width: var(--week-tag-w);
     height: var(--week-tag-h);
     min-height: var(--week-tag-h);
-    padding: 0 0.25rem; /* almost no vertical padding */
     line-height: 1; /* normalize to avoid extra vertical space */
     border-radius: 4px;
     background: rgba(0, 0, 0, 0.02);
@@ -4548,7 +4545,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
   /* Restore compact inline annotation for general UI (player cards, tables) */
   .has-rank-annotation .stat-rank-annotation {
     display: inline-block;
-    font-size: 0.8em;
+    font-size: 0.9em;
     line-height: 1;
     margin-left: 0.1em;
     transform: translateY(-0.25em);
