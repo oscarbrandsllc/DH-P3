@@ -26,16 +26,10 @@
 .stat-rank-variant-ktc {
   display: inline-flex;
   align-items: center; /* keep suffix vertically aligned with number */
-  gap: 0.08rem; /* minimal gap between internal pieces */
+  gap: 0; /* parentheses should hug the rank */
 }
-.player-ktc-wrapper .stat-rank-annotation {
-  margin-left: 0.06rem; /* pull the rank closer to the value */
-}
-.stat-rank-variant-ktc .stat-rank-sep-ktc {
-  font-weight: 600;
-  color: var(--color-text-tertiary);
-  line-height: 1;
-  margin: 0 0.01rem; /* small breathing room around the middot */
+.player-ktc-wrapper.has-rank-annotation .stat-rank-annotation {
+  margin-left: 0; /* no space between the KTC value and rank */
 }
 .stat-rank-variant-ktc .stat-rank-number {
   margin: 0; /* keep number tight to suffix */

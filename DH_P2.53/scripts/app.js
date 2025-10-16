@@ -1594,7 +1594,7 @@ const SEASON_META_HEADERS = {
                         return 'th';
                     };
 
-                    // Render numeric ranks; when ordinal=true, include <sup> suffix; otherwise plain number
+                    // Render numeric ranks; when ordinal=true, include suffix; otherwise plain number
                     const asNumber = Number(displayText);
                     if (displayText !== 'NA' && Number.isFinite(asNumber)) {
                         // Optionally wrap with parentheses
@@ -1606,19 +1606,7 @@ const SEASON_META_HEADERS = {
                         span.appendChild(numNode);
 
                         if (ordinal) {
-                            // For KTC variant we want a middle-dot separator and a smaller suffix
                             if (variant === 'ktc') {
-                                // For KTC: insert middot before the already-appended number node, then append a small inline suffix
-                                const existingNum = span.querySelector('.stat-rank-number');
-                                const sep = document.createElement('span');
-                                sep.className = 'stat-rank-sep stat-rank-sep-ktc';
-                                sep.textContent = '·';
-                                if (existingNum) {
-                                    span.insertBefore(sep, existingNum);
-                                } else {
-                                    span.appendChild(sep);
-                                }
-
                                 const suffix = document.createElement('span');
                                 suffix.className = `stat-rank-suffix stat-rank-suffix-${variant}`; // will target ktc specifically in CSS
                                 suffix.textContent = ordinalSuffix(asNumber);
@@ -3541,8 +3529,8 @@ const wrTeStatOrder = [
             const ktcWrapper = row.querySelector('.player-ktc-wrapper');
             if (ktcWrapper) {
                 ktcWrapper.classList.add('has-rank-annotation');
-                // Render KTC rank with dot separator and smaller ordinal suffix, no surrounding parentheses
-                ktcWrapper.appendChild(createRankAnnotation(typeof ktcPosRankNumber === 'number' ? ktcPosRankNumber : 'NA', { wrapInParens: false, ordinal: true, variant: 'ktc' }));
+                // Render KTC rank inline with ordinal suffix wrapped in parentheses
+                ktcWrapper.appendChild(createRankAnnotation(typeof ktcPosRankNumber === 'number' ? ktcPosRankNumber : 'NA', { wrapInParens: true, ordinal: true, variant: 'ktc' }));
             }
 
             const playerNameClickableEl = row.querySelector('.player-name-clickable');
