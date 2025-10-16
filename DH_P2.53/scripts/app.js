@@ -1606,10 +1606,29 @@ const SEASON_META_HEADERS = {
                         span.appendChild(numNode);
 
                         if (ordinal) {
-                            const sup = document.createElement('sup');
-                            sup.className = `stat-rank-suffix stat-rank-suffix-${variant}`;
-                            sup.textContent = ordinalSuffix(asNumber);
-                            span.appendChild(sup);
+                            // For KTC variant we want a middle-dot separator and a smaller suffix
+                            if (variant === 'ktc') {
+                                // For KTC: insert middot before the already-appended number node, then append a small inline suffix
+                                const existingNum = span.querySelector('.stat-rank-number');
+                                const sep = document.createElement('span');
+                                sep.className = 'stat-rank-sep stat-rank-sep-ktc';
+                                sep.textContent = '·';
+                                if (existingNum) {
+                                    span.insertBefore(sep, existingNum);
+                                } else {
+                                    span.appendChild(sep);
+                                }
+
+                                const suffix = document.createElement('span');
+                                suffix.className = `stat-rank-suffix stat-rank-suffix-${variant}`; // will target ktc specifically in CSS
+                                suffix.textContent = ordinalSuffix(asNumber);
+                                span.appendChild(suffix);
+                            } else {
+                                const sup = document.createElement('sup');
+                                sup.className = `stat-rank-suffix stat-rank-suffix-${variant}`;
+                                sup.textContent = ordinalSuffix(asNumber);
+                                span.appendChild(sup);
+                            }
                         }
 
                         if (wrapInParens) span.appendChild(document.createTextNode(')'));
@@ -3522,8 +3541,8 @@ const wrTeStatOrder = [
             const ktcWrapper = row.querySelector('.player-ktc-wrapper');
             if (ktcWrapper) {
                 ktcWrapper.classList.add('has-rank-annotation');
-                // No suffix for KTC rank in player cards
-                ktcWrapper.appendChild(createRankAnnotation(typeof ktcPosRankNumber === 'number' ? ktcPosRankNumber : 'NA', { wrapInParens: true, ordinal: false, variant: 'ktc' }));
+                // Render KTC rank with dot separator and smaller ordinal suffix, no surrounding parentheses
+                ktcWrapper.appendChild(createRankAnnotation(typeof ktcPosRankNumber === 'number' ? ktcPosRankNumber : 'NA', { wrapInParens: false, ordinal: true, variant: 'ktc' }));
             }
 
             const playerNameClickableEl = row.querySelector('.player-name-clickable');

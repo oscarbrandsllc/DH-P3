@@ -18,9 +18,29 @@
   font-size: 0.5rem !important;
 }
 /* KTC rank in player cards */
-.stat-rank-variant-ktc sup.stat-rank-suffix-ktc {
-  top: 0.0em !important;
-  font-size: 0.55rem !important;
+.stat-rank-variant-ktc {
+  display: inline-flex;
+  align-items: center; /* keep suffix vertically aligned with number */
+  gap: 0.08rem; /* minimal gap between internal pieces */
+}
+.player-ktc-wrapper .stat-rank-annotation {
+  margin-left: 0.06rem; /* pull the rank closer to the value */
+}
+.stat-rank-variant-ktc .stat-rank-sep-ktc {
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  line-height: 1;
+  margin: 0 0.06rem; /* small breathing room around the middot */
+}
+.stat-rank-variant-ktc .stat-rank-number {
+  margin: 0; /* keep number tight to suffix */
+  padding: 0;
+}
+.stat-rank-variant-ktc .stat-rank-suffix-ktc {
+  font-size: 0.75em !important; /* slightly smaller inline suffix */
+  line-height: 1;
+  margin-left: 0; /* no gap between number and suffix */
+  padding-left: 0;
 }
 /* ⬇︎  VARIABLES, THEME, & FOUNDATION  ⬇︎ */
       :root {
