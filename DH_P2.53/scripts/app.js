@@ -3954,7 +3954,7 @@ const wrTeStatOrder = [
               <div class="trade-container glass-panel start-sit-container">
           <div class="trade-header">
             <div class="trade-header-left">
-              <h3>Start/Sit${weekLabel} <i class="fa-solid fa-code-compare fa-rotate-270"></i></h3>
+              <h3>Start/Sit${weekLabel} <i class="fa-solid fa-elevator analyzer-icon"></i></h3>
             </div>
             <div class="trade-header-center">
               <button id="collapseTradeButton"><i class="fa-solid fa-caret-down"></i></button>
