@@ -685,6 +685,8 @@ if (pageType === 'welcome') {
             state.teamsToCompare = teamsToKeep;
 
             state.isCompareMode = false;
+            state.isStartSitMode = false;
+            state.startSitBlock = [];
             rosterView.classList.remove('is-trade-mode');
             rosterGrid.classList.remove('is-preview-mode');
             
@@ -954,6 +956,9 @@ if (pageType === 'welcome') {
 
         function clearTrade() {
             state.tradeBlock = {};
+            if (state.isStartSitMode) {
+                state.startSitBlock = [];
+            }
             document.querySelectorAll('.player-selected').forEach(el => el.classList.remove('player-selected'));
             renderTradeBlock();
             closeComparisonModal();
