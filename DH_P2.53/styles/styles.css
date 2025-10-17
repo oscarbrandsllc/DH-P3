@@ -1387,12 +1387,13 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
         .start-sit-name-text {
             white-space: normal;
             text-align: center;
+            font-size: 0.77rem;
         }
 .start-sit-metric {
     display: inline-flex;
     align-items: baseline;
     justify-content: center;
-    gap: 0.35rem;
+    gap: 0.135rem;
     font-size: 0.74rem;
     text-align: center;
     font-weight: 600;
