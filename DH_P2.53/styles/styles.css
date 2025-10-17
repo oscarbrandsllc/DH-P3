@@ -31,12 +31,16 @@
 .player-ktc-wrapper.has-rank-annotation .stat-rank-annotation {
   margin-left: 0; /* no space between the KTC value and rank */
 }
+.player-ktc-wrapper .value,
+.player-ppg-wrapper .value {
+  margin-left: 0.08rem; /* subtle spacing between label and value */
+}
 .stat-rank-variant-ktc .stat-rank-number {
   margin: 0; /* keep number tight to suffix */
   padding: 0;
 }
 .stat-rank-variant-ktc .stat-rank-suffix-ktc {
-  font-size: 0.85em !important; /* slightly smaller inline suffix */
+  font-size: 0.9em !important; /* slightly smaller inline suffix */
   line-height: 1;
   margin-left: 0; /* no gap between number and suffix */
   padding-left: 0;
@@ -4570,7 +4574,7 @@ padding: 0.15rem 0rem 0rem 0rem;
   /* Restore compact inline annotation for general UI (player cards, tables) */
   .has-rank-annotation .stat-rank-annotation {
     display: inline-block;
-    font-size: 1em;
+    font-size: .92em;
     line-height: 1;
     margin-left: 0.1em;
     transform: translateY(-0.25em);

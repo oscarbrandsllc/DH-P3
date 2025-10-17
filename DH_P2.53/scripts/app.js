@@ -3502,8 +3502,8 @@ const wrTeStatOrder = [
                     ${teamTagHTML}
                 </div>
                 <div class="player-value-line">
-                    <span class="player-ktc-wrapper">KTC: <span class="value player-ktc">${ktc}</span></span>
-                    <span class="player-ppg-wrapper">PPG: <span class="value player-ppg">${ppgValue}</span></span>
+                    <span class="player-ktc-wrapper">KTC:<span class="value player-ktc">${ktc}</span></span>
+                    <span class="player-ppg-wrapper">PPG:<span class="value player-ppg">${ppgValue}</span></span>
                 </div>
             `;
 
