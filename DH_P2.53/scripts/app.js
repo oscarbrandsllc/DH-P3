@@ -3996,6 +3996,7 @@ const wrTeStatOrder = [
                     const rankColor = Number.isFinite(selection.ppgPosRank)
                         ? getConditionalColorByRank(selection.ppgPosRank, posForColor)
                         : 'var(--color-text-tertiary)';
+                    const posColor = TAG_COLORS[posForColor] || 'var(--color-text-secondary)';
                     const baseLabel = posForColor || '';
                     const rankText = (selection.ppgPosRankDisplay && selection.ppgPosRankDisplay !== 'NA')
                         ? selection.ppgPosRankDisplay
@@ -4009,6 +4010,8 @@ const wrTeStatOrder = [
                     const projectionDisplay = selection.projection !== null
                         ? selection.projection.toFixed(1)
                         : ((selection.projectionDisplay && selection.projectionDisplay.toUpperCase() !== 'NA') ? selection.projectionDisplay : '—');
+                    const rankParts = rankText.split('·');
+                    const rankNumberDisplay = rankParts.length > 1 ? rankParts.slice(1).join('·') : (rankParts[0] || 'NA');
                     assetsHTML = `
                         <div class="trade-asset-chip start-sit-chip">
                             <div class="start-sit-chip-body">
@@ -4017,9 +4020,14 @@ const wrTeStatOrder = [
                                     <span class="start-sit-name-text">${escapeHtml(selection.label)}</span>
                                 </span>
                                 <span class="start-sit-metric">
-                                    <span class="start-sit-metric-value" style="color: ${ppgColor};">${ppgText} PPG</span>
+                                    <span class="start-sit-metric-value" style="color: ${ppgColor};">${ppgText}</span>
+                                    <span class="start-sit-metric-unit">PPG</span>
                                     <span class="start-sit-metric-sep">•</span>
-                                    <span class="start-sit-rank" style="color: ${rankColor};">${rankText}</span>
+                                    <span class="start-sit-rank">
+                                        <span class="start-sit-rank-pos" style="color: ${posColor};">${posForColor}</span>
+                                        <span class="start-sit-rank-dot">·</span>
+                                        <span class="start-sit-rank-number" style="color: ${rankColor};">${rankNumberDisplay}</span>
+                                    </span>
                                 </span>
                             </div>
                         </div>`;

@@ -472,7 +472,7 @@
 
 /* === ROW 3: Start/Sit Button === */
 .start-sit-button-slot {
-    width: max(var(--header-icon-size), 2.6rem);
+    width: auto;
     height: var(--header-control-height);
     display: flex;
     align-items: center;
@@ -481,49 +481,57 @@
 }
 
 .start-sit-button-container {
-    width: var(--header-icon-size);
     height: var(--header-control-height);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .start-sit-button {
-    border: none;
-    background: transparent;
-    color: var(--color-text-secondary);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 0;
     gap: 0.1rem;
-    width: 100%;
-    height: 100%;
+    padding: 0.35rem 0.4rem;
+    min-height: 2.25rem;
+    width: auto;
+    background: rgba(13, 14, 35, 0.25);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(128, 138, 189, 0.2);
     border-radius: 8px;
+    color: var(--color-text-secondary);
     cursor: pointer;
     transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .start-sit-button .analyzer-icon {
-    display: block;
-    margin: 0;
+    font-size: 1.1rem;
     line-height: 1;
-    font-size: 1.22rem;
-    filter: drop-shadow(0px 0px 2px #cfafcf69);
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
 }
 
 .start-sit-button .analyzer-label {
-    display: block;
-    margin: -2px 0 0 0;
-    padding: 0;
-    font-size: 0.50rem;
-    font-weight: 400;
+    font-size: 0.45rem;
+    font-weight: 500;
     line-height: 1;
+    margin-top: 0.05rem;
     color: inherit;
-    white-space: nowrap;
 }
 
-.start-sit-button:hover .analyzer-icon,
-.start-sit-button:focus-visible .analyzer-icon {
+.start-sit-button:hover {
     color: var(--color-text-primary);
+    background: rgba(13, 14, 35, 0.35);
+    border-color: rgba(128, 138, 189, 0.35);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
+}
+
+.start-sit-button:focus-visible {
+    outline: 2px solid rgba(118, 109, 255, 0.6);
+    outline-offset: 2px;
 }
 
 /* === Mobile Responsive Adjustments === */
@@ -1357,7 +1365,7 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.1rem;
+            gap: 0.25rem;
         }
         .start-sit-name {
             display: inline-flex;
@@ -1380,23 +1388,27 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
             white-space: normal;
             text-align: center;
         }
-        .start-sit-metric {
-            display: inline-flex;
-            align-items: baseline;
-            justify-content: center;
-            gap: 0.35rem;
-            font-size: 0.74rem;
-            text-align: center;
-            font-weight: 600;
-            line-height: 1;
-        }
-        .start-sit-metric-value {
-            color: var(--color-text-mid-test1);
-        }
+.start-sit-metric {
+    display: inline-flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.135rem;
+    font-size: 0.74rem;
+    text-align: center;
+    font-weight: 600;
+    line-height: 1;
+}
+.start-sit-metric-value {
+    color: var(--color-text-mid-test1);
+}
+.start-sit-metric-unit {
+    color: #9296a3;
+    font-size: 0.65rem;
+}
         .start-sit-metric-sep {
             color: var(--color-text-tertiary);
             font-size: 0.7rem;
-            margin: 0 0.18rem;
+            margin: 0 0.25rem;
         }
         .start-sit-rank {
             font-size: 0.75rem;
@@ -1431,7 +1443,7 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
         .start-sit-preview-column .trade-total {
             font-weight: 600;
             margin-top: auto;
-            margin-bottom: -5px;
+            margin-bottom: 0px;
             padding-bottom: 0;
             padding-top: 0.5rem;
             text-align: center;
