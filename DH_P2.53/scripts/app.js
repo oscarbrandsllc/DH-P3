@@ -331,7 +331,7 @@ if (pageType === 'welcome') {
 }
 
         // --- State ---
-        let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, calculatedRankCache: null, playerProjectionWeeks: {} };
+let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, calculatedRankCache: null, playerProjectionWeeks: {}, isStartSitMode: false, startSitSelections: [], startSitNextSide: 'left', startSitTeamName: null };
         const assignedLeagueColors = new Map();
         let nextColorIndex = 0;
         const assignedRyColors = new Map();
@@ -387,7 +387,9 @@ if (pageType === 'welcome') {
                     if (isModalOpen) {
                         closeComparisonModal();
                     } else {
-                        const selectedPlayers = Object.values(state.tradeBlock).flat().filter(asset => asset.pos !== 'DP');
+                        const selectedPlayers = state.isStartSitMode
+                            ? state.startSitSelections
+                            : Object.values(state.tradeBlock).flat().filter(asset => asset.pos !== 'DP');
                         if (selectedPlayers.length !== 2) {
                             showTemporaryTooltip(compareButton, 'Please select exactly 2 players to compare.');
                         } else {
@@ -402,6 +404,7 @@ if (pageType === 'welcome') {
             lineupViewBtn?.addEventListener('click', () => setRosterView('lineup'));
             positionalFiltersContainer?.addEventListener('click', handlePositionFilter);
             clearFiltersButton?.addEventListener('click', handleClearFilters);
+            startSitButton?.addEventListener('click', handleStartSitButtonClick);
 
             if (gameLogsModal) {
                 modalCloseBtn.addEventListener('click', () => closeModal());
@@ -545,6 +548,9 @@ if (pageType === 'welcome') {
         async function handleLeagueSelect() {
     hideLegend();
             const leagueId = leagueSelect.value;
+            if (state.isStartSitMode) {
+                exitStartSitMode();
+            }
             if (!leagueId || leagueId === 'Select a league...') {
                 rosterView.classList.add('hidden');
                 return;
@@ -596,6 +602,9 @@ if (pageType === 'welcome') {
         function handleTeamSelect(e) {
             const header = e.target.closest('.team-header-item');
             if (header) {
+                if (state.isStartSitMode) {
+                    exitStartSitMode();
+                }
                 const checkbox = header.querySelector('.team-compare-checkbox');
                 const teamName = checkbox.dataset.teamName;
 
@@ -644,11 +653,14 @@ if (pageType === 'welcome') {
         function updateHeaderPreviewState() {
             const appHeader = document.querySelector('.app-header');
             if (appHeader) {
-                appHeader.classList.toggle('preview-active', state.isCompareMode);
+                appHeader.classList.toggle('preview-active', state.isCompareMode || state.isStartSitMode);
             }
         }
 
         function handleCompareClick() {
+            if (state.isStartSitMode) {
+                exitStartSitMode();
+            }
             state.isCompareMode = !state.isCompareMode;
             rosterView.classList.toggle('is-trade-mode', state.isCompareMode);
             rosterGrid.classList.toggle('is-preview-mode', state.isCompareMode);
@@ -662,6 +674,147 @@ if (pageType === 'welcome') {
                 renderTradeBlock();
             }
             renderAllTeamData(state.currentTeams);
+        }
+
+        function handleStartSitButtonClick() {
+            if (state.isStartSitMode) {
+                exitStartSitMode();
+            } else {
+                enterStartSitMode();
+            }
+        }
+
+        function enterStartSitMode() {
+            const teams = state.currentTeams || [];
+            const userTeam = teams.find(team => team.teamName === state.userTeamName) || teams.find(team => team.isUserTeam);
+            if (!userTeam) {
+                if (startSitButton) {
+                    showTemporaryTooltip(startSitButton, 'Load your roster first.');
+                }
+                return;
+            }
+
+            if (state.isCompareMode) {
+                handleClearCompare();
+            }
+
+            state.isStartSitMode = true;
+            state.startSitTeamName = userTeam.teamName;
+            state.startSitSelections = [];
+            state.startSitNextSide = 'left';
+
+            rosterView.classList.add('is-trade-mode');
+            rosterGrid.classList.add('is-preview-mode');
+            rosterGrid.classList.add('start-sit-mode');
+            try { closeCompareSearch(); } catch (e) {}
+            updateHeaderPreviewState();
+            setTimeout(() => window.scrollTo(0, 0), 0);
+            if (state.currentTeams) {
+                renderAllTeamData(state.currentTeams);
+            }
+            renderTradeBlock();
+        }
+
+        function exitStartSitMode() {
+            if (!state.isStartSitMode) return;
+            state.isStartSitMode = false;
+            state.startSitTeamName = null;
+            state.startSitSelections = [];
+            state.startSitNextSide = 'left';
+            rosterView.classList.remove('is-trade-mode');
+            rosterGrid.classList.remove('is-preview-mode');
+            rosterGrid.classList.remove('start-sit-mode');
+            updateHeaderPreviewState();
+            renderTradeBlock();
+            if (state.currentTeams) {
+                renderAllTeamData(state.currentTeams);
+            }
+        }
+
+        function clearStartSitSelections() {
+            if (!state.isStartSitMode) return;
+            state.startSitSelections = [];
+            state.startSitNextSide = 'left';
+            document.querySelectorAll('.roster-column.start-sit-column .player-selected').forEach(el => {
+                el.classList.remove('player-selected');
+                delete el.dataset.startSitSide;
+            });
+            renderTradeBlock();
+        }
+
+        function recalcStartSitNextSide() {
+            const count = state.startSitSelections.length;
+            if (count === 0) {
+                state.startSitNextSide = 'left';
+                return;
+            }
+            if (count === 1) {
+                state.startSitNextSide = state.startSitSelections[0].side === 'left' ? 'right' : 'left';
+                return;
+            }
+            state.startSitNextSide = count % 2 === 0 ? 'left' : 'right';
+        }
+
+        function handleStartSitPlayerClick(e) {
+            const row = e.target.closest('.player-row');
+            if (!row) return;
+            const column = row.closest('.roster-column.start-sit-column');
+            if (!column) return;
+            const teamName = column.dataset.teamName;
+            if (!teamName || teamName !== state.startSitTeamName) return;
+
+            const playerId = row.dataset.assetId;
+            if (!playerId) return;
+
+            // Toggle selection if already selected
+            const existingIndex = state.startSitSelections.findIndex(sel => sel.id === playerId);
+            if (existingIndex > -1) {
+                state.startSitSelections.splice(existingIndex, 1);
+                row.classList.remove('player-selected');
+                delete row.dataset.startSitSide;
+                recalcStartSitNextSide();
+                renderTradeBlock();
+                return;
+            }
+
+            if (state.startSitSelections.length >= 2) {
+                showTemporaryTooltip(row, 'Select up to two players.');
+                return;
+            }
+
+            const ranks = calculatePlayerStatsAndRanks(playerId) || getDefaultPlayerRanks();
+            const rawPpg = typeof ranks.ppg === 'number' ? ranks.ppg : Number.parseFloat(String(ranks.ppg || '').replace(/[^0-9.\-]/g, ''));
+            const hasPpg = Number.isFinite(rawPpg);
+            const ppgValue = hasPpg ? Number(rawPpg) : null;
+            const ppgDisplay = hasPpg ? ppgValue.toFixed(1) : 'NA';
+
+            const rawPpgRank = Number.parseInt(String(ranks.ppgPosRank || '').replace(/[^0-9]/g, ''), 10);
+            const hasPpgRank = Number.isFinite(rawPpgRank) && rawPpgRank > 0;
+
+            const basePosRaw = (row.dataset.assetBasePos || '').toUpperCase();
+            const displayPos = (row.dataset.assetPos || basePosRaw || '').toUpperCase();
+            const normalizedBasePos = basePosRaw || displayPos || '';
+            const rankDisplay = normalizedBasePos
+                ? (hasPpgRank ? `${normalizedBasePos}·${rawPpgRank}` : `${normalizedBasePos}·NA`)
+                : (hasPpgRank ? `${rawPpgRank}` : 'NA');
+            const selection = {
+                id: playerId,
+                label: row.dataset.assetLabel || row.querySelector('.player-name-clickable')?.textContent || 'Unknown Player',
+                pos: displayPos || normalizedBasePos || '',
+                basePos: normalizedBasePos,
+                team: row.dataset.assetTeam || 'FA',
+                side: state.startSitNextSide,
+                ppg: ppgValue,
+                ppgDisplay,
+                ppgPosRank: hasPpgRank ? rawPpgRank : null,
+                ppgPosRankDisplay: rankDisplay
+            };
+
+            state.startSitSelections.push(selection);
+            row.classList.add('player-selected');
+            row.dataset.startSitSide = selection.side;
+            state.startSitNextSide = selection.side === 'left' ? 'right' : 'left';
+            renderTradeBlock();
         }
 
         function handleClearCompare(keepUserTeam = false) {
@@ -833,6 +986,10 @@ if (pageType === 'welcome') {
         });
 
         function handleAssetClickForTrade(e) {
+            if (state.isStartSitMode) {
+                handleStartSitPlayerClick(e);
+                return;
+            }
             if (!state.isCompareMode) return;
 
             const assetRow = e.target.closest('.player-row, .pick-row');
@@ -2640,39 +2797,69 @@ const wrTeStatOrder = [
         }
 
         async function handlePlayerCompare(e) {
-            const selectedPlayersWithTeams = [];
-            for (const teamName in state.tradeBlock) {
-                if (Object.prototype.hasOwnProperty.call(state.tradeBlock, teamName)) {
-                    const assets = state.tradeBlock[teamName];
-                    assets.forEach(asset => {
-                        if (asset.pos !== 'DP') {
-                            const fullPlayer = state.players[asset.id];
-                            const playerName = fullPlayer
-                                ? `${fullPlayer.first_name} ${fullPlayer.last_name}`
-                                : asset.label;
-                            const normalizedTeam = (asset.team || fullPlayer?.team || 'FA').toUpperCase();
-                            const primaryPos = (asset.basePos || fullPlayer?.position || asset.pos || '').toUpperCase();
+            let selectedPlayersWithTeams = [];
 
-                            selectedPlayersWithTeams.push({
-                                ...asset,
-                                teamName,
-                                name: playerName,
-                                pos: primaryPos || asset.pos,
-                                displayPos: asset.pos,
-                                team: normalizedTeam
-                            });
-                        }
-                    });
+            if (state.isStartSitMode) {
+                selectedPlayersWithTeams = state.startSitSelections.map(selection => {
+                    const fullPlayer = state.players[selection.id];
+                    const firstName = (fullPlayer?.first_name || '').trim();
+                    const lastName = (fullPlayer?.last_name || '').trim();
+                    const playerName = [firstName, lastName].filter(Boolean).join(' ') || selection.label;
+                    const normalizedTeam = (selection.team || fullPlayer?.team || 'FA').toUpperCase();
+                    const primaryPos = (selection.basePos || fullPlayer?.position || selection.pos || '').toUpperCase();
+
+                    return {
+                        id: selection.id,
+                        label: selection.label,
+                        teamName: state.startSitTeamName || state.userTeamName || 'Start/Sit',
+                        name: playerName,
+                        pos: primaryPos || selection.pos,
+                        displayPos: selection.pos,
+                        team: normalizedTeam,
+                        side: selection.side
+                    };
+                });
+            } else {
+                for (const teamName in state.tradeBlock) {
+                    if (Object.prototype.hasOwnProperty.call(state.tradeBlock, teamName)) {
+                        const assets = state.tradeBlock[teamName];
+                        assets.forEach(asset => {
+                            if (asset.pos !== 'DP') {
+                                const fullPlayer = state.players[asset.id];
+                                const playerName = fullPlayer
+                                    ? `${fullPlayer.first_name} ${fullPlayer.last_name}`
+                                    : asset.label;
+                                const normalizedTeam = (asset.team || fullPlayer?.team || 'FA').toUpperCase();
+                                const primaryPos = (asset.basePos || fullPlayer?.position || asset.pos || '').toUpperCase();
+
+                                selectedPlayersWithTeams.push({
+                                    ...asset,
+                                    teamName,
+                                    name: playerName,
+                                    pos: primaryPos || asset.pos,
+                                    displayPos: asset.pos,
+                                    team: normalizedTeam
+                                });
+                            }
+                        });
+                    }
                 }
             }
 
-
-            // Sort to ensure user's player is first
-            selectedPlayersWithTeams.sort((a, b) => {
-                if (a.teamName === state.userTeamName) return -1;
-                if (b.teamName === state.userTeamName) return 1;
-                return 0;
-            });
+            if (state.isStartSitMode) {
+                selectedPlayersWithTeams.sort((a, b) => {
+                    if (a.side === 'left' && b.side === 'right') return -1;
+                    if (a.side === 'right' && b.side === 'left') return 1;
+                    return 0;
+                });
+            } else {
+                // Sort to ensure user's player is first
+                selectedPlayersWithTeams.sort((a, b) => {
+                    if (a.teamName === state.userTeamName) return -1;
+                    if (b.teamName === state.userTeamName) return 1;
+                    return 0;
+                });
+            }
 
             const comparisonModalBody = document.getElementById('comparison-modal-body');
             comparisonModalBody.innerHTML = '<p class="text-center p-4">Loading player comparison...</p>';
@@ -3207,6 +3394,14 @@ const wrTeStatOrder = [
             updateRosterContentVisibility();
             rosterGrid.innerHTML = '';
             rosterGrid.style.justifyContent = ''; // Reset style
+            rosterGrid.classList.toggle('start-sit-mode', state.isStartSitMode);
+
+            if (state.isStartSitMode) {
+                renderStartSitColumns(teams);
+                adjustStickyHeaders();
+                syncRosterHeaderPosition();
+                return;
+            }
 
             let teamsToRender = teams;
             if (state.isCompareMode) {
@@ -3263,6 +3458,49 @@ const wrTeStatOrder = [
             }
             adjustStickyHeaders();
             syncRosterHeaderPosition();
+        }
+
+        function renderStartSitColumns(teams) {
+            const targetTeamName = state.startSitTeamName || state.userTeamName;
+            const userTeam = teams.find(team => team.teamName === targetTeamName) || teams.find(team => team.isUserTeam);
+            if (!userTeam) {
+                return;
+            }
+
+            rosterGrid.style.justifyContent = 'center';
+            const positions = ['QB', 'RB', 'WR', 'TE'];
+
+            positions.forEach(pos => {
+                const columnWrapper = document.createElement('div');
+                columnWrapper.className = 'roster-column start-sit-column';
+                columnWrapper.dataset.teamName = userTeam.teamName;
+                columnWrapper.dataset.position = pos;
+
+                const header = document.createElement('div');
+                header.className = 'start-sit-pos-header';
+                header.textContent = pos;
+                columnWrapper.appendChild(header);
+
+                const card = document.createElement('div');
+                card.className = 'team-card start-sit-card';
+
+                const players = userTeam.allPlayers
+                    .filter(player => (player.pos || '').toUpperCase() === pos)
+                    .sort((a, b) => (b.ktc || 0) - (a.ktc || 0));
+
+                if (players.length > 0) {
+                    players.forEach(player => card.appendChild(createPlayerRow(player, userTeam.teamName)));
+                } else {
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'start-sit-empty';
+                    placeholder.textContent = 'None';
+                    card.appendChild(placeholder);
+                }
+
+                columnWrapper.appendChild(card);
+                rosterGrid.appendChild(columnWrapper);
+                calibrateTeamCardIntrinsicSize(card);
+            });
         }
 
         function createDepthChartTeamCard(team) {
@@ -3446,6 +3684,9 @@ const wrTeStatOrder = [
                     .map(name => (name || '').trim().toLowerCase())
                     .filter(Boolean)
             )).join(' ');
+            if (teamName) {
+                row.dataset.teamName = teamName;
+            }
             row.dataset.assetId = player.id;
             row.dataset.assetLabel = player.name;
             row.dataset.playerName = playerSearchKey || (player.name || '').toLowerCase();
@@ -3456,6 +3697,13 @@ const wrTeStatOrder = [
 
             if (state.tradeBlock[teamName]?.find(a => a.id === player.id)) {
                 row.classList.add('player-selected');
+            }
+            if (state.isStartSitMode) {
+                const startSitSelection = state.startSitSelections.find(sel => sel.id === player.id);
+                if (startSitSelection) {
+                    row.classList.add('player-selected');
+                    row.dataset.startSitSide = startSitSelection.side;
+                }
             }
 
             const ktc = player.ktc || '—';
@@ -3562,17 +3810,152 @@ const wrTeStatOrder = [
             return row;
         }
 
+        function renderStartSitPreview() {
+            const selections = state.startSitSelections || [];
+            const escapeHtml = (value) => {
+                if (value === null || value === undefined) return '';
+                return String(value)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            };
+
+            tradeSimulator.innerHTML = `
+              <div class="trade-container glass-panel start-sit-container">
+          <div class="trade-header">
+            <div class="trade-header-left">
+              <h3>Start/Sit <i class="fa-solid fa-code-compare fa-rotate-270"></i></h3>
+            </div>
+            <div class="trade-header-center">
+              <button id="collapseTradeButton"><i class="fa-solid fa-caret-down"></i></button>
+            </div>
+            <div class="trade-header-right">
+              <button id="comparePlayersButton" class="control-button-subtle">
+                <i class="fa-solid fa-chart-simple"></i>
+                <span class="label">Compare</span>
+              </button>
+              <button id="clearTradeButton" type="button">
+                <i class="fa-solid fa-eraser"></i>
+                <span class="label">Clear</span>
+              </button>
+              <button id="closeTradeButton" type="button">
+                <i class="fa-solid fa-circle-xmark"></i>
+                <span class="label">Close</span>
+              </button>
+            </div>
+          </div>
+        
+          <div class="trade-body"></div>
+          <div class="trade-footnote">• Projected Points •</div>
+        </div>
+        
+        <button id="showTradeButton"><i class="fa-solid fa-circle-chevron-up"></i> Start/Sit <i class="fa-solid fa-circle-chevron-up"></i></button>
+  `;
+
+            const sides = ['left', 'right'];
+            const sideLabels = { left: 'Start Candidate', right: 'Sit Candidate' };
+            const tradeBody = tradeSimulator.querySelector('.trade-body');
+
+            let bodyHtml = '';
+            sides.forEach((side, index) => {
+                const selection = selections.find(sel => sel.side === side);
+                let assetsHTML = '';
+                let totalDisplay = '—';
+
+                if (selection) {
+                    const tagColor = TAG_COLORS[selection.pos] || 'var(--pos-bn)';
+                    const rankColor = Number.isFinite(selection.ppgPosRank)
+                        ? getConditionalColorByRank(selection.ppgPosRank, selection.basePos || selection.pos)
+                        : 'var(--color-text-tertiary)';
+                    const rankText = selection.ppgPosRankDisplay || `${selection.basePos}·NA`;
+                    const ppgText = selection.ppgDisplay || 'NA';
+                    assetsHTML = `<div class="trade-asset-chip start-sit-chip"><span class="player-tag" style="background-color: ${tagColor};">${selection.pos}</span><span>${escapeHtml(selection.label)}</span><span class="start-sit-metric" style="color: ${rankColor}">${ppgText} PPG <span class="start-sit-rank">${rankText}</span></span></div>`;
+                    totalDisplay = selection.ppg !== null ? selection.ppg.toFixed(1) : '—';
+                } else {
+                    assetsHTML = `<span class="text-xs text-slate-500 p-2">Select a player...</span>`;
+                }
+
+                bodyHtml += `
+                    <div class="trade-team-column start-sit-preview-column">
+                        <h4>${sideLabels[side]}</h4>
+                        <div class="trade-assets">${assetsHTML}</div>
+                        <div class="trade-total even">
+                            Projected Points: ${totalDisplay}
+                        </div>
+                    </div>
+                `;
+
+                if (index < sides.length - 1) {
+                    bodyHtml += `<div class="trade-divider"></div>`;
+                }
+            });
+
+            tradeBody.innerHTML = bodyHtml;
+
+            const comparePlayersButton = document.getElementById('comparePlayersButton');
+            if (comparePlayersButton) {
+                if (selections.length === 2) {
+                    comparePlayersButton.classList.add('enabled');
+                } else {
+                    comparePlayersButton.classList.remove('enabled');
+                }
+            }
+
+            tradeSimulator.classList.toggle('collapsed', state.isTradeCollapsed);
+
+            const clearBtn = document.getElementById('clearTradeButton');
+            if (clearBtn) {
+                clearBtn.disabled = selections.length === 0;
+                clearBtn.addEventListener('click', clearStartSitSelections);
+            }
+
+            const closeBtn = document.getElementById('closeTradeButton');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => exitStartSitMode());
+            }
+
+            const collapseBtn = document.getElementById('collapseTradeButton');
+            if (collapseBtn) {
+                collapseBtn.addEventListener('click', () => {
+                    tradeSimulator.classList.add('collapsed');
+                    state.isTradeCollapsed = true;
+                    mainContent.style.paddingBottom = `${tradeSimulator.offsetHeight + 20}px`;
+                    closeComparisonModal();
+                });
+            }
+
+            const showBtn = document.getElementById('showTradeButton');
+            if (showBtn) {
+                showBtn.addEventListener('click', () => {
+                    tradeSimulator.classList.remove('collapsed');
+                    state.isTradeCollapsed = false;
+                    mainContent.style.paddingBottom = `${tradeSimulator.offsetHeight + 20}px`;
+                });
+            }
+
+            mainContent.style.paddingBottom = `${tradeSimulator.offsetHeight + 20}px`;
+        }
+
         function renderTradeBlock() {
-  const isEligible = state.isCompareMode && state.teamsToCompare.size >= 2;
+            const tradeEligible = state.isCompareMode && state.teamsToCompare.size >= 2;
+            const startSitActive = state.isStartSitMode;
 
-  if (!isEligible) {
-    tradeSimulator.style.display = 'none';
-    mainContent.style.paddingBottom = '1rem';
-    return;
-  }
+            if (!tradeEligible && !startSitActive) {
+                tradeSimulator.style.display = 'none';
+                tradeSimulator.innerHTML = '';
+                mainContent.style.paddingBottom = '1rem';
+                return;
+            }
 
-  tradeSimulator.style.display = 'block';
-  tradeSimulator.innerHTML = `
+            tradeSimulator.style.display = 'block';
+            if (startSitActive) {
+                renderStartSitPreview();
+                return;
+            }
+
+            tradeSimulator.innerHTML = `
               <div class="trade-container glass-panel">
           <div class="trade-header">
             <div class="trade-header-left">

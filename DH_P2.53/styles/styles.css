@@ -1271,6 +1271,67 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
         #rosterGrid.is-preview-mode {
             justify-content: center;
         }
+        #rosterGrid.start-sit-mode {
+            gap: 0.6rem;
+            justify-content: center;
+        }
+        .start-sit-column {
+            width: 140px;
+        }
+        .start-sit-pos-header {
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            text-align: center;
+            color: var(--color-text-primary);
+            padding: 0.2rem 0;
+            background: linear-gradient(145deg, rgba(118, 109, 255, 0.08), rgba(66, 194, 255, 0.05));
+            border: 1px solid var(--color-panel-border);
+            border-radius: 8px;
+            box-shadow: inset 0 1px 1px rgba(255,255,255,0.05);
+        }
+        .start-sit-card {
+            padding: 0.25rem 0.1rem;
+            gap: 0.2rem;
+        }
+        .start-sit-empty {
+            color: var(--color-text-tertiary);
+            font-size: 0.75rem;
+            font-style: italic;
+            text-align: center;
+            padding: 0.4rem 0.2rem;
+        }
+        .start-sit-container .trade-header {
+            background: linear-gradient(120deg, rgba(118, 109, 255, 0.14), rgba(0, 235, 199, 0.08));
+        }
+        .start-sit-chip {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            align-items: center;
+            column-gap: 0.4rem;
+            row-gap: 0.15rem;
+        }
+        .start-sit-chip > span:nth-child(2) {
+            font-weight: 600;
+        }
+        .start-sit-metric {
+            justify-self: end;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: baseline;
+            column-gap: 0.35rem;
+        }
+        .start-sit-rank {
+            font-size: 0.75em;
+            color: var(--color-text-tertiary);
+        }
+        .start-sit-preview-column .trade-total {
+            font-weight: 600;
+        }
+        .start-sit-preview-column .trade-assets {
+            gap: 0.2rem;
+        }
         .roster-column {
             width: 127px;
             flex-shrink: 0;
