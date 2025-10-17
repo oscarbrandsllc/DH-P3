@@ -726,6 +726,8 @@ if (pageType === 'welcome') {
                 setTimeout(() => window.scrollTo(0, 0), 0);
                 updateHeaderPreviewState();
                 renderAllTeamData(state.currentTeams);
+                tradeSimulator.style.display = 'none';
+                mainContent.style.paddingBottom = '1rem';
             }
         }
 
@@ -3765,13 +3767,19 @@ const wrTeStatOrder = [
         }
 
         function renderTradeBlock() {
-  const isEligible = state.isCompareMode && state.teamsToCompare.size >= 2;
+            // If in Start/Sit mode, use the Start/Sit panel instead
+            if (state.isStartSitMode) {
+                renderStartSitPanel();
+                return;
+            }
 
-  if (!isEligible) {
-    tradeSimulator.style.display = 'none';
-    mainContent.style.paddingBottom = '1rem';
-    return;
-  }
+            const isEligible = state.isCompareMode && state.teamsToCompare.size >= 2;
+
+            if (!isEligible) {
+                tradeSimulator.style.display = 'none';
+                mainContent.style.paddingBottom = '1rem';
+                return;
+            }
 
   tradeSimulator.style.display = 'block';
   tradeSimulator.innerHTML = `
