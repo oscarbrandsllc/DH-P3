@@ -331,7 +331,7 @@ if (pageType === 'welcome') {
 }
 
         // --- State ---
-let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, calculatedRankCache: null, playerProjectionWeeks: {}, isStartSitMode: false, startSitSelections: [], startSitNextSide: 'left', startSitTeamName: null };
+let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, lastLiveStatsWeek: null, lastLiveStatsFetchTs: 0, calculatedRankCache: null, playerProjectionWeeks: {}, isStartSitMode: false, startSitSelections: [], startSitNextSide: 'left', startSitTeamName: null };
         const assignedLeagueColors = new Map();
         let nextColorIndex = 0;
         const assignedRyColors = new Map();
@@ -344,8 +344,6 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
         const PLAYER_STATS_SHEETS = { season: 'SZN', seasonRanks: 'SZN_RKs', weeks: { 1: 'WK1', 2: 'WK2', 3: 'WK3', 4: 'WK4', 5: 'WK5', 6: 'WK6' } };
         // UPDATE THIS: Total number of weeks to display in game logs (including unplayed weeks with projections)
         const MAX_DISPLAY_WEEKS = 8; // Currently showing weeks 1-8; increase as more week sheets are added
-        // UPDATE THIS EACH WEEK: current NFL week number used for Start/Sit labeling and projections
-        const CURRENT_NFL_WEEK = 7;
         const TAG_COLORS = { QB:"var(--pos-qb)", RB:"var(--pos-rb)", WR:"var(--pos-wr)", TE:"var(--pos-te)", BN:"var(--pos-bn)", TX:"var(--pos-tx)", FLX: "var(--pos-flx)", SFLX: "var(--pos-sflx)" };
         const STARTER_ORDER = ['QB', 'RB', 'WR', 'TE', 'FLEX', 'SUPER_FLEX'];
         const TEAM_COLORS = { ARI:"#97233F", ATL:"#A71930", BAL:"#241773", BUF:"#00338D", CAR:"#0085CA", CHI:"#1a2d4e", CIN:"#FB4F14", CLE:"#311D00", DAL:"#003594", DEN:"#FB4F14", DET:"#0076B6", GB:"#203731", HOU:"#03202F", IND:"#002C5F", JAX:"#006778", KC:"#E31837", LAC:"#0080C6", LAR:"#003594", LV:"#A5ACAF", MIA:"#008E97", MIN:"#4F2683", NE:"#002244", NO:"#D3BC8D", NYG:"#0B2265", NYJ:"#125740", PHI:"#004C54", PIT:"#FFB612", SEA:"#69BE28", SF:"#B3995D", TB:"#D50A0A", TEN:"#4B92DB", WAS:"#5A1414", FA: "#64748b" };
@@ -371,6 +369,17 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             "dynasty footballers": "DFB", "la leaguaaa dynasty est2024": "LLGA",
             "la leaugaaa dynasty est2024": "LLGA"
         };
+
+        function getCurrentNflWeekNumber() {
+            if (Number.isFinite(state.currentNflWeek)) return state.currentNflWeek;
+            const liveWeeks = Object.keys(state.liveWeeklyStats || {}).map(Number).filter(Number.isFinite);
+            const sheetWeeks = Object.keys(state.weeklyStats || {}).map(Number).filter(Number.isFinite);
+            const projectionWeeks = state.playerProjectionWeeks || {};
+            const nonProjectionSheetWeeks = sheetWeeks.filter(week => projectionWeeks[week] !== true);
+            const allWeeks = [...liveWeeks, ...nonProjectionSheetWeeks];
+            if (allWeeks.length === 0) return null;
+            return Math.max(...allWeeks);
+        }
 
         // --- Event Listeners ---
         if (pageType === 'rosters') {
@@ -757,9 +766,13 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             state.startSitNextSide = count % 2 === 0 ? 'left' : 'right';
         }
 
-        function getPlayerProjectionForWeek(playerId, week = CURRENT_NFL_WEEK) {
+        function getPlayerProjectionForWeek(playerId, week = null) {
             if (!playerId) return { value: null, display: 'NA' };
-            const numericWeek = Number(week);
+            const fallbackWeek = getCurrentNflWeekNumber();
+            const candidateWeek = Number(week);
+            const numericWeek = Number.isFinite(candidateWeek) && candidateWeek > 0
+                ? candidateWeek
+                : (Number.isFinite(fallbackWeek) && fallbackWeek > 0 ? fallbackWeek : null);
             if (!Number.isFinite(numericWeek)) return { value: null, display: 'NA' };
 
             const resolveProjection = (statSource) => {
@@ -814,6 +827,7 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             }
 
             const ranks = calculatePlayerStatsAndRanks(playerId) || getDefaultPlayerRanks();
+            const activeWeek = getCurrentNflWeekNumber();
             const rawPpg = typeof ranks.ppg === 'number' ? ranks.ppg : Number.parseFloat(String(ranks.ppg || '').replace(/[^0-9.\-]/g, ''));
             const hasPpg = Number.isFinite(rawPpg);
             const ppgValue = hasPpg ? Number(rawPpg) : null;
@@ -828,7 +842,7 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             const rankDisplay = normalizedBasePos
                 ? (hasPpgRank ? `${normalizedBasePos}·${rawPpgRank}` : `${normalizedBasePos}·NA`)
                 : (hasPpgRank ? `${rawPpgRank}` : 'NA');
-            const projectionInfo = getPlayerProjectionForWeek(playerId, CURRENT_NFL_WEEK);
+            const projectionInfo = getPlayerProjectionForWeek(playerId, activeWeek);
             const projectionValue = projectionInfo?.value ?? null;
             const projectionDisplay = projectionInfo?.display || 'NA';
             const selection = {
@@ -1424,15 +1438,31 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             }
         }
 
-        async function ensureSleeperLiveStats() {
-            if (state.liveStatsLoaded) return;
+        async function ensureSleeperLiveStats(force = false) {
+            if (!force && state.liveStatsLoaded) {
+                const knownWeek = state.currentNflWeek;
+                const lastFetchedWeek = state.lastLiveStatsWeek;
+                if (Number.isFinite(knownWeek) && knownWeek === lastFetchedWeek) {
+                    const now = Date.now();
+                    if (state.lastLiveStatsFetchTs && (now - state.lastLiveStatsFetchTs) < 5 * 60 * 1000) {
+                        return;
+                    }
+                }
+            }
             await fetchSleeperLiveStats();
         }
 
         async function fetchSleeperLiveStats() {
             const sheetWeeks = Object.keys(state.playerWeeklyStats || {}).map(week => Number(week)).filter(week => Number.isFinite(week));
             const latestSheetWeek = sheetWeeks.length > 0 ? Math.max(...sheetWeeks) : 0;
-            state.liveWeeklyStats = {};
+            const existingLiveStats = state.liveWeeklyStats && typeof state.liveWeeklyStats === 'object'
+                ? Object.keys(state.liveWeeklyStats).reduce((acc, week) => {
+                    const weekStats = state.liveWeeklyStats[week];
+                    if (!weekStats || typeof weekStats !== 'object') return acc;
+                    acc[week] = { ...weekStats };
+                    return acc;
+                }, {})
+                : {};
 
             try {
                 const response = await fetch(`${API_BASE}/state/nfl`);
@@ -1444,13 +1474,15 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
                 state.currentNflSeason = season;
                 state.currentNflWeek = Number.isFinite(currentWeek) ? currentWeek : null;
 
-                if (!season || !Number.isFinite(currentWeek) || currentWeek <= latestSheetWeek) {
+                if (!season || !Number.isFinite(currentWeek) || currentWeek <= 0) {
+                    state.liveWeeklyStats = existingLiveStats;
                     return;
                 }
 
-                const liveWeeklyStats = {};
+                const liveWeeklyStats = { ...existingLiveStats };
+                const fetchStartWeek = Math.max(Math.min(latestSheetWeek + 1, currentWeek), 1);
 
-                for (let week = latestSheetWeek + 1; week <= currentWeek; week++) {
+                for (let week = fetchStartWeek; week <= currentWeek; week++) {
                     try {
                         const statsResponse = await fetch(`${API_BASE}/stats/nfl/regular/${season}/${week}`);
                         if (!statsResponse.ok) throw new Error(`Sleeper stats request failed: ${statsResponse.status}`);
@@ -1462,7 +1494,11 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
                             if (!statLine) continue;
                             const override = Number(statLine?.pts_ppr ?? statLine?.pts ?? statLine?.pts_ppr_total ?? statLine?.fantasy_points_ppr);
                             if (!Number.isFinite(override)) continue;
-                            weekStats[playerId] = { fpts_override: override, __live: true };
+                            weekStats[playerId] = {
+                                fpts: override,
+                                fpts_override: override,
+                                __live: true
+                            };
                         }
 
                         if (Object.keys(weekStats).length > 0) {
@@ -1474,24 +1510,57 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
                 }
 
                 state.liveWeeklyStats = liveWeeklyStats;
+                state.lastLiveStatsWeek = currentWeek;
                 state.calculatedRankCache = null;
             } catch (error) {
                 console.warn('Sleeper live stats unavailable.', error);
-                state.liveWeeklyStats = {};
+                state.liveWeeklyStats = existingLiveStats;
+                if (!Number.isFinite(state.lastLiveStatsWeek) && Number.isFinite(state.currentNflWeek)) {
+                    state.lastLiveStatsWeek = state.currentNflWeek;
+                }
                 state.calculatedRankCache = null;
             } finally {
                 state.liveStatsLoaded = true;
+                state.lastLiveStatsFetchTs = Date.now();
             }
         }
 
         function getCombinedWeeklyStats() {
-            const combined = { ...(state.weeklyStats || {}) };
+            const combined = {};
+            const baseWeeklyStats = state.weeklyStats || {};
+
+            Object.entries(baseWeeklyStats).forEach(([week, stats]) => {
+                const clonedWeek = {};
+                Object.entries(stats || {}).forEach(([playerId, statLine]) => {
+                    clonedWeek[playerId] = { ...(statLine || {}) };
+                });
+                combined[week] = clonedWeek;
+            });
+
             const liveWeeklyStats = state.liveWeeklyStats || {};
-            for (const [week, stats] of Object.entries(liveWeeklyStats)) {
-                if (!combined[week]) {
-                    combined[week] = stats;
-                }
-            }
+            Object.entries(liveWeeklyStats).forEach(([week, stats]) => {
+                if (!combined[week]) combined[week] = {};
+                const weekBucket = combined[week];
+                const isProjectionWeek = state.playerProjectionWeeks?.[Number(week)] === true;
+                Object.entries(stats || {}).forEach(([playerId, liveLine]) => {
+                    const existing = weekBucket[playerId] ? { ...(weekBucket[playerId]) } : {};
+                    const merged = { ...existing, ...(liveLine || {}) };
+                    const liveFpts = Number.isFinite(liveLine?.fpts)
+                        ? liveLine.fpts
+                        : (Number.isFinite(liveLine?.fpts_override) ? liveLine.fpts_override : null);
+                    if (liveFpts !== null) {
+                        merged.fpts = liveFpts;
+                        merged.fpts_override = liveFpts;
+                    }
+                    if (liveLine && liveLine.__live === true && (isProjectionWeek || Object.keys(existing).length === 0)) {
+                        merged.__live = true;
+                    } else if (!isProjectionWeek && merged.__live) {
+                        delete merged.__live;
+                    }
+                    weekBucket[playerId] = merged;
+                });
+            });
+
             return combined;
         }
 
@@ -2443,7 +2512,8 @@ const wrTeStatOrder = [
                     (typeof snapPct === 'number' && snapPct > 0) ||
                     hasNonProjStat
                 );
-                const isUnplayedWeek = isProjectionWeek || isByeWeek || !hasParticipation;
+                const isLiveWeek = stats?.__live === true;
+                const isUnplayedWeek = !isLiveWeek && (isProjectionWeek || isByeWeek || !hasParticipation);
 
                 const row = document.createElement('tr');
                 if (isUnplayedWeek) row.classList.add('unplayed-week-row');
@@ -2515,8 +2585,6 @@ const wrTeStatOrder = [
 
                 weekTd.appendChild(weekTag);
                 row.appendChild(weekTd);
-
-                const isLiveWeek = stats?.__live === true;
 
                 for (const key of orderedStatKeys) {
                     if (!statLabels[key]) continue;
@@ -3852,6 +3920,8 @@ const wrTeStatOrder = [
 
         function renderStartSitPreview() {
             const selections = state.startSitSelections || [];
+            const currentWeekNumber = getCurrentNflWeekNumber();
+            const weekLabel = Number.isFinite(currentWeekNumber) ? ` WK${currentWeekNumber}` : '';
             const escapeHtml = (value) => {
                 if (value === null || value === undefined) return '';
                 return String(value)
@@ -3866,7 +3936,7 @@ const wrTeStatOrder = [
               <div class="trade-container glass-panel start-sit-container">
           <div class="trade-header">
             <div class="trade-header-left">
-              <h3>Start/Sit WK${CURRENT_NFL_WEEK} <i class="fa-solid fa-code-compare fa-rotate-270"></i></h3>
+              <h3>Start/Sit${weekLabel} <i class="fa-solid fa-code-compare fa-rotate-270"></i></h3>
             </div>
             <div class="trade-header-center">
               <button id="collapseTradeButton"><i class="fa-solid fa-caret-down"></i></button>
@@ -3891,7 +3961,7 @@ const wrTeStatOrder = [
           <div class="trade-footnote">• Projected Points •</div>
         </div>
         
-        <button id="showTradeButton"><i class="fa-solid fa-circle-chevron-up"></i> Start/Sit WK${CURRENT_NFL_WEEK} <i class="fa-solid fa-circle-chevron-up"></i></button>
+        <button id="showTradeButton"><i class="fa-solid fa-circle-chevron-up"></i> Start/Sit${weekLabel} <i class="fa-solid fa-circle-chevron-up"></i></button>
   `;
 
             const sides = ['left', 'right'];
@@ -4328,6 +4398,10 @@ const wrTeStatOrder = [
         }
         function calculateFantasyPoints(stats, scoringSettings) {
             if (!stats) return 0;
+
+            if (typeof stats.fpts === 'number' && Number.isFinite(stats.fpts)) {
+                return stats.fpts;
+            }
 
             if (typeof stats.fpts_override === 'number' && Number.isFinite(stats.fpts_override)) {
                 return stats.fpts_override;
