@@ -33,7 +33,7 @@
 }
 .player-ktc-wrapper .value,
 .player-ppg-wrapper .value {
-  margin-left: 0.08rem; /* subtle spacing between label and value */
+  margin-left: 0.03rem; /* subtle spacing between label and value */
 }
 .stat-rank-variant-ktc .stat-rank-number {
   margin: 0; /* keep number tight to suffix */
