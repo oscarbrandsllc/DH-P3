@@ -4296,7 +4296,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
   pointer-events: none;
 }
 #game-logs-modal .unplayed-week-row .gamelog-week-tag {
-  opacity: 0.6;
+  opacity: 0.52;
 }
 #game-logs-modal .live-week-row .gamelog-week-tag {
   opacity: 1;
