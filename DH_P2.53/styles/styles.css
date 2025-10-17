@@ -1404,7 +1404,7 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
             flex-direction: column;
             align-items: center;
             justify-content: flex-start;
-            gap: 0.12rem;
+            gap: 0.012rem !important;
             padding: 0.12rem 0.2rem 0;
         }
         .start-sit-preview-column > h4 {
@@ -1430,7 +1430,7 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
             margin-top: auto;
             margin-bottom: 0;
             padding-bottom: 0;
-            padding-top: 0.04rem;
+            padding-top: 0.24rem;
             text-align: center;
             line-height: 1;
         }
@@ -1582,6 +1582,10 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
             -webkit-backdrop-filter: blur(var(--roster-card-blur));
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
         }
+        .start-sit-column .player-row,
+        .start-sit-column .pick-row {
+            gap: 0.001rem;
+        }
 
 @media (min-width: 820px) {
   .player-row,
@@ -1642,6 +1646,9 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
             gap: 0.0rem;
             font-size: 0.65rem;
             color: var(--color-text-secondary);
+        }
+        .start-sit-column .player-meta-line {
+            padding: 0rem 0.1rem;
         }
         .team-tag {
             display: inline-flex;
@@ -1739,6 +1746,9 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
             flex-direction: column;
             gap: 0.4rem;
             position: relative;
+        }
+        .start-sit-container .trade-container {
+            gap: 0.04rem;
         }
 
         .trade-header {
