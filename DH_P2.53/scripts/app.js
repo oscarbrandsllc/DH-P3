@@ -331,7 +331,7 @@ if (pageType === 'welcome') {
 }
 
         // --- State ---
-        let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, calculatedRankCache: null, playerProjectionWeeks: {} };
+        let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, isStartSitMode: false, startSitBlock: [], currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, calculatedRankCache: null, playerProjectionWeeks: {}, userTeamName: null };
         const assignedLeagueColors = new Map();
         let nextColorIndex = 0;
         const assignedRyColors = new Map();
@@ -387,11 +387,21 @@ if (pageType === 'welcome') {
                     if (isModalOpen) {
                         closeComparisonModal();
                     } else {
-                        const selectedPlayers = Object.values(state.tradeBlock).flat().filter(asset => asset.pos !== 'DP');
-                        if (selectedPlayers.length !== 2) {
-                            showTemporaryTooltip(compareButton, 'Please select exactly 2 players to compare.');
+                        // Handle Start/Sit mode
+                        if (state.isStartSitMode) {
+                            if (state.startSitBlock.length !== 2) {
+                                showTemporaryTooltip(compareButton, 'Please select exactly 2 players to compare.');
+                            } else {
+                                handlePlayerCompare(e);
+                            }
                         } else {
-                            handlePlayerCompare(e);
+                            // Normal trade mode
+                            const selectedPlayers = Object.values(state.tradeBlock).flat().filter(asset => asset.pos !== 'DP');
+                            if (selectedPlayers.length !== 2) {
+                                showTemporaryTooltip(compareButton, 'Please select exactly 2 players to compare.');
+                            } else {
+                                handlePlayerCompare(e);
+                            }
                         }
                     }
                 }
@@ -402,6 +412,7 @@ if (pageType === 'welcome') {
             lineupViewBtn?.addEventListener('click', () => setRosterView('lineup'));
             positionalFiltersContainer?.addEventListener('click', handlePositionFilter);
             clearFiltersButton?.addEventListener('click', handleClearFilters);
+            startSitButton?.addEventListener('click', handleStartSitClick);
 
             if (gameLogsModal) {
                 modalCloseBtn.addEventListener('click', () => closeModal());
@@ -674,6 +685,8 @@ if (pageType === 'welcome') {
             state.teamsToCompare = teamsToKeep;
 
             state.isCompareMode = false;
+            state.isStartSitMode = false;
+            state.startSitBlock = [];
             rosterView.classList.remove('is-trade-mode');
             rosterGrid.classList.remove('is-preview-mode');
             
@@ -684,6 +697,46 @@ if (pageType === 'welcome') {
             if (state.currentTeams) {
                 renderAllTeamData(state.currentTeams);
             }
+        }
+
+        function handleStartSitClick() {
+            // If already in Start/Sit mode, exit it
+            if (state.isStartSitMode) {
+                state.isStartSitMode = false;
+                state.startSitBlock = [];
+                state.isCompareMode = false;
+                rosterView.classList.remove('is-trade-mode');
+                rosterGrid.classList.remove('is-preview-mode');
+                document.querySelectorAll('.player-selected').forEach(el => el.classList.remove('player-selected'));
+                closeComparisonModal();
+                updateHeaderPreviewState();
+                renderAllTeamData(state.currentTeams);
+                renderTradeBlock();
+                return;
+            }
+
+            // Enter Start/Sit mode
+            state.isStartSitMode = true;
+            state.isCompareMode = true;
+            state.startSitBlock = [];
+            
+            // Clear any existing trade selections
+            state.tradeBlock = {};
+            state.teamsToCompare.clear();
+            
+            // Select only the user's team
+            const userTeam = state.currentTeams?.find(team => team.isUserTeam);
+            if (userTeam) {
+                state.teamsToCompare.add(userTeam.teamName);
+                state.userTeamName = userTeam.teamName;
+            }
+
+            rosterView.classList.add('is-trade-mode');
+            rosterGrid.classList.add('is-preview-mode');
+            updateHeaderPreviewState();
+            window.scrollTo(0, 0);
+            renderAllTeamData(state.currentTeams);
+            renderTradeBlock();
         }
 
         function lockCompareButtonSize() {
@@ -844,6 +897,39 @@ if (pageType === 'welcome') {
             const { assetId, assetLabel, assetKtc, assetPos, assetBasePos, assetTeam } = assetRow.dataset;
             if (!assetId) return;
 
+            // Handle Start/Sit mode differently
+            if (state.isStartSitMode) {
+                // Only allow player selection (not picks)
+                if (assetRow.classList.contains('pick-row')) return;
+
+                const playerIndex = state.startSitBlock.findIndex(a => a.id === assetId);
+                
+                if (playerIndex > -1) {
+                    // Deselect player
+                    state.startSitBlock.splice(playerIndex, 1);
+                    assetRow.classList.remove('player-selected');
+                } else {
+                    // Only allow 2 players max
+                    if (state.startSitBlock.length >= 2) {
+                        return;
+                    }
+                    
+                    state.startSitBlock.push({
+                        id: assetId,
+                        label: assetLabel,
+                        ktc: parseInt(assetKtc, 10) || 0,
+                        pos: assetPos,
+                        basePos: assetBasePos || assetPos,
+                        team: assetTeam || ''
+                    });
+                    assetRow.classList.add('player-selected');
+                }
+                
+                renderTradeBlock();
+                return;
+            }
+
+            // Normal trade mode logic
             if (!state.tradeBlock[teamName]) {
                 state.tradeBlock[teamName] = [];
             }
@@ -870,6 +956,9 @@ if (pageType === 'welcome') {
 
         function clearTrade() {
             state.tradeBlock = {};
+            if (state.isStartSitMode) {
+                state.startSitBlock = [];
+            }
             document.querySelectorAll('.player-selected').forEach(el => el.classList.remove('player-selected'));
             renderTradeBlock();
             closeComparisonModal();
@@ -2641,38 +2730,60 @@ const wrTeStatOrder = [
 
         async function handlePlayerCompare(e) {
             const selectedPlayersWithTeams = [];
-            for (const teamName in state.tradeBlock) {
-                if (Object.prototype.hasOwnProperty.call(state.tradeBlock, teamName)) {
-                    const assets = state.tradeBlock[teamName];
-                    assets.forEach(asset => {
-                        if (asset.pos !== 'DP') {
-                            const fullPlayer = state.players[asset.id];
-                            const playerName = fullPlayer
-                                ? `${fullPlayer.first_name} ${fullPlayer.last_name}`
-                                : asset.label;
-                            const normalizedTeam = (asset.team || fullPlayer?.team || 'FA').toUpperCase();
-                            const primaryPos = (asset.basePos || fullPlayer?.position || asset.pos || '').toUpperCase();
+            
+            // Handle Start/Sit mode
+            if (state.isStartSitMode) {
+                state.startSitBlock.forEach(asset => {
+                    const fullPlayer = state.players[asset.id];
+                    const playerName = fullPlayer
+                        ? `${fullPlayer.first_name} ${fullPlayer.last_name}`
+                        : asset.label;
+                    const normalizedTeam = (asset.team || fullPlayer?.team || 'FA').toUpperCase();
+                    const primaryPos = (asset.basePos || fullPlayer?.position || asset.pos || '').toUpperCase();
 
-                            selectedPlayersWithTeams.push({
-                                ...asset,
-                                teamName,
-                                name: playerName,
-                                pos: primaryPos || asset.pos,
-                                displayPos: asset.pos,
-                                team: normalizedTeam
-                            });
-                        }
+                    selectedPlayersWithTeams.push({
+                        ...asset,
+                        teamName: state.userTeamName,
+                        name: playerName,
+                        pos: primaryPos || asset.pos,
+                        displayPos: asset.pos,
+                        team: normalizedTeam
                     });
+                });
+            } else {
+                // Normal trade mode
+                for (const teamName in state.tradeBlock) {
+                    if (Object.prototype.hasOwnProperty.call(state.tradeBlock, teamName)) {
+                        const assets = state.tradeBlock[teamName];
+                        assets.forEach(asset => {
+                            if (asset.pos !== 'DP') {
+                                const fullPlayer = state.players[asset.id];
+                                const playerName = fullPlayer
+                                    ? `${fullPlayer.first_name} ${fullPlayer.last_name}`
+                                    : asset.label;
+                                const normalizedTeam = (asset.team || fullPlayer?.team || 'FA').toUpperCase();
+                                const primaryPos = (asset.basePos || fullPlayer?.position || asset.pos || '').toUpperCase();
+
+                                selectedPlayersWithTeams.push({
+                                    ...asset,
+                                    teamName,
+                                    name: playerName,
+                                    pos: primaryPos || asset.pos,
+                                    displayPos: asset.pos,
+                                    team: normalizedTeam
+                                });
+                            }
+                        });
+                    }
                 }
+
+                // Sort to ensure user's player is first (only in trade mode)
+                selectedPlayersWithTeams.sort((a, b) => {
+                    if (a.teamName === state.userTeamName) return -1;
+                    if (b.teamName === state.userTeamName) return 1;
+                    return 0;
+                });
             }
-
-
-            // Sort to ensure user's player is first
-            selectedPlayersWithTeams.sort((a, b) => {
-                if (a.teamName === state.userTeamName) return -1;
-                if (b.teamName === state.userTeamName) return 1;
-                return 0;
-            });
 
             const comparisonModalBody = document.getElementById('comparison-modal-body');
             comparisonModalBody.innerHTML = '<p class="text-center p-4">Loading player comparison...</p>';
@@ -3250,7 +3361,9 @@ const wrTeStatOrder = [
                     header.appendChild(recordSpan);
                 }
 
-                const card = state.currentRosterView === 'positional' ? createPositionalTeamCard(team) : createDepthChartTeamCard(team);
+                const card = state.isStartSitMode 
+                    ? createStartSitTeamCard(team)
+                    : (state.currentRosterView === 'positional' ? createPositionalTeamCard(team) : createDepthChartTeamCard(team));
 
                 columnWrapper.appendChild(header);
                 columnWrapper.appendChild(card);
@@ -3405,6 +3518,44 @@ const wrTeStatOrder = [
                     picksEl.innerHTML += `<div class="text-xs text-slate-500 p-1 italic">None</div>`;
                 }
             }
+            return card;
+        }
+
+        function createStartSitTeamCard(team) {
+            const card = document.createElement('div');
+            card.className = 'team-card start-sit-card';
+            card.innerHTML = `
+                <div class="roster-section qb-section"><h3>QB</h3></div>
+                <div class="roster-section rb-section"><h3>RB</h3></div>
+                <div class="roster-section wr-section"><h3>WR</h3></div>
+                <div class="roster-section te-section"><h3>TE</h3></div>
+            `;
+
+            const positions = {
+                QB: team.allPlayers.filter(p => p.pos === 'QB').sort((a, b) => (b.ktc || 0) - (a.ktc || 0)),
+                RB: team.allPlayers.filter(p => p.pos === 'RB').sort((a, b) => (b.ktc || 0) - (a.ktc || 0)),
+                WR: team.allPlayers.filter(p => p.pos === 'WR').sort((a, b) => (b.ktc || 0) - (a.ktc || 0)),
+                TE: team.allPlayers.filter(p => p.pos === 'TE').sort((a, b) => (b.ktc || 0) - (a.ktc || 0)),
+            };
+
+            const populate = (sel, data, creator) => {
+                const el = card.querySelector(sel);
+                const h3 = el.querySelector('h3');
+                el.innerHTML = '';
+                el.appendChild(h3);
+
+                if (data && data.length > 0) {
+                    data.forEach(item => el.appendChild(creator(item, team.teamName)));
+                } else {
+                    el.innerHTML += `<div class="text-xs text-slate-500 p-1 italic">None</div>`;
+                }
+            };
+
+            populate('.qb-section', positions.QB, createPlayerRow);
+            populate('.rb-section', positions.RB, createPlayerRow);
+            populate('.wr-section', positions.WR, createPlayerRow);
+            populate('.te-section', positions.TE, createPlayerRow);
+            
             return card;
         }
 
@@ -3563,6 +3714,162 @@ const wrTeStatOrder = [
         }
 
         function renderTradeBlock() {
+            // Handle Start/Sit mode
+            if (state.isStartSitMode) {
+                const isEligible = state.isCompareMode && state.teamsToCompare.size >= 1;
+                
+                if (!isEligible) {
+                    tradeSimulator.style.display = 'none';
+                    mainContent.style.paddingBottom = '1rem';
+                    return;
+                }
+
+                tradeSimulator.style.display = 'block';
+                tradeSimulator.innerHTML = `
+                    <div class="trade-container glass-panel">
+                        <div class="trade-header">
+                            <div class="trade-header-left">
+                                <h3>Start/Sit <i class="fa-solid fa-elevator"></i></h3>
+                            </div>
+                            <div class="trade-header-center">
+                                <button id="collapseTradeButton"><i class="fa-solid fa-caret-down"></i></button>
+                            </div>
+                            <div class="trade-header-right">
+                                <button id="comparePlayersButton" class="control-button-subtle">
+                                    <i class="fa-solid fa-chart-simple"></i>
+                                    <span class="label">Compare</span>
+                                </button>
+                                <button id="clearTradeButton" type="button">
+                                    <i class="fa-solid fa-eraser"></i>
+                                    <span class="label">Clear</span>
+                                </button>
+                                <button id="closeTradeButton" type="button">
+                                    <i class="fa-solid fa-circle-xmark"></i>
+                                    <span class="label">Close</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="trade-body"></div>
+                        <div class="trade-footnote">• PPR Scoring •</div>
+                    </div>
+                    
+                    <button id="showTradeButton"><i class="fa-solid fa-circle-chevron-up"></i> Start/Sit <i class="fa-solid fa-circle-chevron-up"></i></button>
+                `;
+
+                const tradeBody = tradeSimulator.querySelector('.trade-body');
+                
+                // Calculate totals for selected players
+                let totalProjPoints = 0;
+                const playersData = [];
+
+                state.startSitBlock.forEach(asset => {
+                    const playerRanks = calculatePlayerStatsAndRanks(asset.id) || getDefaultPlayerRanks();
+                    const ppgValue = typeof playerRanks.ppg === 'number' ? playerRanks.ppg : parseFloat(playerRanks.ppg || '0');
+                    const posRank = playerRanks.ppgPosRank || 'NA';
+                    totalProjPoints += ppgValue;
+                    playersData.push({ ...asset, ppg: ppgValue, posRank });
+                });
+
+                let bodyHtml = '';
+                
+                // Player 1 (left side)
+                const player1 = playersData[0];
+                let player1Html = '';
+                if (player1) {
+                    const tagColor = TAG_COLORS[player1.pos] || 'var(--pos-bn)';
+                    const ppgColor = getConditionalColorByRank(player1.posRank, player1.basePos);
+                    player1Html = `<div class="trade-asset-chip">
+                        <span class="player-tag" style="background-color: ${tagColor};">${player1.pos || 'N/A'}</span>
+                        <span>${player1.label}</span>
+                        <span class="ppg-info" style="color: ${ppgColor}">${player1.ppg.toFixed(1)} PPG (${player1.basePos}·${player1.posRank})</span>
+                    </div>`;
+                } else {
+                    player1Html = `<span class="text-xs text-slate-500 p-2">Select first player...</span>`;
+                }
+
+                // Player 2 (right side)
+                const player2 = playersData[1];
+                let player2Html = '';
+                if (player2) {
+                    const tagColor = TAG_COLORS[player2.pos] || 'var(--pos-bn)';
+                    const ppgColor = getConditionalColorByRank(player2.posRank, player2.basePos);
+                    player2Html = `<div class="trade-asset-chip">
+                        <span class="player-tag" style="background-color: ${tagColor};">${player2.pos || 'N/A'}</span>
+                        <span>${player2.label}</span>
+                        <span class="ppg-info" style="color: ${ppgColor}">${player2.ppg.toFixed(1)} PPG (${player2.basePos}·${player2.posRank})</span>
+                    </div>`;
+                } else {
+                    player2Html = `<span class="text-xs text-slate-500 p-2">Select second player...</span>`;
+                }
+
+                bodyHtml = `
+                    <div class="trade-team-column">
+                        <h4>Player 1</h4>
+                        <div class="trade-assets">${player1Html}</div>
+                        <div class="trade-total even">
+                            Proj PPG: ${player1 ? player1.ppg.toFixed(1) : '0.0'}
+                        </div>
+                    </div>
+                    <div class="trade-divider"></div>
+                    <div class="trade-team-column">
+                        <h4>Player 2</h4>
+                        <div class="trade-assets">${player2Html}</div>
+                        <div class="trade-total even">
+                            Proj PPG: ${player2 ? player2.ppg.toFixed(1) : '0.0'}
+                        </div>
+                    </div>
+                `;
+
+                tradeBody.innerHTML = bodyHtml;
+
+                // Update button states
+                const clearBtn = document.getElementById('clearTradeButton');
+                if (clearBtn) clearBtn.disabled = state.startSitBlock.length === 0;
+
+                const comparePlayersButton = document.getElementById('comparePlayersButton');
+                if (comparePlayersButton) {
+                    if (state.startSitBlock.length === 2) {
+                        comparePlayersButton.classList.add('enabled');
+                    } else {
+                        comparePlayersButton.classList.remove('enabled');
+                    }
+                }
+
+                tradeSimulator.classList.toggle('collapsed', state.isTradeCollapsed);
+
+                document.getElementById('clearTradeButton').addEventListener('click', () => {
+                    state.startSitBlock = [];
+                    document.querySelectorAll('.player-selected').forEach(el => el.classList.remove('player-selected'));
+                    renderTradeBlock();
+                    closeComparisonModal();
+                });
+                
+                const closeTradeButton = document.getElementById('closeTradeButton');
+                if (closeTradeButton) {
+                    closeTradeButton.addEventListener('click', () => {
+                        handleStartSitClick();
+                    });
+                }
+                
+                document.getElementById('collapseTradeButton').addEventListener('click', () => {
+                    tradeSimulator.classList.add('collapsed');
+                    state.isTradeCollapsed = true;
+                    mainContent.style.paddingBottom = `${tradeSimulator.offsetHeight + 20}px`;
+                    closeComparisonModal();
+                });
+                
+                document.getElementById('showTradeButton').addEventListener('click', () => {
+                    tradeSimulator.classList.remove('collapsed');
+                    state.isTradeCollapsed = false;
+                    mainContent.style.paddingBottom = `${tradeSimulator.offsetHeight + 20}px`;
+                });
+
+                mainContent.style.paddingBottom = `${tradeSimulator.offsetHeight + 20}px`;
+                return;
+            }
+
+            // Normal trade mode logic
   const isEligible = state.isCompareMode && state.teamsToCompare.size >= 2;
 
   if (!isEligible) {
