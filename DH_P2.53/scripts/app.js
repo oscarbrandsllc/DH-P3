@@ -2489,9 +2489,8 @@ const wrTeStatOrder = [
             };
 
             // Determine last completed week based on configured sheets
-            const completedWeeks = Object.keys(PLAYER_STATS_SHEETS.weeks || {}).map(Number).filter(Number.isFinite);
-            const lastCompletedWeek = completedWeeks.length > 0 ? Math.max(...completedWeeks) : 0;
             const totalColumns = 1 + orderedStatKeys.filter(key => Boolean(statLabels[key])).length;
+            const rowsMeta = [];
 
             for (let week = 1; week <= MAX_DISPLAY_WEEKS; week++) {
                 const weekStatsEntry = gameLogsByWeek.get(week) || null;
@@ -2512,7 +2511,8 @@ const wrTeStatOrder = [
                     (typeof snapPct === 'number' && snapPct > 0) ||
                     hasNonProjStat
                 );
-                const isLiveWeek = stats?.__live === true;
+                const liveFptsValue = typeof stats?.fpts === 'number' && Number.isFinite(stats.fpts) ? stats.fpts : null;
+                const isLiveWeek = stats?.__live === true || (liveFptsValue !== null && !isProjectionWeek);
                 const isUnplayedWeek = !isLiveWeek && (isProjectionWeek || isByeWeek || !hasParticipation);
 
                 const row = document.createElement('tr');
@@ -2691,21 +2691,27 @@ const wrTeStatOrder = [
                     row.appendChild(td);
                 }
 
-                tbody.appendChild(row);
+                rowsMeta.push({ row, isPlayed: !isUnplayedWeek, week });
 
-                // Insert a faint divider line after the last completed week if there are upcoming weeks
-                if (week === lastCompletedWeek && lastCompletedWeek < MAX_DISPLAY_WEEKS) {
-                    const dividerRow = document.createElement('tr');
-                    dividerRow.className = 'week-divider-row';
-                    const dividerTd = document.createElement('td');
-                    dividerTd.colSpan = totalColumns;
-                    dividerRow.appendChild(dividerTd);
-                    tbody.appendChild(dividerRow);
-                }
                 if (!isUnplayedWeek && weekStatsEntry) {
                     gameLogsWithData.push(weekStatsEntry);
                 }
             }
+
+            const firstUnplayedIndex = rowsMeta.findIndex(meta => !meta.isPlayed);
+            const hasPlayedRows = rowsMeta.some(meta => meta.isPlayed);
+            if (firstUnplayedIndex !== -1 && hasPlayedRows) {
+                const dividerRow = document.createElement('tr');
+                dividerRow.className = 'week-divider-row';
+                const dividerTd = document.createElement('td');
+                dividerTd.colSpan = totalColumns;
+                dividerRow.appendChild(dividerTd);
+                rowsMeta.splice(firstUnplayedIndex, 0, { row: dividerRow, isDivider: true });
+            }
+
+            rowsMeta.forEach(meta => {
+                tbody.appendChild(meta.row);
+            });
 
             table.appendChild(thead);
             table.appendChild(tbody);

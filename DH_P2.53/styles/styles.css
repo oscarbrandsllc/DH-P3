@@ -4282,19 +4282,25 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     border: 1px solid rgba(250, 250, 250, 0.1);
     box-shadow: 0 8px 32px rgba(31, 38, 105, 0.10), inset 0 6px 20px rgba(255, 255, 255, 0.013);
   }
-  #game-logs-modal .gamelog-week-tag::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.01);
-    backdrop-filter: blur(1px);
-    box-shadow: inset 10px 12px 0px -8px rgba(255, 255, 255, .05),
-                inset 0px 8px 0px -6px rgba(255, 255, 255, .051);
-    opacity: 0.4;
-    z-index: -1;
-    pointer-events: none;
-  }
+#game-logs-modal .gamelog-week-tag::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.01);
+  backdrop-filter: blur(1px);
+  box-shadow: inset 10px 12px 0px -8px rgba(255, 255, 255, .05),
+              inset 0px 8px 0px -6px rgba(255, 255, 255, .051);
+  opacity: 0.4;
+  z-index: -1;
+  pointer-events: none;
+}
+#game-logs-modal .unplayed-week-row .gamelog-week-tag {
+  opacity: 0.6;
+}
+#game-logs-modal .live-week-row .gamelog-week-tag {
+  opacity: 1;
+}
 
   /* Top line: WK-# */
   #game-logs-modal .gamelog-week-tag-number {
