@@ -280,6 +280,10 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
             await ensureNavigate('research');
     });
 
+    startSitButton?.addEventListener('click', () => {
+        handleStartSitClick();
+    });
+
 // Add pointer/touch guards so quick taps on mobile also blur the input before navigation fires
 ['homeButton','rostersButton','ownershipButton','statsButton','analyzerButton','researchButton'].forEach(id=>{
     const el = document.getElementById(id);
@@ -331,7 +335,7 @@ if (pageType === 'welcome') {
 }
 
         // --- State ---
-        let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, calculatedRankCache: null, playerProjectionWeeks: {} };
+        let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, calculatedRankCache: null, playerProjectionWeeks: {}, isStartSitMode: false, startSitBlock: { left: [], right: [] }, startSitNextSide: 'left' };
         const assignedLeagueColors = new Map();
         let nextColorIndex = 0;
         const assignedRyColors = new Map();
@@ -686,6 +690,53 @@ if (pageType === 'welcome') {
             }
         }
 
+        function handleStartSitClick() {
+            if (!state.currentLeagueId || !state.currentTeams) {
+                return;
+            }
+
+            state.isStartSitMode = !state.isStartSitMode;
+
+            if (state.isStartSitMode) {
+                // Entering Start/Sit mode
+                const userTeam = state.currentTeams.find(team => team.isUserTeam);
+                if (userTeam) {
+                    state.teamsToCompare.clear();
+                    state.teamsToCompare.add(userTeam.teamName);
+                }
+                state.isCompareMode = true;
+                rosterView.classList.add('is-trade-mode');
+                rosterView.classList.add('is-start-sit-mode');
+                rosterGrid.classList.add('is-preview-mode');
+                rosterGrid.classList.add('is-start-sit-mode');
+                clearStartSit();
+                setTimeout(() => window.scrollTo(0, 0), 0);
+                updateHeaderPreviewState();
+                renderAllTeamData(state.currentTeams);
+                renderStartSitPanel();
+            } else {
+                // Exiting Start/Sit mode
+                state.teamsToCompare.clear();
+                state.isCompareMode = false;
+                rosterView.classList.remove('is-trade-mode');
+                rosterView.classList.remove('is-start-sit-mode');
+                rosterGrid.classList.remove('is-preview-mode');
+                rosterGrid.classList.remove('is-start-sit-mode');
+                clearStartSit();
+                setTimeout(() => window.scrollTo(0, 0), 0);
+                updateHeaderPreviewState();
+                renderAllTeamData(state.currentTeams);
+            }
+        }
+
+        function clearStartSit() {
+            state.startSitBlock = { left: [], right: [] };
+            state.startSitNextSide = 'left';
+            document.querySelectorAll('.player-selected').forEach(el => el.classList.remove('player-selected'));
+            renderStartSitPanel();
+            closeComparisonModal();
+        }
+
         function lockCompareButtonSize() {
             if (!compareButton) return;
             if (compareButton.style.width && compareButton.style.height) {
@@ -838,34 +889,93 @@ if (pageType === 'welcome') {
             const assetRow = e.target.closest('.player-row, .pick-row');
             if (!assetRow) return;
 
+            // In Start/Sit mode, ignore draft picks
+            if (state.isStartSitMode && assetRow.classList.contains('pick-row')) return;
+
             const teamName = assetRow.closest('.roster-column')?.dataset.teamName;
             if (!teamName || !state.teamsToCompare.has(teamName)) return;
 
             const { assetId, assetLabel, assetKtc, assetPos, assetBasePos, assetTeam } = assetRow.dataset;
             if (!assetId) return;
 
-            if (!state.tradeBlock[teamName]) {
-                state.tradeBlock[teamName] = [];
-            }
+            if (state.isStartSitMode) {
+                // Start/Sit mode: Alternating sides logic
+                const playerRanks = calculatePlayerStatsAndRanks(assetId) || getDefaultPlayerRanks();
+                const ppgValue = typeof playerRanks.ppg === 'number' ? playerRanks.ppg : parseFloat(playerRanks.ppg) || 0;
+                const ppgPosRank = playerRanks.ppgPosRank || 'NA';
 
-            const assetIndex = state.tradeBlock[teamName].findIndex(a => a.id === assetId);
+                // Check if player is already selected on either side
+                const leftIndex = state.startSitBlock.left.findIndex(a => a.id === assetId);
+                const rightIndex = state.startSitBlock.right.findIndex(a => a.id === assetId);
 
-            if (assetIndex > -1) {
-                state.tradeBlock[teamName].splice(assetIndex, 1);
-                assetRow.classList.remove('player-selected');
+                if (leftIndex > -1) {
+                    state.startSitBlock.left.splice(leftIndex, 1);
+                    assetRow.classList.remove('player-selected');
+                    // If left becomes empty, next selection goes to left
+                    if (state.startSitBlock.left.length === 0) {
+                        state.startSitNextSide = 'left';
+                    }
+                } else if (rightIndex > -1) {
+                    state.startSitBlock.right.splice(rightIndex, 1);
+                    assetRow.classList.remove('player-selected');
+                    // If right becomes empty, next selection goes to right
+                    if (state.startSitBlock.right.length === 0) {
+                        state.startSitNextSide = 'right';
+                    }
+                } else {
+                    // Add to alternating side
+                    const asset = {
+                        id: assetId,
+                        label: assetLabel,
+                        ktc: parseInt(assetKtc, 10) || 0,
+                        pos: assetPos,
+                        basePos: assetBasePos || assetPos,
+                        team: assetTeam || '',
+                        ppg: ppgValue,
+                        ppgPosRank: ppgPosRank
+                    };
+
+                    // Limit to 1 player per side
+                    if (state.startSitNextSide === 'left' && state.startSitBlock.left.length < 1) {
+                        state.startSitBlock.left.push(asset);
+                        state.startSitNextSide = 'right';
+                        assetRow.classList.add('player-selected');
+                    } else if (state.startSitNextSide === 'right' && state.startSitBlock.right.length < 1) {
+                        state.startSitBlock.right.push(asset);
+                        state.startSitNextSide = 'left';
+                        assetRow.classList.add('player-selected');
+                    } else {
+                        // Both sides full, do nothing
+                        return;
+                    }
+                }
+
+                renderStartSitPanel();
             } else {
-                state.tradeBlock[teamName].push({
-                    id: assetId,
-                    label: assetLabel,
-                    ktc: parseInt(assetKtc, 10) || 0,
-                    pos: assetPos,
-                    basePos: assetBasePos || assetPos,
-                    team: assetTeam || ''
-                });
-                assetRow.classList.add('player-selected');
+                // Normal trade mode
+                if (!state.tradeBlock[teamName]) {
+                    state.tradeBlock[teamName] = [];
+                }
+
+                const assetIndex = state.tradeBlock[teamName].findIndex(a => a.id === assetId);
+
+                if (assetIndex > -1) {
+                    state.tradeBlock[teamName].splice(assetIndex, 1);
+                    assetRow.classList.remove('player-selected');
+                } else {
+                    state.tradeBlock[teamName].push({
+                        id: assetId,
+                        label: assetLabel,
+                        ktc: parseInt(assetKtc, 10) || 0,
+                        pos: assetPos,
+                        basePos: assetBasePos || assetPos,
+                        team: assetTeam || ''
+                    });
+                    assetRow.classList.add('player-selected');
+                }
+                
+                renderTradeBlock();
             }
-            
-            renderTradeBlock();
         }
 
         function clearTrade() {
@@ -2688,6 +2798,47 @@ const wrTeStatOrder = [
             renderPlayerComparison(playerData);
         }
 
+        async function handleStartSitPlayerCompare() {
+            const selectedPlayers = [...state.startSitBlock.left, ...state.startSitBlock.right];
+            
+            if (selectedPlayers.length !== 2) {
+                return;
+            }
+
+            const userTeamName = state.currentTeams?.find(team => team.isUserTeam)?.teamName;
+
+            const selectedPlayersWithTeams = selectedPlayers.map(asset => {
+                const fullPlayer = state.players[asset.id];
+                const playerName = fullPlayer
+                    ? `${fullPlayer.first_name} ${fullPlayer.last_name}`
+                    : asset.label;
+                const normalizedTeam = (asset.team || fullPlayer?.team || 'FA').toUpperCase();
+                const primaryPos = (asset.basePos || fullPlayer?.position || asset.pos || '').toUpperCase();
+
+                return {
+                    ...asset,
+                    teamName: userTeamName,
+                    name: playerName,
+                    pos: primaryPos || asset.pos,
+                    displayPos: asset.pos,
+                    team: normalizedTeam
+                };
+            });
+
+            const comparisonModalBody = document.getElementById('comparison-modal-body');
+            comparisonModalBody.innerHTML = '<p class="text-center p-4">Loading player comparison...</p>';
+            openComparisonModal();
+
+            const playerData = await Promise.all(selectedPlayersWithTeams.map(async (player) => {
+                const gameLogs = await fetchGameLogs(player.id);
+                const playerRanks = calculatePlayerStatsAndRanks(player.id);
+                const seasonStats = state.playerSeasonStats?.[player.id] || null;
+                return { ...player, gameLogs, seasonStats, ...playerRanks };
+            }));
+
+            renderPlayerComparison(playerData);
+        }
+
         function renderPlayerComparison(players) {
             const comparisonModalBody = document.getElementById('comparison-modal-body');
             comparisonModalBody.innerHTML = ''; // Clear existing content
@@ -3214,49 +3365,59 @@ const wrTeStatOrder = [
                 rosterGrid.style.justifyContent = 'center';
             }
 
-            teamsToRender.forEach(team => {
-                const columnWrapper = document.createElement('div');
-                columnWrapper.className = 'roster-column';
-                columnWrapper.dataset.teamName = team.teamName;
+            if (state.isStartSitMode) {
+                // Special rendering for Start/Sit mode - 4 columns by position
+                teamsToRender.forEach(team => {
+                    const card = createStartSitTeamCard(team);
+                    rosterGrid.appendChild(card);
+                    calibrateTeamCardIntrinsicSize(card);
+                });
+            } else {
+                // Normal rendering
+                teamsToRender.forEach(team => {
+                    const columnWrapper = document.createElement('div');
+                    columnWrapper.className = 'roster-column';
+                    columnWrapper.dataset.teamName = team.teamName;
 
-                const header = document.createElement('div');
-                header.className = 'team-header-item';
+                    const header = document.createElement('div');
+                    header.className = 'team-header-item';
 
-                const checkbox = document.createElement('div');
-                checkbox.className = 'team-compare-checkbox';
-                if (state.teamsToCompare.has(team.teamName)) {
-                    checkbox.classList.add('selected');
-                }
-                checkbox.dataset.teamName = team.teamName;
+                    const checkbox = document.createElement('div');
+                    checkbox.className = 'team-compare-checkbox';
+                    if (state.teamsToCompare.has(team.teamName)) {
+                        checkbox.classList.add('selected');
+                    }
+                    checkbox.dataset.teamName = team.teamName;
 
-                const teamNameSpan = document.createElement('span');
-                teamNameSpan.className = 'team-name';
-                teamNameSpan.textContent = team.teamName;
+                    const teamNameSpan = document.createElement('span');
+                    teamNameSpan.className = 'team-name';
+                    teamNameSpan.textContent = team.teamName;
 
-                if (team.record) {
-                    header.title = `${team.teamName} (${team.record})`;
-                } else {
-                    header.title = team.teamName;
-                }
+                    if (team.record) {
+                        header.title = `${team.teamName} (${team.record})`;
+                    } else {
+                        header.title = team.teamName;
+                    }
 
 
-                header.appendChild(checkbox);
-                header.appendChild(teamNameSpan);
+                    header.appendChild(checkbox);
+                    header.appendChild(teamNameSpan);
 
-                if (team.record) {
-                    const recordSpan = document.createElement('span');
-                    recordSpan.className = 'team-record';
-                    recordSpan.textContent = `(${team.record})`;
-                    header.appendChild(recordSpan);
-                }
+                    if (team.record) {
+                        const recordSpan = document.createElement('span');
+                        recordSpan.className = 'team-record';
+                        recordSpan.textContent = `(${team.record})`;
+                        header.appendChild(recordSpan);
+                    }
 
-                const card = state.currentRosterView === 'positional' ? createPositionalTeamCard(team) : createDepthChartTeamCard(team);
+                    const card = state.currentRosterView === 'positional' ? createPositionalTeamCard(team) : createDepthChartTeamCard(team);
 
-                columnWrapper.appendChild(header);
-                columnWrapper.appendChild(card);
-                rosterGrid.appendChild(columnWrapper);
-                calibrateTeamCardIntrinsicSize(card);
-            });
+                    columnWrapper.appendChild(header);
+                    columnWrapper.appendChild(card);
+                    rosterGrid.appendChild(columnWrapper);
+                    calibrateTeamCardIntrinsicSize(card);
+                });
+            }
 
             if (compareSearchInput && compareSearchInput.value) {
                 filterTeamsByQuery(compareSearchInput.value);
@@ -3406,6 +3567,47 @@ const wrTeStatOrder = [
                 }
             }
             return card;
+        }
+
+        function createStartSitTeamCard(team) {
+            const container = document.createElement('div');
+            container.className = 'start-sit-grid';
+            container.dataset.teamName = team.teamName;
+
+            // Create 4 columns for QB, RB, WR, TE
+            const positions = {
+                QB: team.allPlayers.filter(p => p.pos === 'QB').sort((a, b) => (b.ktc || 0) - (a.ktc || 0)),
+                RB: team.allPlayers.filter(p => p.pos === 'RB').sort((a, b) => (b.ktc || 0) - (a.ktc || 0)),
+                WR: team.allPlayers.filter(p => p.pos === 'WR').sort((a, b) => (b.ktc || 0) - (a.ktc || 0)),
+                TE: team.allPlayers.filter(p => p.pos === 'TE').sort((a, b) => (b.ktc || 0) - (a.ktc || 0)),
+            };
+
+            ['QB', 'RB', 'WR', 'TE'].forEach(pos => {
+                const column = document.createElement('div');
+                column.className = 'start-sit-column';
+                
+                const header = document.createElement('h3');
+                header.textContent = pos;
+                header.className = 'start-sit-column-header';
+                column.appendChild(header);
+
+                const playerList = document.createElement('div');
+                playerList.className = 'start-sit-player-list';
+
+                const players = positions[pos];
+                if (players && players.length > 0) {
+                    players.forEach(player => {
+                        playerList.appendChild(createPlayerRow(player, team.teamName));
+                    });
+                } else {
+                    playerList.innerHTML = `<div class="text-xs text-slate-500 p-1 italic">None</div>`;
+                }
+
+                column.appendChild(playerList);
+                container.appendChild(column);
+            });
+
+            return container;
         }
 
         function createEmptyTaxiRow() {
@@ -3708,6 +3910,183 @@ const wrTeStatOrder = [
                 mainContent.style.paddingBottom = `${tradeSimulator.offsetHeight + 20}px`;
             });
 
+            mainContent.style.paddingBottom = `${tradeSimulator.offsetHeight + 20}px`;
+        }
+
+        function renderStartSitPanel() {
+            if (!state.isStartSitMode) {
+                tradeSimulator.style.display = 'none';
+                mainContent.style.paddingBottom = '1rem';
+                return;
+            }
+
+            tradeSimulator.style.display = 'block';
+            tradeSimulator.innerHTML = `
+                <div class="trade-container glass-panel">
+                    <div class="trade-header">
+                        <div class="trade-header-left">
+                            <h3>Start/Sit <i class="fa-solid fa-elevator"></i></h3>
+                        </div>
+                        <div class="trade-header-center">
+                            <button id="collapseStartSitButton"><i class="fa-solid fa-caret-down"></i></button>
+                        </div>
+                        <div class="trade-header-right">
+                            <button id="compareStartSitPlayersButton" class="control-button-subtle">
+                                <i class="fa-solid fa-chart-simple"></i>
+                                <span class="label">Compare</span>
+                            </button>
+                            <button id="clearStartSitButton" type="button">
+                                <i class="fa-solid fa-eraser"></i>
+                                <span class="label">Clear</span>
+                            </button>
+                            <button id="closeStartSitButton" type="button">
+                                <i class="fa-solid fa-circle-xmark"></i>
+                                <span class="label">Close</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="trade-body"></div>
+                    <div class="trade-footnote">• Projected Points •</div>
+                </div>
+                
+                <button id="showStartSitButton"><i class="fa-solid fa-circle-chevron-up"></i> Start/Sit <i class="fa-solid fa-circle-chevron-up"></i></button>
+            `;
+
+            const tradeBody = tradeSimulator.querySelector('.trade-body');
+            
+            const leftAssets = state.startSitBlock.left;
+            const rightAssets = state.startSitBlock.right;
+
+            const leftTotal = leftAssets.reduce((sum, asset) => sum + (asset.ppg || 0), 0);
+            const rightTotal = rightAssets.reduce((sum, asset) => sum + (asset.ppg || 0), 0);
+
+            let leftClass = 'even';
+            let rightClass = 'even';
+            
+            if (leftTotal > rightTotal && leftTotal > 0 && rightTotal > 0) {
+                leftClass = 'winning';
+                rightClass = 'losing';
+            } else if (rightTotal > leftTotal && leftTotal > 0 && rightTotal > 0) {
+                leftClass = 'losing';
+                rightClass = 'winning';
+            }
+
+            let bodyHtml = '';
+
+            // Left side
+            let leftAssetsHTML = '';
+            if (leftAssets.length > 0) {
+                leftAssets.forEach(asset => {
+                    const tagColor = TAG_COLORS[asset.pos] || 'var(--pos-bn)';
+                    const ppgColor = typeof asset.ppgPosRank === 'number' ? getConditionalColorByRank(asset.ppgPosRank, asset.pos) : 'inherit';
+                    const ppgDisplay = typeof asset.ppg === 'number' ? asset.ppg.toFixed(1) : 'NA';
+                    const posRankDisplay = asset.ppgPosRank !== 'NA' && typeof asset.ppgPosRank === 'number' 
+                        ? `${asset.pos}·${asset.ppgPosRank}` 
+                        : asset.pos;
+                    leftAssetsHTML += `<div class="trade-asset-chip">
+                        <span class="player-tag" style="background-color: ${tagColor};">${asset.pos}</span>
+                        <span>${asset.label}</span>
+                        <span class="ppg-info">
+                            <span style="color: ${ppgColor}">${ppgDisplay} PPG</span>
+                            <span class="separator">•</span>
+                            <span>${posRankDisplay}</span>
+                        </span>
+                    </div>`;
+                });
+            } else {
+                leftAssetsHTML = `<span class="text-xs text-slate-500 p-2">Select a player...</span>`;
+            }
+
+            bodyHtml += `
+                <div class="trade-team-column">
+                    <h4>Player 1</h4>
+                    <div class="trade-assets">${leftAssetsHTML}</div>
+                    <div class="trade-total ${leftClass}">
+                        PPG: ${leftTotal.toFixed(1)}
+                    </div>
+                </div>
+            `;
+
+            bodyHtml += `<div class="trade-divider"></div>`;
+
+            // Right side
+            let rightAssetsHTML = '';
+            if (rightAssets.length > 0) {
+                rightAssets.forEach(asset => {
+                    const tagColor = TAG_COLORS[asset.pos] || 'var(--pos-bn)';
+                    const ppgColor = typeof asset.ppgPosRank === 'number' ? getConditionalColorByRank(asset.ppgPosRank, asset.pos) : 'inherit';
+                    const ppgDisplay = typeof asset.ppg === 'number' ? asset.ppg.toFixed(1) : 'NA';
+                    const posRankDisplay = asset.ppgPosRank !== 'NA' && typeof asset.ppgPosRank === 'number' 
+                        ? `${asset.pos}·${asset.ppgPosRank}` 
+                        : asset.pos;
+                    rightAssetsHTML += `<div class="trade-asset-chip">
+                        <span class="player-tag" style="background-color: ${tagColor};">${asset.pos}</span>
+                        <span>${asset.label}</span>
+                        <span class="ppg-info">
+                            <span style="color: ${ppgColor}">${ppgDisplay} PPG</span>
+                            <span class="separator">•</span>
+                            <span>${posRankDisplay}</span>
+                        </span>
+                    </div>`;
+                });
+            } else {
+                rightAssetsHTML = `<span class="text-xs text-slate-500 p-2">Select a player...</span>`;
+            }
+
+            bodyHtml += `
+                <div class="trade-team-column">
+                    <h4>Player 2</h4>
+                    <div class="trade-assets">${rightAssetsHTML}</div>
+                    <div class="trade-total ${rightClass}">
+                        PPG: ${rightTotal.toFixed(1)}
+                    </div>
+                </div>
+            `;
+
+            tradeBody.innerHTML = bodyHtml;
+
+            // Clear button state
+            const clearBtn = document.getElementById('clearStartSitButton');
+            const hasAnyPlayers = leftAssets.length > 0 || rightAssets.length > 0;
+            if (clearBtn) clearBtn.disabled = !hasAnyPlayers;
+
+            // Compare button state
+            const compareButton = document.getElementById('compareStartSitPlayersButton');
+            const totalPlayers = leftAssets.length + rightAssets.length;
+            if (compareButton) {
+                if (totalPlayers === 2) {
+                    compareButton.classList.add('enabled');
+                } else {
+                    compareButton.classList.remove('enabled');
+                }
+                compareButton.addEventListener('click', () => {
+                    if (totalPlayers !== 2) {
+                        showTemporaryTooltip(compareButton, 'Please select exactly 2 players to compare.');
+                    } else {
+                        handleStartSitPlayerCompare();
+                    }
+                });
+            }
+
+            // Event listeners
+            document.getElementById('clearStartSitButton').addEventListener('click', clearStartSit);
+            document.getElementById('closeStartSitButton').addEventListener('click', () => {
+                handleStartSitClick(); // Toggle off Start/Sit mode
+            });
+            document.getElementById('collapseStartSitButton').addEventListener('click', () => {
+                tradeSimulator.classList.add('collapsed');
+                state.isTradeCollapsed = true;
+                mainContent.style.paddingBottom = `${tradeSimulator.offsetHeight + 20}px`;
+                closeComparisonModal();
+            });
+            document.getElementById('showStartSitButton').addEventListener('click', () => {
+                tradeSimulator.classList.remove('collapsed');
+                state.isTradeCollapsed = false;
+                mainContent.style.paddingBottom = `${tradeSimulator.offsetHeight + 20}px`;
+            });
+
+            tradeSimulator.classList.toggle('collapsed', state.isTradeCollapsed);
             mainContent.style.paddingBottom = `${tradeSimulator.offsetHeight + 20}px`;
         }
 

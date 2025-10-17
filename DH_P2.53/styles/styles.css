@@ -7786,3 +7786,67 @@ body[data-page="research"] #secondary-header-row {
         max-width: 50%; /* Each takes up half the space */
     }
 }
+
+/* Start/Sit Mode Styles */
+.start-sit-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.start-sit-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.start-sit-column-header {
+    font-size: 1.25rem;
+    font-weight: 600;
+    text-align: center;
+    padding: 0.75rem;
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(99, 102, 241, 0.15));
+    border-radius: 0.5rem;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    margin: 0;
+}
+
+.start-sit-player-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+/* Responsive adjustments for Start/Sit grid */
+@media (max-width: 1200px) {
+    .start-sit-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .start-sit-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Hide roster columns in Start/Sit mode */
+.is-start-sit-mode .roster-column .team-header-item .team-compare-checkbox {
+    display: none;
+}
+
+/* PPG info styling in trade assets */
+.trade-asset-chip .ppg-info {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.85rem;
+}
+
+.trade-asset-chip .ppg-info .separator {
+    opacity: 0.5;
+}
