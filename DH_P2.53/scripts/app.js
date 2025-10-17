@@ -344,6 +344,8 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
         const PLAYER_STATS_SHEETS = { season: 'SZN', seasonRanks: 'SZN_RKs', weeks: { 1: 'WK1', 2: 'WK2', 3: 'WK3', 4: 'WK4', 5: 'WK5', 6: 'WK6' } };
         // UPDATE THIS: Total number of weeks to display in game logs (including unplayed weeks with projections)
         const MAX_DISPLAY_WEEKS = 8; // Currently showing weeks 1-8; increase as more week sheets are added
+        // UPDATE THIS EACH WEEK: current NFL week number used for Start/Sit labeling and projections
+        const CURRENT_NFL_WEEK = 7;
         const TAG_COLORS = { QB:"var(--pos-qb)", RB:"var(--pos-rb)", WR:"var(--pos-wr)", TE:"var(--pos-te)", BN:"var(--pos-bn)", TX:"var(--pos-tx)", FLX: "var(--pos-flx)", SFLX: "var(--pos-sflx)" };
         const STARTER_ORDER = ['QB', 'RB', 'WR', 'TE', 'FLEX', 'SUPER_FLEX'];
         const TEAM_COLORS = { ARI:"#97233F", ATL:"#A71930", BAL:"#241773", BUF:"#00338D", CAR:"#0085CA", CHI:"#1a2d4e", CIN:"#FB4F14", CLE:"#311D00", DAL:"#003594", DEN:"#FB4F14", DET:"#0076B6", GB:"#203731", HOU:"#03202F", IND:"#002C5F", JAX:"#006778", KC:"#E31837", LAC:"#0080C6", LAR:"#003594", LV:"#A5ACAF", MIA:"#008E97", MIN:"#4F2683", NE:"#002244", NO:"#D3BC8D", NYG:"#0B2265", NYJ:"#125740", PHI:"#004C54", PIT:"#FFB612", SEA:"#69BE28", SF:"#B3995D", TB:"#D50A0A", TEN:"#4B92DB", WAS:"#5A1414", FA: "#64748b" };
@@ -755,6 +757,35 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             state.startSitNextSide = count % 2 === 0 ? 'left' : 'right';
         }
 
+        function getPlayerProjectionForWeek(playerId, week = CURRENT_NFL_WEEK) {
+            if (!playerId) return { value: null, display: 'NA' };
+            const numericWeek = Number(week);
+            if (!Number.isFinite(numericWeek)) return { value: null, display: 'NA' };
+
+            const resolveProjection = (statSource) => {
+                if (!statSource || !Object.prototype.hasOwnProperty.call(statSource, 'proj')) return null;
+                const raw = statSource.proj;
+                if (raw === undefined || raw === null) return null;
+                const trimmed = String(raw).trim();
+                if (!trimmed) return null;
+                if (trimmed.toUpperCase() === 'NA') return { value: null, display: 'NA' };
+                const numeric = Number.parseFloat(trimmed.replace(/[^0-9.\-]/g, ''));
+                const value = Number.isFinite(numeric) ? numeric : null;
+                return {
+                    value,
+                    display: value !== null ? value.toFixed(1) : trimmed
+                };
+            };
+
+            const sheetResult = resolveProjection(state.playerWeeklyStats?.[numericWeek]?.[playerId]);
+            if (sheetResult) return sheetResult;
+
+            const liveResult = resolveProjection(state.liveWeeklyStats?.[numericWeek]?.[playerId]);
+            if (liveResult) return liveResult;
+
+            return { value: null, display: 'NA' };
+        }
+
         function handleStartSitPlayerClick(e) {
             const row = e.target.closest('.player-row');
             if (!row) return;
@@ -797,6 +828,9 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             const rankDisplay = normalizedBasePos
                 ? (hasPpgRank ? `${normalizedBasePos}·${rawPpgRank}` : `${normalizedBasePos}·NA`)
                 : (hasPpgRank ? `${rawPpgRank}` : 'NA');
+            const projectionInfo = getPlayerProjectionForWeek(playerId, CURRENT_NFL_WEEK);
+            const projectionValue = projectionInfo?.value ?? null;
+            const projectionDisplay = projectionInfo?.display || 'NA';
             const selection = {
                 id: playerId,
                 label: row.dataset.assetLabel || row.querySelector('.player-name-clickable')?.textContent || 'Unknown Player',
@@ -807,7 +841,9 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
                 ppg: ppgValue,
                 ppgDisplay,
                 ppgPosRank: hasPpgRank ? rawPpgRank : null,
-                ppgPosRankDisplay: rankDisplay
+                ppgPosRankDisplay: rankDisplay,
+                projection: projectionValue,
+                projectionDisplay
             };
 
             state.startSitSelections.push(selection);
@@ -3826,7 +3862,7 @@ const wrTeStatOrder = [
               <div class="trade-container glass-panel start-sit-container">
           <div class="trade-header">
             <div class="trade-header-left">
-              <h3>Start/Sit <i class="fa-solid fa-code-compare fa-rotate-270"></i></h3>
+              <h3>Start/Sit WK${CURRENT_NFL_WEEK} <i class="fa-solid fa-code-compare fa-rotate-270"></i></h3>
             </div>
             <div class="trade-header-center">
               <button id="collapseTradeButton"><i class="fa-solid fa-caret-down"></i></button>
@@ -3851,7 +3887,7 @@ const wrTeStatOrder = [
           <div class="trade-footnote">• Projected Points •</div>
         </div>
         
-        <button id="showTradeButton"><i class="fa-solid fa-circle-chevron-up"></i> Start/Sit <i class="fa-solid fa-circle-chevron-up"></i></button>
+        <button id="showTradeButton"><i class="fa-solid fa-circle-chevron-up"></i> Start/Sit WK${CURRENT_NFL_WEEK} <i class="fa-solid fa-circle-chevron-up"></i></button>
   `;
 
             const sides = ['left', 'right'];
@@ -3866,13 +3902,31 @@ const wrTeStatOrder = [
 
                 if (selection) {
                     const tagColor = TAG_COLORS[selection.pos] || 'var(--pos-bn)';
+                    const posForColor = selection.basePos || selection.pos;
                     const rankColor = Number.isFinite(selection.ppgPosRank)
-                        ? getConditionalColorByRank(selection.ppgPosRank, selection.basePos || selection.pos)
+                        ? getConditionalColorByRank(selection.ppgPosRank, posForColor)
                         : 'var(--color-text-tertiary)';
-                    const rankText = selection.ppgPosRankDisplay || `${selection.basePos}·NA`;
+                    const baseLabel = posForColor || '';
+                    const rankText = (selection.ppgPosRankDisplay && selection.ppgPosRankDisplay !== 'NA')
+                        ? selection.ppgPosRankDisplay
+                        : (baseLabel ? `${baseLabel}·NA` : 'NA');
                     const ppgText = selection.ppgDisplay || 'NA';
-                    assetsHTML = `<div class="trade-asset-chip start-sit-chip"><span class="player-tag" style="background-color: ${tagColor};">${selection.pos}</span><span>${escapeHtml(selection.label)}</span><span class="start-sit-metric" style="color: ${rankColor}">${ppgText} PPG <span class="start-sit-rank">${rankText}</span></span></div>`;
-                    totalDisplay = selection.ppg !== null ? selection.ppg.toFixed(1) : '—';
+                    const projectionDisplay = selection.projection !== null
+                        ? selection.projection.toFixed(1)
+                        : ((selection.projectionDisplay && selection.projectionDisplay.toUpperCase() !== 'NA') ? selection.projectionDisplay : '—');
+                    assetsHTML = `
+                        <div class="trade-asset-chip start-sit-chip">
+                            <span class="player-tag" style="background-color: ${tagColor};">${selection.pos}</span>
+                            <div class="start-sit-chip-body">
+                                <span class="start-sit-name">${escapeHtml(selection.label)}</span>
+                                <span class="start-sit-metric">
+                                    <span class="start-sit-metric-value">${ppgText} PPG</span>
+                                    <span class="start-sit-metric-sep">•</span>
+                                    <span class="start-sit-rank" style="color: ${rankColor};">${rankText}</span>
+                                </span>
+                            </div>
+                        </div>`;
+                    totalDisplay = projectionDisplay;
                 } else {
                     assetsHTML = `<span class="text-xs text-slate-500 p-2">Select a player...</span>`;
                 }
