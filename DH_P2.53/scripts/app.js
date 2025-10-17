@@ -2488,7 +2488,6 @@ const wrTeStatOrder = [
                 return '';
             };
 
-            // Determine last completed week based on configured sheets
             const totalColumns = 1 + orderedStatKeys.filter(key => Boolean(statLabels[key])).length;
             const rowsMeta = [];
 
@@ -2516,8 +2515,12 @@ const wrTeStatOrder = [
                 const isUnplayedWeek = !isLiveWeek && (isProjectionWeek || isByeWeek || !hasParticipation);
 
                 const row = document.createElement('tr');
-                if (isUnplayedWeek) row.classList.add('unplayed-week-row');
                 if (isByeWeek) row.classList.add('bye-week-row');
+                if (isUnplayedWeek) {
+                    row.classList.add('unplayed-week-row');
+                } else if (isLiveWeek) {
+                    row.classList.add('live-week-row');
+                }
 
                 const weekTd = document.createElement('td');
                 weekTd.classList.add('week-cell');
@@ -2698,20 +2701,27 @@ const wrTeStatOrder = [
                 }
             }
 
-            const firstUnplayedIndex = rowsMeta.findIndex(meta => !meta.isPlayed);
-            const hasPlayedRows = rowsMeta.some(meta => meta.isPlayed);
-            if (firstUnplayedIndex !== -1 && hasPlayedRows) {
-                const dividerRow = document.createElement('tr');
-                dividerRow.className = 'week-divider-row';
-                const dividerTd = document.createElement('td');
-                dividerTd.colSpan = totalColumns;
-                dividerRow.appendChild(dividerTd);
-                rowsMeta.splice(firstUnplayedIndex, 0, { row: dividerRow, isDivider: true });
-            }
+            const dividerRow = document.createElement('tr');
+            dividerRow.className = 'week-divider-row';
+            const dividerTd = document.createElement('td');
+            dividerTd.colSpan = totalColumns;
+            dividerRow.appendChild(dividerTd);
 
-            rowsMeta.forEach(meta => {
-                tbody.appendChild(meta.row);
-            });
+            const sleeperCurrentWeek = Number.isFinite(state.currentNflWeek) ? state.currentNflWeek : null;
+            let dividerIndex = rowsMeta.length;
+            if (Number.isFinite(sleeperCurrentWeek)) {
+                const currentWeekIndex = rowsMeta.findIndex(meta => meta.week === sleeperCurrentWeek);
+                if (currentWeekIndex !== -1) {
+                    dividerIndex = rowsMeta[currentWeekIndex].isPlayed ? currentWeekIndex + 1 : currentWeekIndex;
+                }
+            }
+            if (!Number.isFinite(dividerIndex)) dividerIndex = rowsMeta.length;
+            if (!rowsMeta.some(meta => meta.isPlayed)) dividerIndex = 0;
+            dividerIndex = Math.max(0, Math.min(dividerIndex, rowsMeta.length));
+
+            rowsMeta.splice(dividerIndex, 0, { row: dividerRow, isDivider: true });
+
+            rowsMeta.forEach(meta => tbody.appendChild(meta.row));
 
             table.appendChild(thead);
             table.appendChild(tbody);
