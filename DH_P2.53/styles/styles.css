@@ -506,6 +506,13 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15),
                 inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
+.start-sit-button.active {
+    color: var(--color-accent-primary);
+    background: rgba(118, 109, 255, 0.1) !important;
+    border-color: rgba(118, 109, 255, 0.3) !important;
+    box-shadow: 0 4px 12px rgba(118, 109, 255, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
 
 .start-sit-button .analyzer-icon {
     font-size: 1.1rem;

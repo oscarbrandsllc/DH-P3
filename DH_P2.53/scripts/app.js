@@ -709,6 +709,7 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
                 handleClearCompare();
             }
 
+            startSitButton?.classList.add('active');
             state.isStartSitMode = true;
             state.startSitTeamName = userTeam.teamName;
             state.startSitSelections = [];
@@ -735,6 +736,7 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             rosterView.classList.remove('is-trade-mode');
             rosterGrid.classList.remove('is-preview-mode');
             rosterGrid.classList.remove('start-sit-mode');
+            startSitButton?.classList.remove('active');
             updateHeaderPreviewState();
             renderTradeBlock();
             if (state.currentTeams) {
