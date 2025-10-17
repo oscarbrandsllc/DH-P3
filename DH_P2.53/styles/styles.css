@@ -1285,6 +1285,9 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
             --start-sit-glow: rgba(118, 109, 255, 0.35);
             --start-sit-card-glow: rgba(118, 109, 255, 0.16);
         }
+        .roster-column.start-sit-column {
+            gap: 0.03rem;
+        }
         .start-sit-column[data-position="QB"] {
             --start-sit-accent: var(--pos-qb);
             --start-sit-border: #FF3A7599;
@@ -1428,9 +1431,9 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
         .start-sit-preview-column .trade-total {
             font-weight: 600;
             margin-top: auto;
-            margin-bottom: 0;
+            margin-bottom: -5px;
             padding-bottom: 0;
-            padding-top: 0.24rem;
+            padding-top: 0.5rem;
             text-align: center;
             line-height: 1;
         }
@@ -1747,8 +1750,11 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
             gap: 0.4rem;
             position: relative;
         }
-        .start-sit-container .trade-container {
+        .trade-container.start-sit-container {
             gap: 0.04rem;
+        }
+        .trade-container.start-sit-container .trade-footnote {
+            margin-top: 0.01rem;
         }
 
         .trade-header {
