@@ -3517,25 +3517,29 @@ const wrTeStatOrder = [
                 header.textContent = pos;
                 columnWrapper.appendChild(header);
 
-                const card = document.createElement('div');
-                card.className = 'team-card start-sit-card';
+                const cardWrapper = document.createElement('div');
+                cardWrapper.className = 'team-card start-sit-card';
 
                 const players = userTeam.allPlayers
                     .filter(player => (player.pos || '').toUpperCase() === pos)
                     .sort((a, b) => (b.ktc || 0) - (a.ktc || 0));
 
                 if (players.length > 0) {
-                    players.forEach(player => card.appendChild(createPlayerRow(player, userTeam.teamName)));
+                    players.forEach(player => cardWrapper.appendChild(createPlayerRow(player, userTeam.teamName)));
                 } else {
                     const placeholder = document.createElement('div');
                     placeholder.className = 'start-sit-empty';
                     placeholder.textContent = 'None';
-                    card.appendChild(placeholder);
+                    cardWrapper.appendChild(placeholder);
                 }
 
-                columnWrapper.appendChild(card);
+                const columnShell = document.createElement('div');
+                columnShell.className = 'start-sit-column-shell';
+                columnShell.appendChild(cardWrapper);
+
+                columnWrapper.appendChild(columnShell);
                 rosterGrid.appendChild(columnWrapper);
-                calibrateTeamCardIntrinsicSize(card);
+                calibrateTeamCardIntrinsicSize(cardWrapper);
             });
         }
 
@@ -3891,7 +3895,7 @@ const wrTeStatOrder = [
   `;
 
             const sides = ['left', 'right'];
-            const sideLabels = { left: 'Start Candidate', right: 'Sit Candidate' };
+            const sideLabels = { left: 'Player 1', right: 'Player 2' };
             const tradeBody = tradeSimulator.querySelector('.trade-body');
 
             let bodyHtml = '';
@@ -3911,16 +3915,23 @@ const wrTeStatOrder = [
                         ? selection.ppgPosRankDisplay
                         : (baseLabel ? `${baseLabel}·NA` : 'NA');
                     const ppgText = selection.ppgDisplay || 'NA';
+                    const hasPositivePpg = typeof selection.ppg === 'number' && selection.ppg > 0;
+                    const hasPpgRankNumber = Number.isFinite(selection.ppgPosRank) && selection.ppgPosRank > 0;
+                    const ppgColor = hasPositivePpg && hasPpgRankNumber
+                        ? getConditionalColorByRank(selection.ppgPosRank, posForColor)
+                        : (hasPositivePpg ? 'var(--color-text-mid-test1)' : 'var(--color-text-tertiary)');
                     const projectionDisplay = selection.projection !== null
                         ? selection.projection.toFixed(1)
                         : ((selection.projectionDisplay && selection.projectionDisplay.toUpperCase() !== 'NA') ? selection.projectionDisplay : '—');
                     assetsHTML = `
                         <div class="trade-asset-chip start-sit-chip">
-                            <span class="player-tag" style="background-color: ${tagColor};">${selection.pos}</span>
                             <div class="start-sit-chip-body">
-                                <span class="start-sit-name">${escapeHtml(selection.label)}</span>
+                                <span class="start-sit-name">
+                                    <span class="start-sit-inline-tag player-tag" style="background-color: ${tagColor};">${selection.pos}</span>
+                                    <span class="start-sit-name-text">${escapeHtml(selection.label)}</span>
+                                </span>
                                 <span class="start-sit-metric">
-                                    <span class="start-sit-metric-value">${ppgText} PPG</span>
+                                    <span class="start-sit-metric-value" style="color: ${ppgColor};">${ppgText} PPG</span>
                                     <span class="start-sit-metric-sep">•</span>
                                     <span class="start-sit-rank" style="color: ${rankColor};">${rankText}</span>
                                 </span>
@@ -3935,7 +3946,7 @@ const wrTeStatOrder = [
                     <div class="trade-team-column start-sit-preview-column">
                         <h4>${sideLabels[side]}</h4>
                         <div class="trade-assets">${assetsHTML}</div>
-                        <div class="trade-total even">
+                        <div class="trade-total even start-sit-total">
                             Projected Points: ${totalDisplay}
                         </div>
                     </div>
