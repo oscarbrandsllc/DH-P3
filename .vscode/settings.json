@@ -13,5 +13,6 @@
     "chat.agent.thinkingStyle": "collapsedPerItem",
     "chat.renderRelatedFiles": true,
     "chat.todoListTool.writeOnly": false,
-    "chat.tools.terminal.autoReplyToPrompts": true
+    "chat.tools.terminal.autoReplyToPrompts": true,
+    "chat.edits2.enabled": true
 }
