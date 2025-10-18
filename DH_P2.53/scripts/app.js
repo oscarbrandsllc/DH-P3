@@ -345,6 +345,14 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
         // UPDATE THIS: Total number of weeks to display in game logs (including unplayed weeks with projections)
         const MAX_DISPLAY_WEEKS = 8; // Currently showing weeks 1-8; increase as more week sheets are added
         const TAG_COLORS = { QB:"var(--pos-qb)", RB:"var(--pos-rb)", WR:"var(--pos-wr)", TE:"var(--pos-te)", BN:"var(--pos-bn)", TX:"var(--pos-tx)", FLX: "var(--pos-flx)", SFLX: "var(--pos-sflx)" };
+        const INJURY_DESIGNATION_COLORS = {
+            'IR': '#D47DC6',
+            'BYE': '#C3A8FB',
+            'Q': '#f8bc91',
+            'D': '#F5A8DA',
+            'PUP': '#D47DC6',
+            'OUT': '#D47DC6'
+        };
         const STARTER_ORDER = ['QB', 'RB', 'WR', 'TE', 'FLEX', 'SUPER_FLEX'];
         const TEAM_COLORS = { ARI:"#97233F", ATL:"#A71930", BAL:"#241773", BUF:"#00338D", CAR:"#0085CA", CHI:"#1a2d4e", CIN:"#FB4F14", CLE:"#311D00", DAL:"#003594", DEN:"#FB4F14", DET:"#0076B6", GB:"#203731", HOU:"#03202F", IND:"#002C5F", JAX:"#006778", KC:"#E31837", LAC:"#0080C6", LAR:"#003594", LV:"#A5ACAF", MIA:"#008E97", MIN:"#4F2683", NE:"#002244", NO:"#D3BC8D", NYG:"#0B2265", NYJ:"#125740", PHI:"#004C54", PIT:"#FFB612", SEA:"#69BE28", SF:"#B3995D", TB:"#D50A0A", TEN:"#4B92DB", WAS:"#5A1414", FA: "#64748b" };
       const LEAGUE_COLOR_PALETTE = [
@@ -799,6 +807,38 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             if (liveResult) return liveResult;
 
             return { value: null, display: 'NA' };
+        }
+
+        function getUpcomingProjectionDesignation(playerId) {
+            if (!playerId) return null;
+            const projectionWeeks = Object.keys(state.playerProjectionWeeks || {})
+                .map(Number)
+                .filter(Number.isFinite)
+                .sort((a, b) => a - b);
+            if (projectionWeeks.length === 0) return null;
+
+            const currentWeek = getCurrentNflWeekNumber();
+            const targetWeek = Number.isFinite(currentWeek)
+                ? (projectionWeeks.find(week => week > currentWeek) ?? projectionWeeks[0])
+                : projectionWeeks[0];
+            if (!Number.isFinite(targetWeek)) return null;
+
+            const upcomingStats = state.playerWeeklyStats?.[targetWeek]?.[playerId];
+            if (!upcomingStats || !Object.prototype.hasOwnProperty.call(upcomingStats, 'proj')) return null;
+            const rawValue = upcomingStats.proj;
+            if (rawValue === undefined || rawValue === null) return null;
+            const trimmed = String(rawValue).trim();
+            if (!trimmed || trimmed.toUpperCase() === 'NA') return null;
+
+            const numericPattern = /^-?\d+(?:\.\d+)?$/;
+            if (numericPattern.test(trimmed)) return null;
+
+            const designationText = trimmed.toUpperCase();
+            const primaryToken = designationText.split(/\s+/)[0]?.replace(/[^A-Z]/g, '') || '';
+            if (!primaryToken) return null;
+
+            const color = INJURY_DESIGNATION_COLORS[primaryToken] || 'var(--color-text-secondary)';
+            return { designation: primaryToken, color, week: targetWeek };
         }
 
         function handleStartSitPlayerClick(e) {
@@ -2195,7 +2235,7 @@ const SEASON_META_HEADERS = {
             if (!player) return { id: playerId, name: 'Unknown Player', pos: '?', age: '?', team: '?', adp: null, ktc: null, slot, posRank: null, ppg: 0 };
             const valueData = state.isSuperflex ? state.sflxData[playerId] : state.oneQbData[playerId];
             let lastName = player.last_name || '';
-            if (lastName.length > 10) lastName = lastName.slice(0, 10) + '..'; // add ellipsis if truncated
+            if (lastName.length > 9) lastName = lastName.slice(0, 9) + '..'; // add ellipsis if truncated
             let displayName = `${player.first_name.charAt(0)}. ${lastName}`;
 
             // Prioritize age from the sheet and format it to one decimal place
@@ -2203,6 +2243,7 @@ const SEASON_META_HEADERS = {
             const formattedAge = (typeof ageFromSheet === 'number') ? ageFromSheet.toFixed(1) : (player.age ? Number(player.age).toFixed(1) : '?');
 
             const playerRanks = calculatePlayerStatsAndRanks(playerId) || getDefaultPlayerRanks();
+            const upcomingDesignation = getUpcomingProjectionDesignation(playerId);
 
             return { 
                 id: playerId, 
@@ -2216,7 +2257,8 @@ const SEASON_META_HEADERS = {
                 posRank: valueData?.posRank || null,
                 overallRank: valueData?.overallRank || null,
                 ppg: playerRanks ? parseFloat(playerRanks.ppg) : 0,
-                playerRanks: playerRanks
+                playerRanks: playerRanks,
+                injuryDesignation: upcomingDesignation
             };
         }
 
@@ -3863,10 +3905,16 @@ const wrTeStatOrder = [
             const rawKtcPosRankNumber = ktcPosRankMatch ? Number.parseInt(ktcPosRankMatch[1], 10) : null;
             const ktcPosRankNumber = Number.isFinite(rawKtcPosRankNumber) && rawKtcPosRankNumber > 0 ? rawKtcPosRankNumber : null;
 
+            const injuryDesignation = player.injuryDesignation;
+            const injuryBadgeHtml = injuryDesignation
+                ? `<div class="player-injury-badge" style="color: ${injuryDesignation.color};">${injuryDesignation.designation}</div>`
+                : '';
+
             row.innerHTML = `
                 <div class="player-main-line">
                     <div class="player-tag" style="background-color: ${TAG_COLORS[displaySlot] || 'var(--pos-bn)'};">${displaySlot}</div>
                     <div class="player-name"><span class="player-name-clickable">${player.name}</span></div>
+                    ${injuryBadgeHtml}
                 </div>
                 <div class="player-meta-line">
                     <span class="player-pos-rank" style="color: ${posRankColor}; font-weight: 400;">${fptsPosRankDisplay}</span>
