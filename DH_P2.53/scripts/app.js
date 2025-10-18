@@ -3939,8 +3939,9 @@ const wrTeStatOrder = [
         function renderStartSitPreview() {
             const selections = state.startSitSelections || [];
             const currentWeekNumber = getCurrentNflWeekNumber();
-            // weekLabel now holds just the WK number (e.g. WK5). Parentheses and styling are applied in the template.
+            // weekLabel now holds just the WK number (e.g. WK5). Bracketing and styling are applied in the template.
             const weekLabel = Number.isFinite(currentWeekNumber) ? `WK${currentWeekNumber}` : '';
+            const weekLabelDisplay = weekLabel ? `[${weekLabel}]` : '';
             const escapeHtml = (value) => {
                 if (value === null || value === undefined) return '';
                 return String(value)
@@ -3955,7 +3956,7 @@ const wrTeStatOrder = [
                             <div class="trade-container glass-panel start-sit-container">
                     <div class="trade-header">
                             <div class="trade-header-left">
-                            <h3><i class="fa-solid fa-elevator analyzer-icon"></i> Start/Sit<span class="start-sit-week">(${weekLabel})</span></h3>
+                            <h3><i class="fa-solid fa-elevator analyzer-icon"></i> Start/Sit<span class="start-sit-week">${weekLabelDisplay}</span></h3>
                         </div>
             <div class="trade-header-center">
               <button id="collapseTradeButton"><i class="fa-solid fa-caret-down"></i></button>
