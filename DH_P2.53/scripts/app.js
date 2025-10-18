@@ -873,34 +873,38 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
 
         function getUpcomingProjectionDesignation(playerId) {
             if (!playerId) return null;
-            const projectionWeeks = Object.keys(state.playerProjectionWeeks || {})
-                .map(Number)
-                .filter(Number.isFinite)
-                .sort((a, b) => a - b);
-            if (projectionWeeks.length === 0) return null;
 
             const currentWeek = getCurrentNflWeekNumber();
-            const targetWeek = Number.isFinite(currentWeek)
-                ? (projectionWeeks.find(week => week > currentWeek) ?? projectionWeeks[0])
-                : projectionWeeks[0];
-            if (!Number.isFinite(targetWeek)) return null;
+            if (!Number.isFinite(currentWeek)) return null;
 
-            const upcomingStats = state.playerWeeklyStats?.[targetWeek]?.[playerId];
-            if (!upcomingStats || !Object.prototype.hasOwnProperty.call(upcomingStats, 'proj')) return null;
-            const rawValue = upcomingStats.proj;
-            if (rawValue === undefined || rawValue === null) return null;
-            const trimmed = String(rawValue).trim();
-            if (!trimmed || trimmed.toUpperCase() === 'NA') return null;
+            const extractDesignation = (rawValue) => {
+                if (rawValue === undefined || rawValue === null) return null;
+                const trimmed = String(rawValue).trim();
+                if (!trimmed || trimmed.toUpperCase() === 'NA') return null;
+                const numericPattern = /^-?\d+(?:\.\d+)?$/;
+                if (numericPattern.test(trimmed)) return null;
+                const primaryToken = trimmed.toUpperCase().split(/\s+/)[0]?.replace(/[^A-Z]/g, '') || '';
+                return primaryToken || null;
+            };
 
-            const numericPattern = /^-?\d+(?:\.\d+)?$/;
-            if (numericPattern.test(trimmed)) return null;
+            const statSources = [
+                state.playerWeeklyStats?.[currentWeek]?.[playerId],
+                state.liveWeeklyStats?.[currentWeek]?.[playerId]
+            ];
 
-            const designationText = trimmed.toUpperCase();
-            const primaryToken = designationText.split(/\s+/)[0]?.replace(/[^A-Z]/g, '') || '';
-            if (!primaryToken) return null;
+            for (const statSource of statSources) {
+                if (!statSource || !Object.prototype.hasOwnProperty.call(statSource, 'proj')) continue;
+                const designation = extractDesignation(statSource.proj);
+                if (!designation) continue;
+                const color = INJURY_DESIGNATION_COLORS[designation] || 'var(--color-text-secondary)';
+                return { designation, color, week: currentWeek };
+            }
 
-            const color = INJURY_DESIGNATION_COLORS[primaryToken] || 'var(--color-text-secondary)';
-            return { designation: primaryToken, color, week: targetWeek };
+            const projectionInfo = getPlayerProjectionForWeek(playerId, currentWeek);
+            const designation = extractDesignation(projectionInfo?.display);
+            if (!designation) return null;
+            const color = INJURY_DESIGNATION_COLORS[designation] || 'var(--color-text-secondary)';
+            return { designation, color, week: currentWeek };
         }
 
         function handleStartSitPlayerClick(e) {
