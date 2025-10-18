@@ -3939,7 +3939,8 @@ const wrTeStatOrder = [
         function renderStartSitPreview() {
             const selections = state.startSitSelections || [];
             const currentWeekNumber = getCurrentNflWeekNumber();
-            const weekLabel = Number.isFinite(currentWeekNumber) ? ` WK${currentWeekNumber}` : '';
+            // weekLabel now holds just the WK number (e.g. WK5). Parentheses and styling are applied in the template.
+            const weekLabel = Number.isFinite(currentWeekNumber) ? `WK${currentWeekNumber}` : '';
             const escapeHtml = (value) => {
                 if (value === null || value === undefined) return '';
                 return String(value)
@@ -3951,11 +3952,11 @@ const wrTeStatOrder = [
             };
 
             tradeSimulator.innerHTML = `
-              <div class="trade-container glass-panel start-sit-container">
-          <div class="trade-header">
-            <div class="trade-header-left">
-              <h3>Start/Sit <i class="fa-solid fa-elevator analyzer-icon"></i> •${weekLabel}•</h3>
-            </div>
+                            <div class="trade-container glass-panel start-sit-container">
+                    <div class="trade-header">
+                        <div class="trade-header-left">
+                            <h3>Start/Sit<span class="start-sit-week">[${weekLabel}]</span> <i class="fa-solid fa-elevator analyzer-icon"></i></h3>
+                        </div>
             <div class="trade-header-center">
               <button id="collapseTradeButton"><i class="fa-solid fa-caret-down"></i></button>
             </div>
@@ -3979,7 +3980,7 @@ const wrTeStatOrder = [
           <div class="trade-footnote">• Projected Points •</div>
         </div>
         
-        <button id="showTradeButton"><i class="fa-solid fa-circle-chevron-up"></i> Start/Sit <i class="fa-solid fa-elevator analyzer-icon"></i> •${weekLabel}• <i class="fa-solid fa-circle-chevron-up"></i></button>
+      <button id="showTradeButton"><i class="fa-solid fa-circle-chevron-up"></i> Start/Sit<span class="start-sit-week"></span> <i class="fa-solid fa-elevator analyzer-icon"></i> <i class="fa-solid fa-circle-chevron-up"></i></button>
   `;
 
             const sides = ['left', 'right'];
