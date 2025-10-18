@@ -1469,7 +1469,7 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
             align-items: center;
             justify-content: center;
             gap: 0.12rem;
-            width: auto;
+            width: 90%;
             min-height: 2.2rem;
             flex: 0 0 auto;
             text-align: center;
@@ -1480,7 +1480,7 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
             font-weight: 600;
             margin-top: auto;
             margin-bottom: 0px;
-            padding-bottom: 4px;
+            padding-bottom: 1px;
             padding-top: 0.5rem;
             text-align: center;
             line-height: 1;
@@ -1494,11 +1494,11 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
             font-weight: 600;
         }
     .start-sit-preview-column .start-sit-matchup-meta {
-      font-size: 0.66rem;
+      font-size: 0.8rem;
       color: var(--color-text-tertiary);
       text-align: center;
       line-height: 1.25;
-      margin-top: 0.2rem;
+      margin-top: -0.2rem;
       letter-spacing: 0.01em;
     }
     .start-sit-matchup-meta .start-sit-matchup-opponent,
