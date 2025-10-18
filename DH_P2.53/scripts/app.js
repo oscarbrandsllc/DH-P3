@@ -353,6 +353,20 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             'PUP': '#D47DC6',
             'OUT': '#D47DC6'
         };
+
+        function parseInjuryDesignation(rawValue) {
+            if (rawValue === undefined || rawValue === null) return null;
+            const trimmed = String(rawValue).trim();
+            if (!trimmed) return null;
+            const upper = trimmed.toUpperCase();
+            if (upper === 'NA' || upper === 'N/A' || upper === 'UNDEFINED' || upper === 'NULL') return null;
+            const numericPattern = /^-?\d+(?:\.\d+)?$/;
+            if (numericPattern.test(trimmed)) return null;
+            const primaryToken = upper.split(/\s+/)[0]?.replace(/[^A-Z]/g, '') || '';
+            if (!primaryToken) return null;
+            const color = INJURY_DESIGNATION_COLORS[primaryToken] || 'var(--color-text-secondary)';
+            return { designation: primaryToken, color, raw: trimmed };
+        }
         const STARTER_ORDER = ['QB', 'RB', 'WR', 'TE', 'FLEX', 'SUPER_FLEX'];
         const TEAM_COLORS = { ARI:"#97233F", ATL:"#A71930", BAL:"#241773", BUF:"#00338D", CAR:"#0085CA", CHI:"#1a2d4e", CIN:"#FB4F14", CLE:"#311D00", DAL:"#003594", DEN:"#FB4F14", DET:"#0076B6", GB:"#203731", HOU:"#03202F", IND:"#002C5F", JAX:"#006778", KC:"#E31837", LAC:"#0080C6", LAR:"#003594", LV:"#A5ACAF", MIA:"#008E97", MIN:"#4F2683", NE:"#002244", NO:"#D3BC8D", NYG:"#0B2265", NYJ:"#125740", PHI:"#004C54", PIT:"#FFB612", SEA:"#69BE28", SF:"#B3995D", TB:"#D50A0A", TEN:"#4B92DB", WAS:"#5A1414", FA: "#64748b" };
       const LEAGUE_COLOR_PALETTE = [
@@ -738,7 +752,6 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
         function exitStartSitMode() {
             if (!state.isStartSitMode) return;
             state.isStartSitMode = false;
-            state.startSitTeamName = null;
             state.startSitSelections = [];
             state.startSitNextSide = 'left';
             rosterView.classList.remove('is-trade-mode');
@@ -746,6 +759,12 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             rosterGrid.classList.remove('start-sit-mode');
             startSitButton?.classList.remove('active');
             updateHeaderPreviewState();
+            try { closeComparisonModal(); } catch (e) {}
+            try {
+                if (gameLogsModal && !gameLogsModal.classList.contains('hidden')) {
+                    closeModal();
+                }
+            } catch (e) {}
             renderTradeBlock();
             if (state.currentTeams) {
                 renderAllTeamData(state.currentTeams);
@@ -877,16 +896,6 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             const currentWeek = getCurrentNflWeekNumber();
             if (!Number.isFinite(currentWeek)) return null;
 
-            const extractDesignation = (rawValue) => {
-                if (rawValue === undefined || rawValue === null) return null;
-                const trimmed = String(rawValue).trim();
-                if (!trimmed || trimmed.toUpperCase() === 'NA') return null;
-                const numericPattern = /^-?\d+(?:\.\d+)?$/;
-                if (numericPattern.test(trimmed)) return null;
-                const primaryToken = trimmed.toUpperCase().split(/\s+/)[0]?.replace(/[^A-Z]/g, '') || '';
-                return primaryToken || null;
-            };
-
             const statSources = [
                 state.playerWeeklyStats?.[currentWeek]?.[playerId],
                 state.liveWeeklyStats?.[currentWeek]?.[playerId]
@@ -894,17 +903,15 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
 
             for (const statSource of statSources) {
                 if (!statSource || !Object.prototype.hasOwnProperty.call(statSource, 'proj')) continue;
-                const designation = extractDesignation(statSource.proj);
-                if (!designation) continue;
-                const color = INJURY_DESIGNATION_COLORS[designation] || 'var(--color-text-secondary)';
-                return { designation, color, week: currentWeek };
+                const parsed = parseInjuryDesignation(statSource.proj);
+                if (!parsed) continue;
+                return { designation: parsed.designation, color: parsed.color, week: currentWeek };
             }
 
             const projectionInfo = getPlayerProjectionForWeek(playerId, currentWeek);
-            const designation = extractDesignation(projectionInfo?.display);
-            if (!designation) return null;
-            const color = INJURY_DESIGNATION_COLORS[designation] || 'var(--color-text-secondary)';
-            return { designation, color, week: currentWeek };
+            const fallback = parseInjuryDesignation(projectionInfo?.display);
+            if (!fallback) return null;
+            return { designation: fallback.designation, color: fallback.color, week: currentWeek };
         }
 
         function handleStartSitPlayerClick(e) {
@@ -2580,6 +2587,16 @@ const wrTeStatOrder = [
 
             const gameLogsWithData = [];
             const gameLogsByWeek = new Map(gameLogs.map(entry => [parseInt(entry.week, 10), entry]));
+            const applyProjectionCellDisplay = (cell, rawValue) => {
+                const display = rawValue === undefined || rawValue === null ? '' : String(rawValue);
+                cell.textContent = display;
+                const designationMeta = parseInjuryDesignation(display);
+                if (designationMeta) {
+                    cell.style.color = designationMeta.color;
+                } else {
+                    cell.style.color = '';
+                }
+            };
 
             const getProjectionDisplayValue = (statLine, playerId, week) => {
                 // First try the provided statLine (for played weeks)
@@ -2710,10 +2727,10 @@ const wrTeStatOrder = [
                     if (isUnplayedWeek) {
                             if (key === 'proj') {
                                 const projValue = getProjectionDisplayValue(stats, player.id, week);
-                                // Show whatever value is returned directly - no further transformations
-                                td.textContent = projValue;
+                                applyProjectionCellDisplay(td, projValue);
                             } else {
                                 td.textContent = '-';
+                                td.style.color = '';
                             }
                         row.appendChild(td);
                         continue;
@@ -2733,8 +2750,7 @@ const wrTeStatOrder = [
 
                     if (key === 'proj') {
                         const projValue = getProjectionDisplayValue(stats, player.id, week);
-                        // Show whatever value is returned directly - no further transformations
-                        td.textContent = projValue;
+                        applyProjectionCellDisplay(td, projValue);
                         row.appendChild(td);
                         continue;
                     }
