@@ -3954,7 +3954,7 @@ const wrTeStatOrder = [
               <div class="trade-container glass-panel start-sit-container">
           <div class="trade-header">
             <div class="trade-header-left">
-              <h3>Start/Sit${weekLabel} <i class="fa-solid fa-elevator analyzer-icon"></i></h3>
+              <h3>Start/Sit <i class="fa-solid fa-elevator analyzer-icon"></i> •${weekLabel}</h3>
             </div>
             <div class="trade-header-center">
               <button id="collapseTradeButton"><i class="fa-solid fa-caret-down"></i></button>
@@ -3979,7 +3979,7 @@ const wrTeStatOrder = [
           <div class="trade-footnote">• Projected Points •</div>
         </div>
         
-        <button id="showTradeButton"><i class="fa-solid fa-circle-chevron-up"></i> Start/Sit${weekLabel} <i class="fa-solid fa-circle-chevron-up"></i></button>
+        <button id="showTradeButton"><i class="fa-solid fa-circle-chevron-up"></i> Start/Sit <i class="fa-solid fa-elevator analyzer-icon"></i> •${weekLabel} <i class="fa-solid fa-circle-chevron-up"></i></button>
   `;
 
             const sides = ['left', 'right'];
