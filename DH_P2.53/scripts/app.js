@@ -3981,7 +3981,7 @@ const wrTeStatOrder = [
           <div class="trade-footnote">• Projected Points •</div>
         </div>
         
-      <button id="showTradeButton"><i class="fa-solid fa-circle-chevron-up"></i> Start/Sit<span class="start-sit-week"></span> <i class="fa-solid fa-elevator analyzer-icon"></i> <i class="fa-solid fa-circle-chevron-up"></i></button>
+    <button id="showTradeButton"><i class="fa-solid fa-circle-chevron-up"></i> <span class="show-button-label">Start/Sit <i class="fa-solid fa-elevator analyzer-icon"></i></span><span class="start-sit-week"></span> <i class="fa-solid fa-circle-chevron-up"></i></button>
   `;
 
             const sides = ['left', 'right'];

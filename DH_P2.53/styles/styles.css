@@ -1975,16 +1975,25 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 1rem;
+      gap: 2rem;
       font-size: 1em;
       box-shadow: inset 0 0 13px var(--color-accent-primary), 0 0 9px var(--color-accent-primary);
       border-color: var(--color-accent-primary);
       color: var(--color-accent-primary);
-      padding: 9px 37px;
+      padding: 11px 19px;
       background: #1E1F30e9;
       width: fit-content;
       align-self: center;
     }
+
+    /* Keep the Start/Sit label and elevator icon tightly grouped */
+    #showTradeButton .show-button-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem; /* small single-space gap */
+      line-height: 1;
+    }
+    #showTradeButton .show-button-label i.analyzer-icon {font-size: 1rem;vertical-align: middle;margin-bottom: 3.5px;}
 
     #tradeSimulator.collapsed #showTradeButton .start-sit-week:empty {
       display: none;
