@@ -1845,7 +1845,8 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
             line-height: 0.9rem;
             color: #b0bcdbde;
             text-shadow: 0 0 5px rgba(0,0,0,0.2);
-            margin: 0.2rem 0.5rem 0.1rem 0.15rem;
+            margin: 0.5rem;
+            margin-left: 1px;
         }
         .trade-header-left {
             margin-left: 2px;
