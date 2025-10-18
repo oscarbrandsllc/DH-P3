@@ -3954,8 +3954,8 @@ const wrTeStatOrder = [
             tradeSimulator.innerHTML = `
                             <div class="trade-container glass-panel start-sit-container">
                     <div class="trade-header">
-                        <div class="trade-header-left">
-                            <h3>Start/Sit<span class="start-sit-week">[${weekLabel}]</span> <i class="fa-solid fa-elevator analyzer-icon"></i></h3>
+                            <div class="trade-header-left">
+                            <h3><i class="fa-solid fa-elevator analyzer-icon"></i> Start/Sit<span class="start-sit-week">(${weekLabel})</span></h3>
                         </div>
             <div class="trade-header-center">
               <button id="collapseTradeButton"><i class="fa-solid fa-caret-down"></i></button>
