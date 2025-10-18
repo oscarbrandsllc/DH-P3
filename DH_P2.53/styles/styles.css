@@ -1493,6 +1493,23 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
         .start-sit-total-value {
             font-weight: 600;
         }
+    .start-sit-preview-column .start-sit-matchup-meta {
+      font-size: 0.66rem;
+      color: var(--color-text-tertiary);
+      text-align: center;
+      line-height: 1.25;
+      margin-top: 0.2rem;
+      letter-spacing: 0.01em;
+    }
+    .start-sit-matchup-meta .start-sit-matchup-opponent,
+    .start-sit-matchup-meta .start-sit-matchup-rank {
+      font-weight: 500;
+    }
+    .start-sit-matchup-meta .start-sit-matchup-sep {
+      display: inline-block;
+      margin: 0 0.3rem;
+      color: var(--color-text-tertiary);
+    }
         .start-sit-column[data-position="QB"] .player-row {
             box-shadow: inset 0 0 15px rgba(255, 58, 117, 0.2);
         }

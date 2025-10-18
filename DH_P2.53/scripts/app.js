@@ -809,6 +809,68 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             return { value: null, display: 'NA' };
         }
 
+        function getPlayerMatchupForWeek(playerId, week = null) {
+            if (!playerId) return null;
+
+            const fallbackWeek = getCurrentNflWeekNumber();
+            const candidateWeek = Number(week);
+            const numericWeek = Number.isFinite(candidateWeek) && candidateWeek > 0
+                ? candidateWeek
+                : (Number.isFinite(fallbackWeek) && fallbackWeek > 0 ? fallbackWeek : null);
+            if (!Number.isFinite(numericWeek)) return null;
+
+            const extractFromStats = (stats) => {
+                if (!stats) return null;
+
+                const opponentRaw = stats.opponent;
+                const opponent = typeof opponentRaw === 'string' ? opponentRaw.trim() : '';
+                const isBye = opponent.toUpperCase() === 'BYE';
+
+                let rankValue = null;
+                const rankRaw = stats.opponent_rank;
+                if (typeof rankRaw === 'number' && Number.isFinite(rankRaw)) {
+                    rankValue = rankRaw;
+                } else if (typeof rankRaw === 'string') {
+                    const trimmedRank = rankRaw.trim();
+                    if (trimmedRank && trimmedRank.toUpperCase() !== 'NA') {
+                        const parsedRank = Number.parseInt(trimmedRank.replace(/[^0-9]/g, ''), 10);
+                        if (Number.isFinite(parsedRank)) {
+                            rankValue = parsedRank;
+                        }
+                    }
+                }
+
+                const hasOpponent = Boolean(opponent) || isBye;
+                const hasRank = Number.isFinite(rankValue);
+                if (!hasOpponent && !hasRank) return null;
+
+                const rankDisplay = getRankDisplayText(rankRaw);
+                const ordinalDisplay = hasRank ? ordinalSuffix(rankValue) : null;
+                const color = hasRank ? getOpponentRankColor(rankValue) : null;
+
+                return {
+                    opponent: isBye ? 'BYE' : opponent,
+                    opponentRank: hasRank ? rankValue : null,
+                    opponentRankDisplay: rankDisplay,
+                    opponentOrdinal: ordinalDisplay,
+                    color: color || null,
+                    isBye
+                };
+            };
+
+            const sources = [
+                state.playerWeeklyStats?.[numericWeek]?.[playerId],
+                state.liveWeeklyStats?.[numericWeek]?.[playerId]
+            ];
+
+            for (const stats of sources) {
+                const matchup = extractFromStats(stats);
+                if (matchup) return matchup;
+            }
+
+            return null;
+        }
+
         function getUpcomingProjectionDesignation(playerId) {
             if (!playerId) return null;
             const projectionWeeks = Object.keys(state.playerProjectionWeeks || {})
@@ -887,6 +949,7 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             const projectionInfo = getPlayerProjectionForWeek(playerId, activeWeek);
             const projectionValue = projectionInfo?.value ?? null;
             const projectionDisplay = projectionInfo?.display || 'NA';
+            const matchupInfo = getPlayerMatchupForWeek(playerId, activeWeek);
             const selection = {
                 id: playerId,
                 label: row.dataset.assetLabel || row.querySelector('.player-name-clickable')?.textContent || 'Unknown Player',
@@ -899,7 +962,8 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
                 ppgPosRank: hasPpgRank ? rawPpgRank : null,
                 ppgPosRankDisplay: rankDisplay,
                 projection: projectionValue,
-                projectionDisplay
+                projectionDisplay,
+                matchup: matchupInfo
             };
 
             state.startSitSelections.push(selection);
@@ -4042,6 +4106,7 @@ const wrTeStatOrder = [
                 let assetsHTML = '';
                 let totalDisplay = '—';
                 let projectionColor = 'var(--color-text-tertiary)';
+                let matchupSectionHtml = '';
 
                 if (selection) {
                     const tagColor = TAG_COLORS[selection.pos] || 'var(--pos-bn)';
@@ -4078,6 +4143,24 @@ const wrTeStatOrder = [
                             projectionColor = 'var(--color-text-secondary)';
                         }
                     }
+
+                    if (selection.matchup) {
+                        const { opponent, opponentOrdinal, opponentRankDisplay, color, isBye } = selection.matchup;
+                        const opponentText = opponent || (isBye ? 'BYE' : '');
+                        if (opponentText) {
+                            const opponentStyle = color && !isBye ? ` style="color: ${color};"` : '';
+                            const rankRawText = !isBye
+                                ? (opponentOrdinal || (opponentRankDisplay && opponentRankDisplay !== 'NA' ? opponentRankDisplay : ''))
+                                : '';
+                            const hasRankText = Boolean(rankRawText);
+                            const rankStyle = color && !isBye ? ` style="color: ${color};"` : '';
+                            const safeOpponent = escapeHtml(opponentText);
+                            const rankHtml = hasRankText
+                                ? `<span class="start-sit-matchup-sep">•</span><span class="start-sit-matchup-rank"${rankStyle}>${escapeHtml(rankRawText)}</span>`
+                                : '';
+                            matchupSectionHtml = `<div class="start-sit-matchup-meta"><span class="start-sit-matchup-opponent"${opponentStyle}>${safeOpponent}</span>${rankHtml}</div>`;
+                        }
+                    }
                     const rankParts = rankText.split('·');
                     const rankNumberDisplay = rankParts.length > 1 ? rankParts.slice(1).join('·') : 'NA';
                     assetsHTML = `
@@ -4104,6 +4187,7 @@ const wrTeStatOrder = [
                             <span class="start-sit-total-label">Projected Points:</span>
                             <span class="start-sit-total-value" style="color: ${projectionColor};">${safeTotal}</span>
                         </div>
+                        ${matchupSectionHtml}
                     </div>
                 `;
 
