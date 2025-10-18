@@ -2099,18 +2099,15 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
             font-weight: 700;
             color: var(--color-text-primary);
         }
-        .trade-total {
-            margin-top: 0.25rem;
-            text-align: center;
-             font-size: 0.9rem;
-             line-height: 0.9rem;
-             display: inline-flex;
-             align-items: center;
-             vertical-align: middle;
-            padding: 0.25rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
+    .trade-total {
+      margin-top: 0.25rem;
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 700;
+      padding: 0.25rem;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
         .trade-total.winning {
             box-shadow: 0 0 12px var(--color-accent-trade-win);
             color: var(--color-accent-trade-win);
