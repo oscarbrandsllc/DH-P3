@@ -3991,6 +3991,7 @@ const wrTeStatOrder = [
                 const selection = selections.find(sel => sel.side === side);
                 let assetsHTML = '';
                 let totalDisplay = '—';
+                let projectionColor = 'var(--color-text-tertiary)';
 
                 if (selection) {
                     const tagColor = TAG_COLORS[selection.pos] || 'var(--pos-bn)';
@@ -4006,12 +4007,27 @@ const wrTeStatOrder = [
                     const ppgText = selection.ppgDisplay || 'NA';
                     const hasPositivePpg = typeof selection.ppg === 'number' && selection.ppg > 0;
                     const hasPpgRankNumber = Number.isFinite(selection.ppgPosRank) && selection.ppgPosRank > 0;
+                    const projectionValue = typeof selection.projection === 'number'
+                        ? selection.projection
+                        : Number.parseFloat(selection.projection);
                     const ppgColor = hasPositivePpg && hasPpgRankNumber
                         ? getConditionalColorByRank(selection.ppgPosRank, posForColor)
                         : (hasPositivePpg ? 'var(--color-text-mid-test1)' : 'var(--color-text-tertiary)');
                     const projectionDisplay = selection.projection !== null
                         ? selection.projection.toFixed(1)
                         : ((selection.projectionDisplay && selection.projectionDisplay.toUpperCase() !== 'NA') ? selection.projectionDisplay : '—');
+                    if (Number.isFinite(projectionValue)) {
+                        const derivedColor = getProjectionColorForValue(posForColor, projectionValue);
+                        if (derivedColor) {
+                            projectionColor = derivedColor;
+                        } else if (hasPpgRankNumber) {
+                            projectionColor = getConditionalColorByRank(selection.ppgPosRank, posForColor);
+                        } else if (hasPositivePpg) {
+                            projectionColor = 'var(--color-text-mid-test1)';
+                        } else {
+                            projectionColor = 'var(--color-text-secondary)';
+                        }
+                    }
                     const rankParts = rankText.split('·');
                     const rankNumberDisplay = rankParts.length > 1 ? rankParts.slice(1).join('·') : 'NA';
                     assetsHTML = `
@@ -4028,13 +4044,15 @@ const wrTeStatOrder = [
                 } else {
                     assetsHTML = `<span class="text-xs text-slate-500 p-2">Select a player...</span>`;
                 }
+                const safeTotal = escapeHtml(totalDisplay);
 
                 bodyHtml += `
                     <div class="trade-team-column start-sit-preview-column">
                         <h4>${sideLabels[side]}</h4>
                         <div class="trade-assets">${assetsHTML}</div>
                         <div class="trade-total even start-sit-total">
-                            Projected Points: ${totalDisplay}
+                            <span class="start-sit-total-label">Projected Points:</span>
+                            <span class="start-sit-total-value" style="color: ${projectionColor};">${safeTotal}</span>
                         </div>
                     </div>
                 `;
@@ -4702,6 +4720,62 @@ const wrTeStatOrder = [
             }
 
             return '#767693';
+        }
+
+        const __projectionRankCache = new Map();
+
+        function getProjectionRankForValue(position, projectionValue) {
+            const numericProjection = Number.parseFloat(projectionValue);
+            if (!Number.isFinite(numericProjection) || numericProjection < 0) {
+                return null;
+            }
+            const normalizedPos = typeof position === 'string' ? position.trim().toUpperCase() : '';
+            if (!normalizedPos) {
+                return null;
+            }
+            const calcCache = state.calculatedRankCache;
+            if (!calcCache || !calcCache.players) {
+                return null;
+            }
+
+            const leagueKey = state.currentLeagueId || 'global';
+            const cacheKey = `${leagueKey}|${normalizedPos}`;
+            let cachedEntry = __projectionRankCache.get(cacheKey);
+
+            if (!cachedEntry || cachedEntry.version !== calcCache) {
+                const values = [];
+                for (const [playerId, ranks] of Object.entries(calcCache.players)) {
+                    if (!ranks) continue;
+                    const rosterPlayer = state.players?.[playerId];
+                    const playerPos = (rosterPlayer?.position || '').toUpperCase();
+                    if (playerPos !== normalizedPos) continue;
+                    const ppgValue = Number.parseFloat(ranks.ppg);
+                    if (!Number.isFinite(ppgValue)) continue;
+                    values.push(ppgValue);
+                }
+                values.sort((a, b) => b - a);
+                cachedEntry = { values, version: calcCache };
+                __projectionRankCache.set(cacheKey, cachedEntry);
+            }
+
+            const ppgValues = cachedEntry.values;
+            if (!ppgValues || ppgValues.length === 0) {
+                return null;
+            }
+
+            const index = ppgValues.findIndex(ppg => numericProjection >= ppg);
+            if (index === -1) {
+                return ppgValues.length;
+            }
+            return index + 1;
+        }
+
+        function getProjectionColorForValue(position, projectionValue) {
+            const rank = getProjectionRankForValue(position, projectionValue);
+            if (!Number.isFinite(rank)) {
+                return null;
+            }
+            return getConditionalColorByRank(rank, position);
         }
         function getKtcColor(v) {
         const s = [
