@@ -4009,7 +4009,46 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
       width: 100%;
       border-collapse: collapse;
       font-size: 0.7rem;
-      margin-bottom:2px;
+    }
+
+    .game-logs-scroll-container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .weekly-table-wrapper {
+        overflow-y: auto;
+        max-height: 250px; /* Reduced max-height for vertical scrolling */
+        overflow-x: auto; /* For horizontal scrolling */
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 8px; /* Gap between tables */
+    }
+
+    .season-table-wrapper {
+        overflow-x: auto; /* For horizontal scrolling */
+    }
+
+    .weekly-table-wrapper::-webkit-scrollbar,
+    .season-table-wrapper::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .weekly-table-wrapper::-webkit-scrollbar-thumb,
+    .season-table-wrapper::-webkit-scrollbar-thumb {
+        background: var(--color-text-tertiary);
+        border-radius: 4px;
+    }
+
+    #game-logs-modal .weekly-stats-table,
+    #game-logs-modal .season-stats-table {
+        table-layout: fixed;
+        width: 100%;
+        min-width: 800px; /* Force a min-width to ensure horizontal scroll */
+    }
+
+    #game-logs-modal .season-stats-table {
+        border-top: 1px solid var(--color-panel-border-glow);
     }
     
     #modal-body th,
@@ -4706,6 +4745,18 @@ padding: 0.15rem 0rem 0rem 0rem;
         margin-right: 0.5em;
         display: inline-block;
         width: 70px;
+    }
+
+    @media (max-width: 540px) {
+      #stats-key-container {
+        position: absolute;
+        bottom: 50px;
+        left: 1.1rem;
+        right: 1.1rem;
+        width: auto;
+        margin-top: 0;
+        z-index: 102;
+      }
     }
     
     /* ⬇︎ PLAYER-COMP MODAL ⬇︎ */
