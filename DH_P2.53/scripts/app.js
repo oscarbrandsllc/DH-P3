@@ -1739,6 +1739,10 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             'SNP%': 'snp_pct',
             'YDS(t)': 'yds_total',
             'FPOE': 'fpoe',
+            'YPG(t)': 'ypg',
+            'paYPG': 'pa_ypg',
+            'ruYPG': 'ru_ypg',
+            'recYPG': 'rec_ypg',
             'PROJ': 'proj'
         };
 
@@ -2490,8 +2494,8 @@ const qbStatOrder = [
   'pass_yd',
   'pass_td',
   'pass_att',
-  'pass_cmp',  
-  'yds_total',  
+  'pass_cmp',
+  'yds_total',
   'rush_yd',
   'rush_td',
   'pass_fd',
@@ -2516,11 +2520,11 @@ const rbStatOrder = [
   'rush_yd',
   'ypc',
   'rush_td',
-  'elu',
   'rec',
+  'rec_yd',
   'rec_tgt',
   'yds_total',
-  'rec_yd',
+  'elu',
   'mtf_per_att',
   'yco_per_att',  
   'mtf',
@@ -3339,9 +3343,84 @@ const wrTeStatOrder = [
             const otherPlayer = players[1];
 
             const getStatOrderForPosition = (pos) => {
-                const qbStatOrder = ['fpts','proj','pass_rtg','pass_yd','pass_td','pass_att','pass_cmp','yds_total','rush_yd','rush_td','pass_fd','imp_per_g','pass_imp','pass_imp_per_att','rush_att','ypc','ttt','prs_pct','pass_sack','pass_int','fum','fpoe'];
-                const rbStatOrder = ['fpts','proj','snp_pct','rush_att','rush_yd','ypc','rush_td','elu','rec','rec_tgt','yds_total','rec_yd','mtf_per_att','yco_per_att','mtf','rush_yac','rush_fd','rec_td','rec_fd','rec_yar','imp_per_g','fum','fpoe'];
-                const wrTeStatOrder = ['fpts','proj','snp_pct','rec_tgt','rec','ts_per_rr','rec_yd','rec_td','yprr','rec_fd','first_down_rec_rate','rec_yar','ypr','imp_per_g','rr','fpoe','yds_total','rush_att','rush_yd','rush_td','ypc','fum'];
+const qbStatOrder = [
+  'fpts',
+  'proj',
+  'pass_rtg',
+  'pass_yd',
+  'pass_td',
+  'pass_att',
+  'pass_cmp',
+  'yds_total',
+  'pa_ypg',
+  'rush_yd',
+  'rush_td',
+  'pass_fd',
+  'imp_per_g',
+  'pass_imp',
+  'pass_imp_per_att',
+  'rush_att',
+  'ypc',
+  'ttt',
+  'prs_pct',
+  'pass_sack',
+  'pass_int',
+  'fum',
+  'fpoe'
+];
+
+const rbStatOrder = [
+  'fpts',
+  'proj',
+  'snp_pct',
+  'rush_att',
+  'rush_yd',
+  'ypc',
+  'rush_td',
+  'rec',
+  'rec_yd',
+  'rec_tgt',
+  'yds_total',
+  'ru_ypg',
+  'elu',
+  'mtf_per_att',
+  'yco_per_att',  
+  'mtf',
+  'rush_yac',
+  'rush_fd',
+  'rec_td',
+  'rec_fd',
+  'rec_yar',
+  'imp_per_g',
+  'fum',
+  'fpoe'
+];
+
+const wrTeStatOrder = [
+  'fpts',
+  'proj',
+  'snp_pct',
+  'rec_tgt',
+  'rec',
+  'ts_per_rr',
+  'rec_yd',
+  'rec_td',
+  'yprr',
+  'rec_fd',
+  'first_down_rec_rate',
+  'rec_ypg',
+  'rec_yar',
+  'ypr',
+  'imp_per_g',
+  'rr',
+  'fpoe',
+  'yds_total',
+  'rush_att',
+  'rush_yd',
+  'rush_td',
+  'ypc',
+  'fum'
+];
                 if (pos === 'QB') return qbStatOrder;
                 if (pos === 'RB') return rbStatOrder;
                 if (pos === 'WR' || pos === 'TE') return wrTeStatOrder;
