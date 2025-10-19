@@ -1437,7 +1437,7 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
 .start-sit-week {
   font-size: 0.82rem; /* slightly smaller than the H3 */
   color: var(--color-text-secondary);
-  margin-left: 0.1rem;
+  margin-left: 0.41rem;
   margin-right: 0.18rem;
 }
 .start-sit-rank-pos,
