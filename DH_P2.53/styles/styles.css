@@ -4018,6 +4018,22 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
       text-align: center;
       /* border-bottom is removed from here to be more specific */
     }
+
+    #game-logs-modal thead th.gamelog-header-passing {
+      color: #FFB2D8;
+    }
+
+    #game-logs-modal thead th.gamelog-header-rushing {
+      color: #BBF7E0;
+    }
+
+    #game-logs-modal thead th.gamelog-header-receiving {
+      color: #A0C2F7;
+    }
+
+    #game-logs-modal thead th.gamelog-header-all {
+      color:#ADA2FF;
+    }
     
     #modal-body thead th {
       border-bottom: 1px solid var(--color-panel-border);

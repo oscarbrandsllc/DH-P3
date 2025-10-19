@@ -2562,6 +2562,25 @@ const wrTeStatOrder = [
   'ypc',
   'fum'
 ];
+
+            const statGroupByKey = new Map();
+            const assignStatGroup = (group, keys) => {
+                for (const key of keys) statGroupByKey.set(key, group);
+            };
+            assignStatGroup('all', ['fpts', 'proj', 'snp_pct', 'yds_total', 'imp_per_g', 'fum', 'fpoe']);
+            assignStatGroup('passing', [
+                'pass_rtg', 'pass_yd', 'pass_td', 'pass_att', 'pass_cmp', 'pass_fd',
+                'pass_imp', 'pass_imp_per_att', 'ttt', 'prs_pct', 'pass_sack', 'pass_int'
+            ]);
+            assignStatGroup('rushing', [
+                'rush_att', 'rush_yd', 'ypc', 'rush_td', 'rush_fd', 'elu', 'mtf_per_att',
+                'yco_per_att', 'mtf', 'rush_yac'
+            ]);
+            assignStatGroup('receiving', [
+                'rec', 'rec_yd', 'rec_tgt', 'rec_td', 'rec_fd', 'rec_yar', 'ypr', 'yprr',
+                'ts_per_rr', 'first_down_rec_rate', 'rr'
+            ]);
+
             let orderedStatKeys;
             if (player.pos === 'QB') orderedStatKeys = qbStatOrder;
             else if (player.pos === 'RB') orderedStatKeys = rbStatOrder;
@@ -2585,6 +2604,8 @@ const wrTeStatOrder = [
                 if (statLabels[key]) {
                     const th = document.createElement('th');
                     th.textContent = statLabels[key];
+                    const statGroup = statGroupByKey.get(key);
+                    if (statGroup) th.classList.add(`gamelog-header-${statGroup}`);
                     headerRow.appendChild(th);
                 }
             }
