@@ -2563,8 +2563,11 @@ const wrTeStatOrder = [
             else if (player.pos === 'WR' || player.pos === 'TE') orderedStatKeys = wrTeStatOrder;
             else orderedStatKeys = ['fpts', 'pass_att', 'pass_cmp', 'pass_yd', 'pass_td', 'pass_fd', 'imp_per_g', 'pass_rtg', 'pass_imp', 'pass_imp_per_att', 'rush_att', 'rush_yd', 'ypc', 'rush_td', 'rush_fd', 'ttt', 'prs_pct', 'mtf', 'mtf_per_att', 'rush_yac', 'yco_per_att', 'rec_tgt', 'rec', 'rec_yd', 'rec_td', 'rec_fd', 'rec_yar', 'ypr', 'yprr', 'ts_per_rr', 'rr', 'fum', 'snp_pct', 'yds_total', 'fpoe'];
 
-            const container = document.createElement('div');
-            container.className = 'game-logs-table-container';
+            const outerContainer = document.createElement('div');
+            outerContainer.className = 'game-logs-tables-wrapper';
+
+            const weeklyContainer = document.createElement('div');
+            weeklyContainer.className = 'game-logs-weekly-table-container';
 
             const table = document.createElement('table');
             const thead = document.createElement('thead');
@@ -2854,15 +2857,43 @@ const wrTeStatOrder = [
             table.appendChild(thead);
             table.appendChild(tbody);
 
-            // Add table footer for totals
+            weeklyContainer.appendChild(table);
+            outerContainer.appendChild(weeklyContainer);
+
+            // Create separate season stats table
             if (gameLogsWithData.length > 0) {
-                const tfoot = document.createElement('tfoot');
-                const footerRow = document.createElement('tr');
-                const totalTh = document.createElement('th');
-                totalTh.className = 'modal-table-footer-label week-column-header';
+                const seasonContainer = document.createElement('div');
+                seasonContainer.className = 'game-logs-season-table-container';
+
+                const seasonTable = document.createElement('table');
+                const seasonThead = document.createElement('thead');
+                const seasonTbody = document.createElement('tbody');
+
+                // Create header row for season stats (identical to weekly)
+                const seasonHeaderRow = document.createElement('tr');
+                const seasonWkTh = document.createElement('th');
+                seasonWkTh.classList.add('week-column-header');
+                seasonWkTh.textContent = 'WK  ·  VS ';
+                seasonHeaderRow.appendChild(seasonWkTh);
+
+                for (const key of orderedStatKeys) {
+                    if (statLabels[key]) {
+                        const th = document.createElement('th');
+                        th.textContent = statLabels[key];
+                        seasonHeaderRow.appendChild(th);
+                    }
+                }
+                seasonThead.appendChild(seasonHeaderRow);
+
+                // Create season stats row
+                const seasonStatsRow = document.createElement('tr');
+                seasonStatsRow.className = 'season-stats-row';
+                
+                const totalTh = document.createElement('td');
+                totalTh.className = 'modal-table-season-label week-column-header';
                 const gamesPlayed = getAdjustedGamesPlayed(player.id, scoringSettings);
                 totalTh.innerHTML = `<span class="season-label">2025</span><br><span class="gp-label">(GP: ${gamesPlayed})</span>`;
-                footerRow.appendChild(totalTh);
+                seasonStatsRow.appendChild(totalTh);
 
                 const seasonTotals = state.playerSeasonStats?.[player.id] || null;
                 const aggregatedTotals = {};
@@ -2889,7 +2920,7 @@ const wrTeStatOrder = [
                     if (key === 'proj') td.classList.add('proj-cell');
                     if (key === 'proj') {
                         td.textContent = '-';
-                        footerRow.appendChild(td);
+                        seasonStatsRow.appendChild(td);
                         continue;
                     }
                     let displayValue;
@@ -3026,14 +3057,31 @@ const wrTeStatOrder = [
                     td.appendChild(rankAnnotation);
                     td.classList.add('has-rank-annotation');
                     rankAnnotation.style.color = getConditionalColorByRank(rankValue, player.pos);
-                    footerRow.appendChild(td);
+                    seasonStatsRow.appendChild(td);
                 }
-                tfoot.appendChild(footerRow);
-                table.appendChild(tfoot);
+                
+                seasonTbody.appendChild(seasonStatsRow);
+                seasonTable.appendChild(seasonThead);
+                seasonTable.appendChild(seasonTbody);
+                seasonContainer.appendChild(seasonTable);
+                outerContainer.appendChild(seasonContainer);
             }
 
-            container.appendChild(table);
-            modalBody.appendChild(container);
+            modalBody.appendChild(outerContainer);
+            
+            // Sync horizontal scrolling between weekly and season tables
+            const weeklyScrollContainer = weeklyContainer;
+            const seasonScrollContainer = outerContainer.querySelector('.game-logs-season-table-container');
+            
+            if (weeklyScrollContainer && seasonScrollContainer) {
+                weeklyScrollContainer.addEventListener('scroll', () => {
+                    seasonScrollContainer.scrollLeft = weeklyScrollContainer.scrollLeft;
+                });
+                seasonScrollContainer.addEventListener('scroll', () => {
+                    weeklyScrollContainer.scrollLeft = seasonScrollContainer.scrollLeft;
+                });
+            }
+            
             modalBody.scrollLeft = 0;
 
             // Set player vitals width to match summary chips
