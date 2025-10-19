@@ -346,11 +346,12 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
         const MAX_DISPLAY_WEEKS = 9; // Currently showing weeks 1-8; increase as more week sheets are added
         const TAG_COLORS = { QB:"var(--pos-qb)", RB:"var(--pos-rb)", WR:"var(--pos-wr)", TE:"var(--pos-te)", BN:"var(--pos-bn)", TX:"var(--pos-tx)", FLX: "var(--pos-flx)", SFLX: "var(--pos-sflx)" };
         const INJURY_DESIGNATION_COLORS = {
-            'IR': '#D47DC6',
+            'IR': '#d93d76',
             'BYE': '#C3A8FB',
-            'Q': '#f8bc91',
-            'D': '#F5A8DA',
+            'Q': '#fd9a3dff',
+            'D': '#e780c3ff',
             'PUP': '#D47DC6',
+            'DNP': '#e780c3ff',
             'OUT': '#D47DC6'
         };
 
