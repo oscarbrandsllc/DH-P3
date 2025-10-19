@@ -3070,15 +3070,14 @@ const wrTeStatOrder = [
             modalBody.appendChild(outerContainer);
             
             // Sync horizontal scrolling between weekly and season tables
-            const weeklyScrollContainer = weeklyContainer;
             const seasonScrollContainer = outerContainer.querySelector('.game-logs-season-table-container');
             
-            if (weeklyScrollContainer && seasonScrollContainer) {
-                weeklyScrollContainer.addEventListener('scroll', () => {
-                    seasonScrollContainer.scrollLeft = weeklyScrollContainer.scrollLeft;
+            if (weeklyContainer && seasonScrollContainer) {
+                weeklyContainer.addEventListener('scroll', () => {
+                    seasonScrollContainer.scrollLeft = weeklyContainer.scrollLeft;
                 });
                 seasonScrollContainer.addEventListener('scroll', () => {
-                    weeklyScrollContainer.scrollLeft = seasonScrollContainer.scrollLeft;
+                    weeklyContainer.scrollLeft = seasonScrollContainer.scrollLeft;
                 });
             }
             

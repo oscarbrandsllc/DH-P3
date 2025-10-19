@@ -4109,7 +4109,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     /* Season stats row styling */
     .game-logs-season-table-container tbody tr.season-stats-row {
       border-top: 1px solid var(--color-panel-border-glow);
-      white-space:nowrap;
+      white-space: nowrap;
       font-size: 0.7rem;
     }
 
@@ -4119,12 +4119,12 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 
     #modal-body tfoot th {
         color: var(--color-accent-primary);
-        white-space:nowrap;
+        white-space: nowrap;
         padding: 0.25rem 0rem 0.08rem 0.02rem;    }
     
     .modal-table-season-label {
         color: var(--color-accent-primary);
-        white-space:nowrap;
+        white-space: nowrap;
         padding: 0.25rem 0rem 0.08rem 0.02rem;
     }
     
