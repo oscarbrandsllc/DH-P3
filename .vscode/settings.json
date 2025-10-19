@@ -1,0 +1,18 @@
+{
+    "github.copilot.chat.alternateGptPrompt.enabled": true,
+    "editor.fontSize": 11,
+    "files.autoSave": "afterDelay",
+    "editor.tabSize": 4,
+    "chat.editor.fontSize": 11,
+    "terminal.integrated.fontSize": 11,
+    "scm.inputFontSize": 11,
+    "debug.console.fontSize": 11,
+    "chat.fontSize": 11,
+    "markdown.preview.fontSize": 11,
+    "chat.agent.maxRequests": 40,
+    "chat.agent.thinkingStyle": "collapsedPerItem",
+    "chat.renderRelatedFiles": true,
+    "chat.todoListTool.writeOnly": false,
+    "chat.tools.terminal.autoReplyToPrompts": true,
+    "chat.edits2.enabled": true
+}
