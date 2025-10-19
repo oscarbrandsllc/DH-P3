@@ -8079,3 +8079,65 @@ body[data-page="research"] #secondary-header-row {
         max-width: 50%; /* Each takes up half the space */
     }
 }
+
+/* GAME LOGS MODAL */
+.game-logs-scroll-container {
+    overflow-x: auto;
+}
+
+.weekly-table-wrapper {
+    max-height: 250px; /* Adjust as needed */
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.season-table-wrapper {
+    margin-top: 10px;
+    overflow-x: hidden;
+}
+
+.weekly-table-wrapper::-webkit-scrollbar {
+    width: 8px;
+}
+
+.weekly-table-wrapper::-webkit-scrollbar-thumb {
+    background-color: var(--color-text-tertiary);
+    border-radius: 4px;
+}
+
+#stats-key-container {
+    position: absolute;
+    bottom: 45px;
+    left: 1rem;
+    right: 1rem;
+    max-height: calc(100% - 150px);
+    overflow-y: auto;
+    background: rgba(13, 14, 27, 0.95);
+    padding: 1rem;
+    border: 1px solid #444;
+    z-index: 102;
+    border-radius: var(--card-border-radius);
+}
+
+@media (max-width: 540px) {
+    #stats-key-container {
+        bottom: auto;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .key-chip {
+        position: relative;
+    }
+
+    #stats-key-container.hidden {
+        display: none;
+    }
+
+    #stats-key-container:not(.hidden) {
+        display: block;
+        bottom: 100%;
+        top: auto;
+        transform: none;
+    }
+}
