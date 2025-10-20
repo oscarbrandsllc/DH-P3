@@ -192,6 +192,9 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
                 case 'ownership':
                     url = `${base}ownership/ownership.html`;
                     break;
+                case 'stats':
+                    url = `${base}stats/stats.html`;
+                    break;
                 case 'analyzer':
                     url = `${base}analyzer/analyzer.html`;
                     break;
@@ -202,7 +205,7 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
 
             if (username && page !== 'home') {
                 url += `?username=${encodeURIComponent(username)}`;
-                if (page === 'rosters' || page === 'analyzer') {
+                if (page === 'rosters' || page === 'analyzer' || page === 'stats') {
                      const selected = leagueSelect?.value;
                     if (selected && selected !== 'Select a league...') {
                         url += `&leagueId=${selected}`;
