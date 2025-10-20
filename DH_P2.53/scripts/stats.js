@@ -1,4 +1,5 @@
 (function () {
+  console.log('stats.js loaded');
   if (typeof document === 'undefined') return;
   const root = document.body;
   if (!root || root.dataset.page !== 'stats') return;
@@ -794,10 +795,9 @@
   }
 
   async function fetchSheetCsv(sheetName) {
-    const sheetId = typeof PLAYER_STATS_SHEET_ID !== 'undefined'
-      ? PLAYER_STATS_SHEET_ID
-      : '1i-cKqSfYw0iFiV9S-wBw8lwZePwXZ7kcaWMdnaMTHDs';
-    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+    const proxyUrl = 'https://cors-anywhere.herokuapp.com/';
+    const sheetId = '1-sw0KxK-z-JkF33N0d2hGgxM-2OpBI2_Y3Jhjv-hxGg';
+    const url = `${proxyUrl}https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${sheetName}`;
     const response = await fetch(url, { cache: 'no-cache' });
     if (!response.ok) throw new Error(`Failed to fetch ${sheetName}: ${response.status}`);
     return response.text();
