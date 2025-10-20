@@ -156,7 +156,7 @@
   };
 
   if (dom.leagueChip) {
-    dom.leagueChip.textContent = 'Advanced Analytics';
+    dom.leagueChip.textContent = 'DH DATA HUB';
   }
 
   const TEAM_TAG_STYLES = (() => {
@@ -783,11 +783,11 @@
         state.isSuperflex = (superflexSlots > 0) || (qbSlots > 1);
       }
       if (dom.leagueChip) {
-        dom.leagueChip.textContent = 'Advanced Analytics';
+        dom.leagueChip.textContent = 'DH DATA HUB';
       }
     } catch (error) {
       if (dom.leagueChip) {
-        dom.leagueChip.textContent = 'Advanced Analytics';
+        dom.leagueChip.textContent = 'DH DATA HUB';
       }
       console.warn('Unable to resolve league context for stats page:', error);
     }
