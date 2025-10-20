@@ -1,6 +1,6 @@
 :root {
   --stats-col-rk-width: 2.25rem;
-  --stats-col-player-width: 7.1rem;
+  --stats-col-player-width: clamp(5rem, calc(5rem + 1.2vw), 5.9rem) !important;
   --stats-col-pos-width: 3.1rem;
 }
 
@@ -414,7 +414,7 @@
 }
 
 .stats-table tbody tr:nth-child(even) td {
-  background: rgba(10, 12, 26, 0.26);
+  background: rgba(12, 14, 29, 0.96);
 }
 
 .stats-table tbody tr:hover td {
@@ -497,6 +497,7 @@
 
 .stats-table thead th.stats-header-all {
   color: #ADA2FF;
+  padding: 8px 4px;
 }
 
 .stats-table thead th.stats-header-passing {
@@ -558,11 +559,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 2.25rem;
+  min-width: 2rem;
   height: 1.1rem;
   padding: 0;
   font-size: 0.6rem;
-  border-radius: 6px;
+  border-radius: 4px;
   letter-spacing: 0.05em;
 }
 
@@ -644,6 +645,6 @@
 
   .stats-table thead th,
   .stats-table tbody td {
-    padding: 0.18rem 0.22rem;
+    padding: 0.18rem 0.35rem;
   }
 }
