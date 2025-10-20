@@ -1081,8 +1081,8 @@
     }
 
     .filter-btn.active[data-position="FLX"] {
-      color: #ba6597;
-      box-shadow: inset 0 0 7px #ba659727;
+      color: #8983a0;
+      box-shadow: inset 0 0 7px #82808767;
     }
         .filter-btn.active {
         position: relative;
@@ -5844,15 +5844,15 @@ img.team-logo.glow[alt="WAS"] {
  #player-comparison-modal .modal-content {
     /* keep your existing layout props */
     border-radius: 9px;
-    border: 1px solid rgba(250, 250, 250, 0.05);
-    background-color: rgba(13,14,35,0.18);
+      border: 1px solid rgba(250, 250, 250, 0.05);
+      background-color: rgba(13, 14, 35, 0.18);
     
-    -webkit-backdrop-filter: blur(6px) saturate(110%) brightness(110%);
-    backdrop-filter: blur(6px) saturate(110%) brightness(110%);
+      -webkit-backdrop-filter: blur(6px) saturate(110%) brightness(110%);
+      backdrop-filter: blur(6px) saturate(110%) brightness(110%);
     
-    box-shadow: 0 8px 32px rgba(31, 38, 85, 0.15), inset 0 6px 20px rgba(255, 255, 255, 0.013), inset 0 0 4px #fff1;
-    /* create a local stacking context so the ::after sits correctly */
-    isolation: isolate;
+      box-shadow: 0 8px 32px rgba(31, 38, 85, 0.15), inset 0 6px 20px rgba(255, 255, 255, 0.013), inset 0 0 4px #fff1;
+      /* create a local stacking context so the ::after sits correctly */
+      isolation: isolate;
     }
     
 /* Highlight sheen layer (same as your .modal-body::after) */
@@ -6056,7 +6056,6 @@ body[data-page="research"] .app-header {
 .syop-tab:focus {
   color: #f5f7ff;
 }
-
 .syop-tab:focus-visible {
   outline: 2px solid rgba(70, 231, 255, 0.6);
   outline-offset: 2px;
@@ -8063,7 +8062,10 @@ body[data-page="analyzer"] #leagueSelect {
 }
 
 /* Scramble dud character color */
-#dh-scramble .dh-dud { color: #7666b5 !important; opacity: 0.75; }
+#dh-scramble .dh-dud {
+  color: #7666b5 !important;
+  opacity: 0.75;
+}
 
 /* === end loader block === */
 
