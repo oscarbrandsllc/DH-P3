@@ -1,12 +1,13 @@
 :root {
-  --stats-col-rk-width: 2.8rem;
-  --stats-col-player-width: 9.4rem;
-  --stats-col-pos-width: 3.9rem;
+  --stats-col-rk-width: 2.25rem;
+  --stats-col-player-width: 7.1rem;
+  --stats-col-pos-width: 3.1rem;
 }
 
+
 .stats-header-shell {
-  padding: 0.3rem 0.45rem 0.45rem;
-  gap: 0.25rem;
+  padding: 0.24rem 0.4rem;
+  gap: 0.18rem;
 }
 
 .stats-context-pill {
@@ -26,16 +27,16 @@
 .stats-page-content {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
-  padding-top: 0.35rem;
+  gap: 0.4rem;
+  padding-top: 0.25rem;
   flex-grow: 1;
 }
 
 .stats-page-intro {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  padding: 0.72rem clamp(0.75rem, 3vw, 1.2rem);
+  gap: 0.18rem;
+  padding: 0.56rem clamp(0.6rem, 2.4vw, 1rem);
   border-radius: 12px;
   background: rgba(13, 14, 35, 0.22);
   border: 1px solid rgba(128, 138, 189, 0.18);
@@ -44,15 +45,15 @@
 
 .stats-page-title {
   margin: 0;
-  font-size: clamp(1.25rem, 2vw, 1.65rem);
+  font-size: clamp(1.08rem, 1.8vw, 1.48rem);
   font-weight: 600;
   color: var(--color-text-primary);
   display: flex;
-  align-items: flex-end;
-  gap: 0.55rem;
+  align-items: baseline;
+  gap: 0.3rem;
   letter-spacing: 0.035em;
   text-transform: uppercase;
-  line-height: 1.05;
+  line-height: 1.1;
 }
 
 .stats-page-title span {
@@ -65,21 +66,15 @@
   letter-spacing: 0.08em;
 }
 
-.stats-page-title-divider {
-  color: var(--color-text-tertiary);
-  font-size: 0.72rem;
-  opacity: 0.65;
-}
-
 .stats-page-title-label {
   font-weight: 600;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
 }
 
 .stats-page-subtitle {
   margin: 0;
-  font-size: 0.8rem;
-  letter-spacing: 0.07em;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
   color: var(--color-text-tertiary);
   text-transform: uppercase;
 }
@@ -103,9 +98,9 @@
 .stats-tabs {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.35rem;
   border-radius: 12px;
-  padding: clamp(0.6rem, 2.2vw, 0.9rem) clamp(0.6rem, 2vw, 0.95rem);
+  padding: clamp(0.48rem, 2vw, 0.75rem) clamp(0.48rem, 1.8vw, 0.8rem);
   background: rgba(13, 14, 35, 0.22);
   border: 1px solid rgba(128, 138, 189, 0.18);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02), 0 12px 26px rgba(7, 10, 25, 0.26);
@@ -114,14 +109,14 @@
 .stats-tabs-buttons {
   display: flex;
   justify-content: center;
-  gap: 0.55rem;
+  gap: 0.4rem;
   flex-wrap: nowrap;
 }
 
 .stats-tab-button {
   position: relative;
-  padding: 0.32rem 1.15rem;
-  font-size: 0.82rem;
+  padding: 0.26rem 0.85rem;
+  font-size: 0.72rem;
   font-weight: 600;
   border-radius: 999px;
   border: 2px solid transparent;
@@ -129,9 +124,11 @@
   color: #94a3b8;
   background: rgba(13, 14, 35, 0.5);
   transition: all 0.2s ease;
-  letter-spacing: 0.13em;
+  letter-spacing: 0.1em;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   text-transform: uppercase;
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .stats-tab-button::after {
@@ -175,10 +172,10 @@
 
 .stats-tab-heading {
   margin: 0;
-  font-size: clamp(1.18rem, 2.6vw, 1.6rem);
+  font-size: clamp(1.05rem, 2.2vw, 1.45rem);
   font-weight: 600;
   color: var(--color-text-primary);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
 }
 
 .stats-heading-accent {
@@ -198,13 +195,13 @@
 .stats-controls {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.45rem;
+  gap: 0.35rem;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
 }
 
 .stats-search-block {
-  flex: 1 1 210px;
+  flex: 1 1 200px;
   display: flex;
   align-items: center;
 }
@@ -218,12 +215,12 @@
 
 .stats-search-input {
   width: 100%;
-  padding: 0.45rem 2.2rem 0.45rem 0.85rem;
-  border-radius: 9px;
+  padding: 0.38rem 2rem 0.38rem 0.8rem;
+  border-radius: 8px;
   border: 1px solid rgba(128, 138, 189, 0.24);
   background: rgba(13, 14, 35, 0.48);
   color: var(--color-text-primary);
-  font-size: 0.82rem;
+  font-size: 0.74rem;
   transition: all 0.2s ease;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
 }
@@ -276,7 +273,7 @@
 
 .stats-filter-block {
   display: flex;
-  gap: 0.35rem;
+  gap: 0.28rem;
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
@@ -284,17 +281,17 @@
 
 .stats-filter-btn {
   position: relative;
-  padding: 0.28rem 0.62rem;
-  font-size: 0.74rem;
+  padding: 0.24rem 0.58rem;
+  font-size: 0.68rem;
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: 7px;
   border: 1px solid rgba(128, 138, 189, 0.18);
   background: linear-gradient(to bottom, rgba(255, 255, 255, 0.015), rgba(0, 0, 0, 0.11));
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: all 0.2s ease;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.07em;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 4px 12px rgba(7, 10, 25, 0.22);
 }
 
@@ -336,10 +333,10 @@
 .stats-table-region {
   position: relative;
   border-radius: 12px;
-  padding: 0.32rem;
+  padding: 0.24rem;
   background: rgba(13, 14, 35, 0.22);
   border: 1px solid rgba(128, 138, 189, 0.18);
-  min-height: 380px;
+  min-height: 360px;
   overflow: hidden;
 }
 
@@ -380,7 +377,7 @@
 .stats-table-scroll {
   overflow-x: auto;
   overflow-y: auto;
-  max-height: clamp(380px, 70vh, 680px);
+  max-height: clamp(340px, 65vh, 640px);
   border-radius: 10px;
   background: rgba(10, 12, 28, 0.55);
   border: 1px solid rgba(128, 138, 189, 0.16);
@@ -392,18 +389,18 @@
   border-collapse: separate;
   border-spacing: 0;
   color: var(--color-text-primary);
-  min-width: 920px;
-  font-size: 0.72rem;
+  min-width: 860px;
+  font-size: 0.66rem;
 }
 
 .stats-table thead th {
   font-weight: 600;
-  padding: 0.32rem 0.36rem;
+  padding: 0.22rem 0.26rem;
   text-transform: uppercase;
-  font-size: 0.62rem;
-  letter-spacing: 0.12em;
+  font-size: 0.56rem;
+  letter-spacing: 0.11em;
   border-bottom: 1px solid rgba(128, 138, 189, 0.22);
-  background: rgba(10, 12, 26, 0.95);
+  background: rgba(8, 10, 24, 0.97);
   position: sticky;
   top: 0;
   z-index: 3;
@@ -411,13 +408,13 @@
 }
 
 .stats-table tbody td {
-  padding: 0.26rem 0.35rem;
+  padding: 0.2rem 0.26rem;
   border-bottom: 1px solid rgba(128, 138, 189, 0.12);
-  background: rgba(10, 12, 26, 0.34);
+  background: rgba(10, 12, 26, 0.32);
 }
 
 .stats-table tbody tr:nth-child(even) td {
-  background: rgba(10, 12, 26, 0.28);
+  background: rgba(10, 12, 26, 0.26);
 }
 
 .stats-table tbody tr:hover td {
@@ -428,7 +425,7 @@
 .stats-table th {
   white-space: nowrap;
   text-align: center;
-  line-height: 1.1;
+  line-height: 1.05;
 }
 
 .stats-table td.stats-player-cell,
@@ -440,7 +437,7 @@
   color: inherit;
   font-weight: 600;
   position: relative;
-  padding-left: 0.08rem;
+  padding-left: 0.06rem;
   transition: color 0.2s ease;
 }
 
@@ -448,7 +445,7 @@
   content: '';
   position: absolute;
   left: 0;
-  bottom: -0.1rem;
+  bottom: -0.08rem;
   width: 100%;
   height: 1px;
   background: rgba(144, 150, 208, 0.55);
@@ -463,22 +460,22 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.08rem 0.5rem;
+  padding: 0.04rem 0.42rem;
   border-radius: 999px;
   font-weight: 700;
   letter-spacing: 0.04em;
-  min-width: 2.9rem;
+  min-width: 2.35rem;
 }
 
 .stats-table .stats-team-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 18px;
+  width: 32px;
+  height: 16px;
   border-radius: 6px;
   font-weight: 600;
-  font-size: 0.6rem;
+  font-size: 0.55rem;
   background: rgba(255, 255, 255, 0.08);
   color: #ffffff;
   letter-spacing: 0.05em;
@@ -519,15 +516,15 @@
 .stats-table .sticky-col-3 {
   position: sticky;
   z-index: 2;
-  backdrop-filter: blur(10px);
-  box-shadow: inset -1px 0 0 rgba(128, 138, 189, 0.14);
+  backdrop-filter: blur(18px);
+  box-shadow: inset -1px 0 0 rgba(128, 138, 189, 0.16);
 }
 
 .stats-table thead .sticky-col-1,
 .stats-table thead .sticky-col-2,
 .stats-table thead .sticky-col-3 {
   z-index: 4;
-  background: rgba(10, 12, 26, 0.96);
+  background: rgba(6, 8, 22, 0.98);
 }
 
 .stats-table .sticky-col-1 {
@@ -554,7 +551,19 @@
 .stats-table tbody td.sticky-col-1,
 .stats-table tbody td.sticky-col-2,
 .stats-table tbody td.sticky-col-3 {
-  background: rgba(10, 12, 26, 0.9);
+  background: rgba(6, 8, 22, 0.97);
+}
+
+.stats-table .player-tag.modal-pos-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.25rem;
+  height: 1.1rem;
+  padding: 0;
+  font-size: 0.6rem;
+  border-radius: 6px;
+  letter-spacing: 0.05em;
 }
 
 .stats-table thead th.stats-sort-asc::after,
@@ -585,8 +594,8 @@
 
 @media (max-width: 1024px) {
   :root {
-    --stats-col-player-width: 8.8rem;
-    --stats-col-pos-width: 3.7rem;
+    --stats-col-player-width: 6.8rem;
+    --stats-col-pos-width: 2.9rem;
   }
 
   .stats-controls {
@@ -605,24 +614,24 @@
 
 @media (max-width: 600px) {
   :root {
-    --stats-col-player-width: 8.4rem;
-    --stats-col-pos-width: 3.5rem;
-    --stats-col-rk-width: 2.5rem;
+    --stats-col-player-width: 6.4rem;
+    --stats-col-pos-width: 2.7rem;
+    --stats-col-rk-width: 2.1rem;
   }
 
   .stats-page-title {
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.25rem;
+    gap: 0.18rem;
   }
 
   .stats-tabs-buttons {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
   }
 
   .stats-tab-button {
-    width: 100%;
-    justify-content: center;
+    padding: 0.24rem 0.55rem;
+    font-size: 0.66rem;
   }
 
   .stats-filter-block {
@@ -630,11 +639,11 @@
   }
 
   .stats-table {
-    font-size: 0.68rem;
+    font-size: 0.64rem;
   }
 
   .stats-table thead th,
   .stats-table tbody td {
-    padding: 0.24rem 0.28rem;
+    padding: 0.18rem 0.22rem;
   }
 }
