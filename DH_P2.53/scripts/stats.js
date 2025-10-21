@@ -813,11 +813,11 @@
         state.isSuperflex = (superflexSlots > 0) || (qbSlots > 1);
       }
       if (dom.leagueChip) {
-        dom.leagueChip.textContent = 'DH DATA HUB';
+        dom.leagueChip.textContent = 'DH DATA HUB – ADVANCED ANALYTICS';
       }
     } catch (error) {
       if (dom.leagueChip) {
-        dom.leagueChip.textContent = 'DH DATA HUB';
+        dom.leagueChip.textContent = 'DH DATA HUB – ADVANCED ANALYTICS';
       }
       console.warn('Unable to resolve league context for stats page:', error);
     }

@@ -72,7 +72,7 @@
 
 .stats-page-title {
   margin: 0;
-  font-size: clamp(1.08rem, 1.8vw, 1.48rem);
+  font-size: clamp(1.28rem, 1.8vw, 1.48rem);
   font-weight: 600;
   color: var(--color-text-primary);
   display: flex;
@@ -202,7 +202,7 @@
 .stats-tab-heading {
   margin: 0;
   font-size: clamp(1.05rem, 2.2vw, 1.45rem);
-  font-weight: 600;
+  font-weight: 400;
   color: var(--color-text-primary);
   letter-spacing: 0.05em;
 }
