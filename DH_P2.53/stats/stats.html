@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stats - Dynasty Hub</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@200;300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@100;200;300;400;500;700;900&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css?family=Google+Sans:100,200,300,400,500,600,700" rel="stylesheet"/>
+    <link href="../manifest.webmanifest?v=20250827002411?v=20250826235225" rel="manifest"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="../assets/icons/apple-touch-icon-180.png?v=20250926r5c" />
+    <meta content="#0D0E1B" name="theme-color"/>
+    <link href="../styles/styles.css?v=20250827002411?v=20250826235225" rel="stylesheet"/>
+    <link href="../styles/stats.css" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" sizes="32x32" href="../assets/icons/favicon-32.png?v=20250926r5c" />
+    <link rel="icon" type="image/png" sizes="16x16" href="../assets/icons/favicon-16.png?v=20250926r5c" />
+    <link rel="shortcut icon" href="../assets/icons/favicon.ico?v=20250926r5c" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer"/>
+</head>
+<body data-page="stats" class="p-2 sm:p-4">
+    <div aria-hidden="true" id="starfield">
+        <div id="stars"></div>
+        <div id="stars1"></div>
+        <div id="stars2"></div>
+        <div id="stars3"></div>
+    </div>
+    <div id="noise-overlay"></div>
+    <div class="relative z-10 content-wrapper">
+        <div id="header-container">
+            <header class="app-header glass-panel">
+                <div class="header-row" id="primary-header-row">
+                    <div class="nav-buttons-container">
+                        <button class="nav-button" id="homeButton" data-nav="home">
+                            <img src="../assets/logos/App_Logo_icon256.png" alt="Dynasty Hub" class="nav-logo" aria-hidden="true" />
+                            <span class="nav-label">Home</span>
+                        </button>
+                        <button class="nav-button" id="rostersButton" data-nav="rosters">
+                            <i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>
+                            <span class="nav-label">Rosters</span>
+                        </button>
+                        <button class="nav-button" id="ownershipButton" data-nav="ownership">
+                            <i class="fa-solid fa-percent" aria-hidden="true"></i>
+                            <span class="nav-label">Ownership</span>
+                        </button>
+                        <button class="nav-button active" id="statsButton" data-nav="stats">
+                            <i class="fa-solid fa-chart-column" aria-hidden="true"></i>
+                            <span class="nav-label">Stats</span>
+                        </button>
+                        <button class="nav-button" id="analyzerButton" data-nav="analyzer">
+                            <i class="fa-solid fa-square-poll-vertical" aria-hidden="true"></i>
+                            <span class="nav-label">L.Analyze</span>
+                        </button>
+                        <button class="nav-button" id="researchButton" data-nav="research">
+                            <i class="fa-solid fa-flask" aria-hidden="true"></i>
+                            <span class="nav-label">Research</span>
+                        </button>
+                    </div>
+                </div>
+            </header>
+        </div>
+        <main id="content">
+            <div class="tabs max-w-7xl mx-auto">
+                <button class="tab-btn tab-btn-1qb active" onclick="showPage('page-1qb', this)">1QB</button>
+                <button class="tab-btn tab-btn-sflx" onclick="showPage('page-sflx', this)">SFLX</button>
+            </div>
+            <div id="page-1qb">
+                <div class="relative max-w-7xl mx-auto glass-panel rounded-2xl shadow-2xl p-3 sm:p-6">
+                    <header class="flex flex-col items-center gap-2 mb-4 pt-4 sm:pt-0">
+                        <h1 class="text-2xl sm:text-3xl text-white">
+                            2025 <B><span style="background-image: linear-gradient(to right, #009efd, #2af598); -webkit-background-clip: text; background-clip: text; color: transparent;">1QB</span></B> Stats
+                        </h1>
+                    </header>
+                    <div class="flex flex-col md:flex-row gap-4 mb-4">
+                        <div class="flex-grow flex items-center gap-2">
+                            <div class="relative flex-grow">
+                                <input type="text" id="searchInput-1qb" placeholder="Search..." class="w-full bg-slate-900 border-2 border-slate-700 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg py-2 px-4 text-white placeholder-slate-500 transition-colors">
+                            </div>
+                        </div>
+                        <div id="filterContainer-1qb" class="flex items-center justify-center gap-2 flex-wrap">
+                            <button class="filter-btn" data-position="QB">QB</button>
+                            <button class="filter-btn" data-position="RB">RB</button>
+                            <button class="filter-btn" data-position="WR">WR</button>
+                            <button class="filter-btn" data-position="TE">TE</button>
+                            <button class="filter-btn" data-position="RDP">RDP</button>
+                            <button class="filter-btn" data-position="ROOKIES">ROOKIES</button>
+                        </div>
+                    </div>
+                    <div class="table-container rounded-lg border border-slate-700">
+                        <table class="w-full">
+                            <thead></thead>
+                            <tbody id="playerTableBody-1qb"></tbody>
+                        </table>
+                    </div>
+                    <div id="loading-1qb" class="text-center p-8 text-slate-400">Loading...</div>
+                </div>
+            </div>
+            <div id="page-sflx" style="display: none;">
+                <div class="relative max-w-7xl mx-auto glass-panel rounded-2xl shadow-2xl p-3 sm:p-6">
+                    <header class="relative text-center mb-4 pt-4 sm:pt-0">
+                        <h1 class="text-2xl sm:text-3xl text-white">
+                            2025 <b><span style="background-image: linear-gradient(to right, #c084fc, #ec4899); -webkit-background-clip: text; background-clip: text; color: transparent;">SFLX</span></b> Stats
+                        </h1>
+                    </header>
+                    <div class="flex flex-col md:flex-row gap-4 mb-4">
+                        <div class="flex-grow flex items-center gap-2">
+                            <div class="relative flex-grow">
+                                <input type="text" id="searchInput-sflx" placeholder="Search..." class="w-full bg-slate-900 border-2 border-slate-700 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg py-2 px-4 text-white placeholder-slate-500 transition-colors">
+                            </div>
+                        </div>
+                        <div id="filterContainer-sflx" class="flex items-center justify-center gap-2 flex-wrap">
+                            <button class="filter-btn" data-position="QB">QB</button>
+                            <button class="filter-btn" data-position="RB">RB</button>
+                            <button class="filter-btn" data-position="WR">WR</button>
+                            <button class="filter-btn" data-position="TE">TE</button>
+                            <button class="filter-btn" data-position="RDP">RDP</button>
+                            <button class="filter-btn" data-position="ROOKIES">ROOKIES</button>
+                        </div>
+                    </div>
+                    <div class="table-container rounded-lg border border-slate-700">
+                        <table class="w-full">
+                            <thead></thead>
+                            <tbody id="playerTableBody-sflx"></tbody>
+                        </table>
+                    </div>
+                    <div id="loading-sflx" class="text-center p-8 text-slate-400">Loading...</div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="../scripts/app.js"></script>
+    <script src="../scripts/stats.js"></script>
+</body>
+</html>
