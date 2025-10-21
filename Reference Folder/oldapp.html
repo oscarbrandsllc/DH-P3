@@ -51,6 +51,67 @@
    .header-sortable.asc .sort-arrow::after { content: ' ▲'; color: #f8fafc; } 
    .header-sortable.desc .sort-arrow::after { content: ' ▼'; color: #f8fafc; } 
     
+   /* Sticky Column Styles */
+   .th-sticky, .td-sticky {
+    position: -webkit-sticky; /* For Safari */
+    position: sticky;
+    z-index: 1;
+   }
+   .th-sticky {
+    background-color: #1a1d25; /* Match thead background */
+   }
+   /* Ensure sticky header stays on top of sticky body cells when scrolling vertically */
+   thead.sticky {
+    z-index: 10;
+   }
+   #playerTableBody-1qb tr:nth-child(odd) .td-sticky, 
+   #playerTableBody-sflx tr:nth-child(odd) .td-sticky {
+    background-color: #212635; /* Match odd row background */
+   }
+   #playerTableBody-1qb tr:nth-child(even) .td-sticky, 
+   #playerTableBody-sflx tr:nth-child(even) .td-sticky {
+    background-color: #1e232d; /* Match even row background */
+   }
+   /* Final fix for sticky column seams using ::before pseudo-elements */
+   .td-sticky::before, .th-sticky::before {
+       content: '';
+       position: absolute;
+       top: 0;
+       /* Extend slightly left and right to cover any browser rendering gaps */
+       left: -1px;
+       right: -1px;
+       bottom: 0;
+       z-index: -1; /* Place it behind the cell's content */
+   }
+   .th-sticky::before {
+       background-color: #1a1d25; /* Match header background */
+   }
+   #playerTableBody-1qb tr:nth-child(odd) .td-sticky::before,
+   #playerTableBody-sflx tr:nth-child(odd) .td-sticky::before {
+       background-color: #212635; /* Match odd row background */
+   }
+   #playerTableBody-1qb tr:nth-child(even) .td-sticky::before,
+   #playerTableBody-sflx tr:nth-child(even) .td-sticky::before {
+       background-color: #1e232d; /* Match even row background */
+   }
+   .col-rank {
+    width: 40px;
+    min-width: 40px;
+    left: 0;
+    z-index: 3; /* To overlap and hide scroll seam */
+   }
+   .col-player {
+    width: 110px;
+    min-width: 110px;
+    left: 40px; /* New width of col-rank */
+    z-index: 2; /* To overlap and hide scroll seam */
+   }
+   .col-pos {
+    width: 55px;
+    min-width: 55px;
+    left: 150px; /* New width of rank + player */
+   }
+
    /* Compact cell styles for mobile */ 
    .td-compact { 
     padding: 0.25rem 0.3rem; /* Tighter vertical padding */ 
@@ -179,9 +240,9 @@
      <table class="w-full"> 
       <thead class="sticky top-0"> 
        <tr> 
-        <th class="td-compact header-sortable text-center" data-sort="RANK">RK <span class="sort-arrow"></span></th> 
-        <th class="td-compact header-sortable text-center" data-sort="PLAYER NAME">Player <span class="sort-arrow"></span></th> 
-        <th class="td-compact header-sortable text-center" data-sort="POS">Pos <span class="sort-arrow"></span></th> 
+        <th class="td-compact header-sortable text-center th-sticky col-rank" data-sort="RANK">RK <span class="sort-arrow"></span></th> 
+        <th class="td-compact header-sortable text-center th-sticky col-player" data-sort="PLAYER NAME">Player <span class="sort-arrow"></span></th> 
+        <th class="td-compact header-sortable text-center th-sticky col-pos" data-sort="POS">Pos <span class="sort-arrow"></span></th> 
         <th class="td-compact header-sortable text-center" data-sort="AGE">Age <span class="sort-arrow"></span></th> 
         <th class="td-compact header-sortable text-center" data-sort="VALUE">Value<span class="sort-arrow"></span></th> 
         <th class="td-compact header-sortable text-center" data-sort="ADP">ADP <span class="sort-arrow"></span></th> 
@@ -245,9 +306,9 @@
      <table class="w-full"> 
       <thead class="sticky top-0"> 
        <tr> 
-        <th class="td-compact header-sortable text-center" data-sort="RANK">RK <span class="sort-arrow"></span></th> 
-        <th class="td-compact header-sortable text-center" data-sort="PLAYER NAME">Player <span class="sort-arrow"></span></th> 
-        <th class="td-compact header-sortable text-center" data-sort="POS">Pos <span class="sort-arrow"></span></th> 
+        <th class="td-compact header-sortable text-center th-sticky col-rank" data-sort="RANK">RK <span class="sort-arrow"></span></th> 
+        <th class="td-compact header-sortable text-center th-sticky col-player" data-sort="PLAYER NAME">Player <span class="sort-arrow"></span></th> 
+        <th class="td-compact header-sortable text-center th-sticky col-pos" data-sort="POS">Pos <span class="sort-arrow"></span></th> 
         <th class="td-compact header-sortable text-center" data-sort="AGE">Age <span class="sort-arrow"></span></th> 
         <th class="td-compact header-sortable text-center" data-sort="VALUE">Value<span class="sort-arrow"></span></th> 
         <th class="td-compact header-sortable text-center" data-sort="ADP">ADP <span class="sort-arrow"></span></th> 
@@ -335,6 +396,21 @@
     const searchIcon = pageElement.querySelector('[id^="searchIcon"]');
     const clearIcon = pageElement.querySelector('[id^="clearIcon"]');
 
+    function abbreviateName(fullName) {
+      if (!fullName || typeof fullName !== 'string') return 'N/A';
+      const parts = fullName.trim().split(' ');
+      if (parts.length < 2) {
+        return fullName.slice(0, 13);
+      }
+      const firstName = parts[0];
+      const restOfName = parts.slice(1).join(' ');
+      let finalName = `${firstName.charAt(0)}. ${restOfName}`;
+      if (finalName.length > 13) {
+        finalName = finalName.substring(0, 13);
+      }
+      return finalName;
+    }
+
     function parseAndLoadData() {
       try {
         const lines = (config.csvData || '').trim().split(/\r?\n/).filter(Boolean);
@@ -419,9 +495,9 @@
         } 
 
         row.innerHTML = ` 
-            <td class="td-compact text-center font-medium" ${rankStyle}>${player['RANK'] === Infinity ? 'N/A' : player['RANK']}</td> 
-            <td class="td-compact font-bold player-name-no-wrap">${player['PLAYER NAME'] || 'N/A'}</td> 
-            <td class="td-compact text-center font-semibold pos-${player['POS']}">${player['POS'] || 'N/A'}</td> 
+            <td class="td-compact text-center font-medium td-sticky col-rank" ${rankStyle}>${player['RANK'] === Infinity ? 'N/A' : player['RANK']}</td> 
+            <td class="td-compact font-bold player-name-no-wrap td-sticky col-player" title="${player['PLAYER NAME'] || 'N/A'}">${abbreviateName(player['PLAYER NAME'])}</td> 
+            <td class="td-compact text-center font-semibold pos-${player['POS']} td-sticky col-pos">${player['POS'] || 'N/A'}</td> 
             <td class="td-compact text-center" ${ageStyle}>${formattedAge}</td> 
             <td class="td-compact text-center"><span style="${getValueStyles(player['VALUE'])}">${displayNA(player['VALUE'])}</span></td> 
             <td class="td-compact text-center font-bold" ${adpStyle}>${formattedADP}</td> 
@@ -616,4 +692,3 @@ async function fetchSheetCsv(sheetName) {
   </style> 
  </body> 
  </html>
-
