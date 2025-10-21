@@ -3,6 +3,7 @@
   --stats-col-player-width: 5.6rem;
   --stats-col-pos-width: 2.75rem;
   --stats-col-standard-width: clamp(3.9rem, 4.6vw, 4.9rem);
+  --stats-table-width: calc(var(--stats-col-rk-width) + var(--stats-col-player-width) + var(--stats-col-pos-width) + (20 * var(--stats-col-standard-width)));
 }
 
 
@@ -207,6 +208,18 @@
   background-image: linear-gradient(to right, #c084fc, #ec4899);
 }
 
+.stats-controls-panel {
+  display: flex;
+  justify-content: center;
+  width: min(100%, 820px);
+  margin: 0 auto;
+  padding: clamp(0.48rem, 2vw, 0.75rem) clamp(0.48rem, 1.8vw, 0.8rem);
+  border-radius: 12px;
+  background: rgba(13, 14, 35, 0.22);
+  border: 1px solid rgba(128, 138, 189, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02), 0 12px 26px rgba(7, 10, 25, 0.26);
+}
+
 .stats-controls {
   display: flex;
   flex-wrap: wrap;
@@ -214,7 +227,6 @@
   justify-content: center;
   align-items: center;
   width: 100%;
-  margin-top: 0.35rem;
   max-width: 640px;
 }
 
@@ -416,10 +428,10 @@
   left: 0;
   bottom: 0;
   width: calc(var(--stats-col-rk-width) + var(--stats-col-player-width) + var(--stats-col-pos-width) + 2px);
-  background: rgba(10, 12, 26, 0.96);
+  background: rgba(10, 12, 26, 0.98);
   border-right: 1px solid rgba(128, 138, 189, 0.24);
   pointer-events: none;
-  z-index: 1;
+  z-index: 2;
 }
 
 .stats-table {
@@ -484,7 +496,6 @@
 
 .stats-table tbody td:not(.sticky-col-1):not(.sticky-col-2):not(.sticky-col-3) {
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .stats-table .stats-player-btn {
@@ -551,7 +562,7 @@
 
 .stats-table thead th.stats-header-all {
   color: #ADA2FF;
-  padding: 0.22rem 0.26rem;
+  padding: 0.4rem 0.26rem;
 }
 
 .stats-table thead th.stats-header-passing {
@@ -570,7 +581,7 @@
 .stats-table .sticky-col-2,
 .stats-table .sticky-col-3 {
   position: sticky;
-  z-index: 3;
+  z-index: 4;
   background: #080b1d;
   border-right: 1px solid rgba(128, 138, 189, 0.22);
   background-clip: padding-box;
@@ -579,7 +590,7 @@
 .stats-table thead .sticky-col-1,
 .stats-table thead .sticky-col-2,
 .stats-table thead .sticky-col-3 {
-  z-index: 4;
+  z-index: 5;
   background: #070a1b;
 }
 
@@ -621,7 +632,7 @@
   height: 100%;
   background: rgba(128, 138, 189, 0.22);
   pointer-events: none;
-  z-index: 5;
+  z-index: 6;
 }
 
 .stats-table .sticky-col-3::after {
@@ -632,8 +643,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 2rem;
-  height: 1.1rem;
+  min-width: 1.8rem;
+  height: 1rem;
   padding: 0;
   font-size: 0.6rem;
   border-radius: 4px;
@@ -673,6 +684,10 @@
     --stats-col-standard-width: clamp(3.6rem, 6vw, 4.4rem);
   }
 
+  .stats-controls-panel {
+    width: 100%;
+  }
+
   .stats-controls {
     flex-direction: column;
     align-items: stretch;
@@ -694,10 +709,15 @@
 
 @media (max-width: 600px) {
   :root {
-    --stats-col-player-width: 4.4rem;
-    --stats-col-pos-width: 2.1rem;
+    --stats-col-player-width: 5rem;
+    --stats-col-pos-width: 3rem;
     --stats-col-rk-width: 1.4rem;
-    --stats-col-standard-width: clamp(2rem, 2.4vw, 3rem);
+    --stats-col-standard-width: clamp(3rem, 3.4vw, 4rem);
+  }
+
+  .stats-controls-panel {
+    width: 100%;
+    padding: clamp(0.42rem, 4vw, 0.6rem) clamp(0.42rem, 4vw, 0.6rem);
   }
 
   .stats-page-title {
