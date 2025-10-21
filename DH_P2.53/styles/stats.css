@@ -3,7 +3,6 @@
   --stats-col-player-width: 5.6rem;
   --stats-col-pos-width: 2.75rem;
   --stats-col-standard-width: clamp(3.9rem, 4.6vw, 4.9rem);
-  --stats-sticky-overlap: 1px;
   --stats-table-width: calc(var(--stats-col-rk-width) + var(--stats-col-player-width) + var(--stats-col-pos-width) + (20 * var(--stats-col-standard-width)));
 }
 
@@ -451,22 +450,7 @@
 }
 
 .stats-table-scroll::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  width: calc(
-    var(--stats-col-rk-width)
-    + var(--stats-col-player-width)
-    + var(--stats-col-pos-width)
-    - (2 * var(--stats-sticky-overlap))
-    + 2px
-  );
-  background: rgba(10, 12, 26, 0.98);
-  border-right: 1px solid rgba(128, 138, 189, 0.24);
-  pointer-events: none;
-  z-index: 2;
+  display: none;
 }
 
 .stats-table {
@@ -618,7 +602,7 @@
 .stats-table .sticky-col-3 {
   position: sticky;
   background: transparent;
-  border-right: 1px solid rgba(128, 138, 189, 0.22);
+  border-right: none;
   background-clip: padding-box;
   overflow: visible;
   will-change: transform;
@@ -641,7 +625,7 @@
 }
 
 .stats-table .sticky-col-2 {
-  left: calc(var(--stats-col-rk-width) - var(--stats-sticky-overlap));
+  left: var(--stats-col-rk-width);
   width: var(--stats-col-player-width);
   min-width: var(--stats-col-player-width);
   max-width: var(--stats-col-player-width);
@@ -649,7 +633,7 @@
 }
 
 .stats-table .sticky-col-3 {
-  left: calc(var(--stats-col-rk-width) + var(--stats-col-player-width) - (2 * var(--stats-sticky-overlap)));
+  left: calc(var(--stats-col-rk-width) + var(--stats-col-player-width));
   width: var(--stats-col-pos-width);
   min-width: var(--stats-col-pos-width);
   max-width: var(--stats-col-pos-width);
@@ -694,6 +678,8 @@
   background: #0b0f24;
 }
 
+
+
 .stats-table tbody tr:hover td.sticky-col-1,
 .stats-table tbody tr:hover td.sticky-col-2,
 .stats-table tbody tr:hover td.sticky-col-3,
@@ -703,22 +689,24 @@
   background: rgba(118, 109, 255, 0.1);
 }
 
-.stats-table .sticky-col-1::after,
-.stats-table .sticky-col-2::after,
-.stats-table .sticky-col-3::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 1px;
-  height: 100%;
-  background: rgba(128, 138, 189, 0.22);
-  pointer-events: none;
-  z-index: 6;
+.stats-table thead th.sticky-col-1::before,
+.stats-table tbody td.sticky-col-1::before {
+  left: 0;
 }
 
-.stats-table .sticky-col-3::after {
-  background: rgba(128, 138, 189, 0.28);
+.stats-table thead th.sticky-col-1,
+.stats-table tbody td.sticky-col-1 {
+  box-shadow: none;
+}
+
+.stats-table thead th.sticky-col-2,
+.stats-table tbody td.sticky-col-2 {
+  box-shadow: inset -1px 0 0 rgba(128, 138, 189, 0.14);
+}
+
+.stats-table thead th.sticky-col-3,
+.stats-table tbody td.sticky-col-3 {
+  box-shadow: inset -1px 0 0 rgba(128, 138, 189, 0.18);
 }
 
 @supports (content-visibility: auto) {
