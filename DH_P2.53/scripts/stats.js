@@ -131,7 +131,9 @@
     rookieOnly: false,
     searchTerm: '',
     sort: { column: null, direction: 0 },
-    datasets: new Map()
+    datasets: new Map(),
+    headerLabels: new Map(),
+    availableColumns: new Map()
   };
 
   const dom = {
@@ -177,7 +179,7 @@
 
   function parseCsv(text) {
     const lines = (text || '').split(/\r?\n/).filter(Boolean);
-    if (!lines.length) return { headers: [], rows: [] };
+    if (!lines.length) return { headers: [], rows: [], headerDisplay: new Map() };
     const parseLine = (line) => {
       const result = [];
       let current = '';
@@ -207,14 +209,27 @@
       result.push(current.trim());
       return result;
     };
-    const headers = parseLine(lines[0]).map((h) => HEADER_ALIASES.get(h) || h);
+    const rawHeaders = parseLine(lines[0]);
+    const headerDisplay = new Map();
+    const headers = rawHeaders.map((raw) => {
+      const canonical = HEADER_ALIASES.get(raw) || raw;
+      const displayLabel = raw || canonical;
+      if (!headerDisplay.has(canonical)) {
+        headerDisplay.set(canonical, displayLabel);
+      }
+      return canonical;
+    });
     const rows = lines.slice(1).map(parseLine);
-    return { headers, rows };
+    return { headers, rows, headerDisplay };
   }
 
   function toNumber(value, { allowFloat = true } = {}) {
     if (value === null || value === undefined) return null;
-    const numeric = allowFloat ? parseFloat(value) : parseInt(value, 10);
+    let source = value;
+    if (typeof source === 'string') {
+      source = source.replace(/,/g, '');
+    }
+    const numeric = allowFloat ? parseFloat(source) : parseInt(source, 10);
     return Number.isNaN(numeric) ? null : numeric;
   }
 
@@ -461,9 +476,9 @@
 
   function formatCellValue(column, entry) {
     const { row, meta } = entry;
-    if (column === 'PLAYER') return meta.displayName || meta.name || 'N/A';
-    if (column === 'POS') return meta.pos || 'N/A';
-    if (column === 'TM') return meta.team || 'FA';
+    if (column === 'PLAYER') return meta.displayName || row[column] || meta.name || '';
+    if (column === 'POS') return row[column] || meta.pos || '';
+    if (column === 'TM') return row[column] || meta.team || 'FA';
     if (column === 'FPTS') {
       if (meta.fpts === null || Number.isNaN(meta.fpts)) return 'NA';
       return meta.fpts.toFixed(1);
@@ -473,19 +488,25 @@
       return meta.ppg.toFixed(2).replace(/\.00$/, '');
     }
     if (column === 'VALUE') {
-      if (!Number.isFinite(meta.value)) return 'NA';
-      return Math.round(meta.value);
+      const rawValue = row[column];
+      if (rawValue !== undefined && rawValue !== null && rawValue !== '') return rawValue;
+      if (Number.isFinite(meta.value)) return Math.round(meta.value);
+      return '';
     }
     if (column === 'AGE') {
-      if (!Number.isFinite(meta.age) || meta.age <= 0) return 'NA';
+      const rawValue = row[column];
+      if (rawValue !== undefined && rawValue !== null && rawValue !== '') return rawValue;
+      if (!Number.isFinite(meta.age) || meta.age <= 0) return '';
       return meta.age.toFixed(1);
     }
     if (column === 'RK') {
-      if (!Number.isFinite(meta.rank) || meta.rank === Infinity) return 'NA';
+      const rawValue = row[column];
+      if (rawValue !== undefined && rawValue !== null && rawValue !== '') return rawValue;
+      if (!Number.isFinite(meta.rank) || meta.rank === Infinity) return '';
       return meta.rank;
     }
     const raw = row[column];
-    if (raw === undefined || raw === null || raw === '') return '—';
+    if (raw === undefined || raw === null) return '';
     return raw;
   }
 
@@ -505,7 +526,14 @@
 
   function renderTable() {
     const dataset = getActiveDataset();
-    const columnSet = getColumnSet();
+    const baseColumnSet = getColumnSet();
+    const availableColumns = statsState.availableColumns.get(statsState.currentTab);
+    const columnSet = baseColumnSet.filter((column, index) => {
+      if (index < 3) return true;
+      if (!availableColumns) return true;
+      return availableColumns.has(column);
+    });
+    const headerLabels = statsState.headerLabels.get(statsState.currentTab) || new Map();
     const filtered = dataset.filter(passesFilters);
     const sortColumn = statsState.sort.column && columnSet.includes(statsState.sort.column)
       ? statsState.sort.column
@@ -572,7 +600,8 @@
     const headerRow = document.createElement('tr');
     columnSet.forEach((column, index) => {
       const th = document.createElement('th');
-      th.textContent = column;
+      const displayLabel = headerLabels.get(column) || column;
+      th.textContent = displayLabel;
       const category = getColumnCategory(column);
       th.classList.add(`stats-header-${category}`);
       if (index === 0) th.classList.add('sticky-col-1', 'stats-rank-cell');
@@ -588,16 +617,20 @@
       if (activeHeader) applySortIndicator(activeHeader);
     }
 
-    rows.forEach((entry, rowIndex) => {
+    rows.forEach((entry) => {
       const tr = document.createElement('tr');
       columnSet.forEach((column, index) => {
         const td = document.createElement('td');
-        let textValue = formatCellValue(column, entry);
+        const rawValue = formatCellValue(column, entry);
+        const textValue = rawValue === null || rawValue === undefined ? '' : rawValue;
         if (index === 0) {
           td.classList.add('sticky-col-1', 'stats-rank-cell');
-          const displayRank = rowIndex + 1;
-          textValue = displayRank;
-          td.style.color = getRankColorValue(displayRank);
+          const rankForColor = Number.isFinite(entry.meta.rank)
+            ? entry.meta.rank
+            : toNumber(textValue, { allowFloat: false });
+          if (Number.isFinite(rankForColor)) {
+            td.style.color = getRankColorValue(rankForColor);
+          }
         } else if (index === 1) {
           td.classList.add('sticky-col-2', 'stats-player-cell');
           const btn = document.createElement('button');
@@ -613,7 +646,8 @@
         if (index === 1) {
           // handled above
         } else if (column === 'VALUE') {
-          td.innerHTML = `<span class="stats-value-chip" style="${entry.meta.valueStyle}">${textValue}</span>`;
+          const display = textValue !== '' ? textValue : (Number.isFinite(entry.meta.value) ? Math.round(entry.meta.value) : '');
+          td.innerHTML = `<span class="stats-value-chip" style="${entry.meta.valueStyle}">${display}</span>`;
         } else if (column === 'TM') {
           td.innerHTML = `<span class="stats-team-chip" style="${entry.meta.teamStyle}">${textValue}</span>`;
         } else if (column === 'POS') {
@@ -632,10 +666,6 @@
         if (column === 'PPG') {
           td.style.color = entry.meta.ppgColor;
           td.classList.add('stats-ppg-cell');
-        }
-
-        if (column === 'RK' && index !== 1) {
-          td.textContent = textValue;
         }
 
         tr.appendChild(td);
@@ -837,10 +867,12 @@
     const tab = TAB_CONFIG[tabKey];
     if (!tab) return;
     const csv = await fetchSheetCsv(tab.sheet);
-    const { headers, rows } = parseCsv(csv);
+    const { headers, rows, headerDisplay } = parseCsv(csv);
     const parsedRows = rows.map((values) => normalizeHeadersRow(headers, values));
     const enriched = parsedRows.map(buildRow);
     statsState.datasets.set(tabKey, enriched);
+    statsState.headerLabels.set(tabKey, new Map(headerDisplay));
+    statsState.availableColumns.set(tabKey, new Set(headers));
   }
 
   async function loadAllTabs() {
