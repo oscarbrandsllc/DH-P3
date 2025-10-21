@@ -445,7 +445,6 @@
   background: rgba(10, 12, 28, 0.55);
   border: 1px solid rgba(128, 138, 189, 0.16);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
-  scrollbar-gutter: stable both-edges;
   contain: paint;
 }
 
@@ -455,7 +454,7 @@
   top: 0;
   left: 0;
   bottom: 0;
-  width: calc(var(--stats-col-rk-width) + var(--stats-col-player-width) + var(--stats-col-pos-width) + 2px);
+  width: calc(var(--stats-col-rk-width) + var(--stats-col-player-width) + var(--stats-col-pos-width));
   background: rgba(10, 12, 26, 0.98);
   border-right: 1px solid rgba(128, 138, 189, 0.24);
   pointer-events: none;
@@ -505,6 +504,7 @@
   white-space: nowrap;
   text-align: center;
   line-height: 1.05;
+  box-sizing: border-box;
 }
 
 .stats-table td.stats-player-cell {
@@ -609,7 +609,6 @@
 .stats-table .sticky-col-2,
 .stats-table .sticky-col-3 {
   position: sticky;
-  z-index: 4;
   background: transparent;
   border-right: 1px solid rgba(128, 138, 189, 0.22);
   background-clip: padding-box;
@@ -619,7 +618,6 @@
 .stats-table thead .sticky-col-1,
 .stats-table thead .sticky-col-2,
 .stats-table thead .sticky-col-3 {
-  z-index: 5;
   background: transparent;
 }
 
@@ -628,6 +626,7 @@
   width: var(--stats-col-rk-width);
   min-width: var(--stats-col-rk-width);
   max-width: var(--stats-col-rk-width);
+  z-index: 7;
 }
 
 .stats-table .sticky-col-2 {
@@ -635,6 +634,7 @@
   width: var(--stats-col-player-width);
   min-width: var(--stats-col-player-width);
   max-width: var(--stats-col-player-width);
+  z-index: 6;
 }
 
 .stats-table .sticky-col-3 {
@@ -642,7 +642,12 @@
   width: var(--stats-col-pos-width);
   min-width: var(--stats-col-pos-width);
   max-width: var(--stats-col-pos-width);
+  z-index: 5;
 }
+
+.stats-table thead .sticky-col-1 { z-index: 8; }
+.stats-table thead .sticky-col-2 { z-index: 7; }
+.stats-table thead .sticky-col-3 { z-index: 6; }
 
 .stats-table tbody td.sticky-col-1,
 .stats-table tbody td.sticky-col-2,
@@ -658,10 +663,10 @@
 .stats-table tbody td.sticky-col-3::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: -1px;
+  top: -1px;
+  left: -2px;
   right: -1px;
-  bottom: 0;
+  bottom: -1px;
   background: #080b1d;
   z-index: -1;
 }
@@ -693,7 +698,7 @@
   content: '';
   position: absolute;
   top: 0;
-  right: -0.5px;
+  right: 0;
   width: 1px;
   height: 100%;
   background: rgba(128, 138, 189, 0.22);

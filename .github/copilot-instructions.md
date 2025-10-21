@@ -1,3 +1,5 @@
+DO NOT REFERENCE UNLESS SESSION HAS JUST STARTED WITH THE FIRST PROMPT!!
+
 If chat session just started with initial prompt, follow complete instructions below along with prompt. 
 If session is continuing, follow prompt instructions only!
 Aside from initial prompt, throughout the chat session, always follow latest instructions given in most recent prompt, do not focus on past instructions unless spcified, or needed for context.
