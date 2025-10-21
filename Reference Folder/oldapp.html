@@ -145,6 +145,7 @@
    /* Performance optimization for smoother scrolling in long tables */
    #playerTableBody-1qb tr, #playerTableBody-sflx tr {
     content-visibility: auto;
+    contain-intrinsic-size: 28px; /* Prevents lag when scrolling by giving the browser a placeholder size */
    }
 
    .rookie-filter-btn.active-filter { 
@@ -697,3 +698,4 @@ async function fetchSheetCsv(sheetName) {
   </style> 
  </body> 
  </html>
+
