@@ -142,6 +142,11 @@
     background-color: #1e232d; 
    } 
    
+   /* Performance optimization for smoother scrolling in long tables */
+   #playerTableBody-1qb tr, #playerTableBody-sflx tr {
+    content-visibility: auto;
+   }
+
    .rookie-filter-btn.active-filter { 
     background-color: #ec4899; 
     color: white; 
