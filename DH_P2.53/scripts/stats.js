@@ -85,6 +85,39 @@
     'FUM': 'all'
   };
 
+  const INTEGER_COLUMNS = new Set([
+    'RK', 'GM_P', 'VALUE', 'YDS(t)', 'OPP', 'IMP', 'paYDS', 'paTD', 'paATT', 'CMP', 'pa1D', 'ruYDS', 'ruTD',
+    'CAR', 'SAC', 'INT', 'FUM', 'REC', 'TGT', 'ru1D', 'recTD', 'rec1D', 'YAC', 'RR', 'MTF', 'YCO'
+  ]);
+
+  const DECIMAL_PRECISION = new Map([
+    ['AGE', 1],
+    ['YPG(t)', 1],
+    ['paYPG', 1],
+    ['ruYPG', 1],
+    ['recYPG', 1],
+    ['IMP/G', 2],
+    ['IMP/OPP', 2],
+    ['pIMP', 1],
+    ['pIMP/A', 2],
+    ['YPC', 2],
+    ['YPR', 2],
+    ['YPRR', 2],
+    ['ELU', 2],
+    ['MTF/A', 2],
+    ['YCO/A', 2],
+    ['TTT', 2],
+    ['FPOE', 1],
+    ['paRTG', 1],
+    ['1DRR', 2]
+  ]);
+
+  const PERCENT_PRECISION = new Map([
+    ['SNP%', 1],
+    ['PRS%', 1],
+    ['TS%', 1]
+  ]);
+
   const VALUE_COLOR_SCALE = [
     { value: 9000, color: '#00EEB6' },
     { value: 8000, color: '#14D7CB' },
@@ -176,6 +209,57 @@
   })();
 
   const params = new URLSearchParams(window.location.search);
+
+  function formatInteger(value) {
+    if (!Number.isFinite(value)) return '';
+    return Math.round(value).toString();
+  }
+
+  function formatDecimal(value, decimals) {
+    if (!Number.isFinite(value)) return '';
+    const fixed = value.toFixed(decimals);
+    return fixed;
+  }
+
+  function formatPercentageValue(value, decimals = 1) {
+    if (!Number.isFinite(value)) return '';
+    const fixed = value.toFixed(decimals);
+    return `${fixed}%`;
+  }
+
+  function formatSheetCellValue(column, rawValue) {
+    if (rawValue === undefined || rawValue === null) return '';
+    if (typeof rawValue === 'string') {
+      const trimmed = rawValue.trim();
+      if (trimmed === '') return '';
+      const upper = trimmed.toUpperCase();
+      if (upper === 'NA' || upper === 'N/A') return trimmed;
+      if (trimmed.includes('%')) return trimmed;
+      if (/[^0-9.,\-]/.test(trimmed)) return trimmed;
+    }
+
+    const numeric = toNumber(rawValue);
+    if (numeric === null) {
+      return typeof rawValue === 'string' ? rawValue : '';
+    }
+
+    if (PERCENT_PRECISION.has(column)) {
+      const decimals = PERCENT_PRECISION.get(column) ?? 1;
+      const scaled = Math.abs(numeric) <= 1 ? numeric * 100 : numeric;
+      return formatPercentageValue(scaled, decimals);
+    }
+
+    if (INTEGER_COLUMNS.has(column)) {
+      return formatInteger(numeric);
+    }
+
+    if (DECIMAL_PRECISION.has(column)) {
+      const decimals = DECIMAL_PRECISION.get(column) ?? 2;
+      return formatDecimal(numeric, decimals);
+    }
+
+    return typeof rawValue === 'string' ? rawValue : `${numeric}`;
+  }
 
   function parseCsv(text) {
     const lines = (text || '').split(/\r?\n/).filter(Boolean);
@@ -485,27 +569,30 @@
     }
     if (column === 'PPG') {
       if (meta.ppg === null || Number.isNaN(meta.ppg)) return 'NA';
-      return meta.ppg.toFixed(2).replace(/\.00$/, '');
+      return meta.ppg.toFixed(1);
     }
     if (column === 'VALUE') {
       const rawValue = row[column];
-      if (rawValue !== undefined && rawValue !== null && rawValue !== '') return rawValue;
-      if (Number.isFinite(meta.value)) return Math.round(meta.value);
+      const formatted = formatSheetCellValue(column, rawValue);
+      if (formatted !== '') return formatted;
+      if (Number.isFinite(meta.value)) return formatInteger(meta.value);
       return '';
     }
     if (column === 'AGE') {
-      const rawValue = row[column];
-      if (rawValue !== undefined && rawValue !== null && rawValue !== '') return rawValue;
+      const formatted = formatSheetCellValue(column, row[column]);
+      if (formatted !== '') return formatted;
       if (!Number.isFinite(meta.age) || meta.age <= 0) return '';
-      return meta.age.toFixed(1);
+      return formatDecimal(meta.age, 1);
     }
     if (column === 'RK') {
-      const rawValue = row[column];
-      if (rawValue !== undefined && rawValue !== null && rawValue !== '') return rawValue;
+      const formatted = formatSheetCellValue(column, row[column]);
+      if (formatted !== '') return formatted;
       if (!Number.isFinite(meta.rank) || meta.rank === Infinity) return '';
-      return meta.rank;
+      return formatInteger(meta.rank);
     }
     const raw = row[column];
+    const formatted = formatSheetCellValue(column, raw);
+    if (formatted !== '') return formatted;
     if (raw === undefined || raw === null) return '';
     return raw;
   }
