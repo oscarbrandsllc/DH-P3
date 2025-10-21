@@ -536,6 +536,36 @@
     const table = wrapper.querySelector('.stats-table');
     const thead = table.querySelector('thead');
     const tbody = table.querySelector('tbody');
+
+    const dataColumnCount = Math.max(columnSet.length - 3, 0);
+    const widthExpression = `calc(var(--stats-col-rk-width) + var(--stats-col-player-width) + var(--stats-col-pos-width) + ${dataColumnCount} * var(--stats-col-standard-width))`;
+    table.style.setProperty('--stats-table-width', widthExpression);
+
+    const existingColgroup = table.querySelector('colgroup');
+    if (existingColgroup) existingColgroup.remove();
+    const colgroup = document.createElement('colgroup');
+    columnSet.forEach((column, index) => {
+      const col = document.createElement('col');
+      if (index === 0) {
+        col.style.width = 'var(--stats-col-rk-width)';
+        col.style.minWidth = 'var(--stats-col-rk-width)';
+        col.style.maxWidth = 'var(--stats-col-rk-width)';
+      } else if (index === 1) {
+        col.style.width = 'var(--stats-col-player-width)';
+        col.style.minWidth = 'var(--stats-col-player-width)';
+        col.style.maxWidth = 'var(--stats-col-player-width)';
+      } else if (index === 2) {
+        col.style.width = 'var(--stats-col-pos-width)';
+        col.style.minWidth = 'var(--stats-col-pos-width)';
+        col.style.maxWidth = 'var(--stats-col-pos-width)';
+      } else {
+        col.style.width = 'var(--stats-col-standard-width)';
+        col.style.minWidth = 'var(--stats-col-standard-width)';
+        col.style.maxWidth = 'var(--stats-col-standard-width)';
+      }
+      colgroup.appendChild(col);
+    });
+    table.insertBefore(colgroup, thead);
     thead.innerHTML = '';
     tbody.innerHTML = '';
 
