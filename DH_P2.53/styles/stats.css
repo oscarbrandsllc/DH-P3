@@ -12,6 +12,19 @@
   gap: 0.18rem;
 }
 
+.stats-nav-hidden-inputs {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  border: 0;
+  padding: 0;
+  clip-path: inset(50%);
+  clip: rect(0, 0, 0, 0);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
 .stats-context-pill {
   justify-self: end;
   align-self: center;
@@ -83,7 +96,7 @@
 }
 
 .stats-page-title-label {
-  font-weight: 600;
+  font-weight: 200;
   letter-spacing: 0.1em;
 }
 
@@ -222,12 +235,27 @@
 
 .stats-controls {
   display: flex;
+  flex-direction: column;
+  gap: 0.42rem;
+  width: 100%;
+  max-width: 640px;
+}
+
+.stats-controls-heading {
+  text-align: center;
+}
+
+.stats-controls-heading .stats-tab-heading {
+  margin-bottom: 0;
+}
+
+.stats-controls-body {
+  display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
   justify-content: center;
   align-items: center;
   width: 100%;
-  max-width: 640px;
 }
 
 .stats-search-block {
@@ -524,20 +552,20 @@
 .stats-table .stats-value-chip {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 0.04rem 0.42rem;
-  border-radius: 999px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  min-width: 2.35rem;
+    justify-content: center;
+    padding: 0.08rem 0.242rem;
+    border-radius: 4px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    min-width: 1.5rem;
 }
 
 .stats-table .stats-team-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 16px;
+  width: 27px;
+  height: 13px;
   border-radius: 6px;
   font-weight: 600;
   font-size: 0.55rem;
@@ -582,16 +610,17 @@
 .stats-table .sticky-col-3 {
   position: sticky;
   z-index: 4;
-  background: #080b1d;
+  background: transparent;
   border-right: 1px solid rgba(128, 138, 189, 0.22);
   background-clip: padding-box;
+  overflow: visible;
 }
 
 .stats-table thead .sticky-col-1,
 .stats-table thead .sticky-col-2,
 .stats-table thead .sticky-col-3 {
   z-index: 5;
-  background: #070a1b;
+  background: transparent;
 }
 
 .stats-table .sticky-col-1 {
@@ -618,7 +647,44 @@
 .stats-table tbody td.sticky-col-1,
 .stats-table tbody td.sticky-col-2,
 .stats-table tbody td.sticky-col-3 {
+  background: transparent;
+}
+
+.stats-table thead th.sticky-col-1::before,
+.stats-table thead th.sticky-col-2::before,
+.stats-table thead th.sticky-col-3::before,
+.stats-table tbody td.sticky-col-1::before,
+.stats-table tbody td.sticky-col-2::before,
+.stats-table tbody td.sticky-col-3::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -1px;
+  right: -1px;
+  bottom: 0;
   background: #080b1d;
+  z-index: -1;
+}
+
+.stats-table thead th.sticky-col-1::before,
+.stats-table thead th.sticky-col-2::before,
+.stats-table thead th.sticky-col-3::before {
+  background: #070a1b;
+}
+
+.stats-table tbody tr:nth-child(even) td.sticky-col-1::before,
+.stats-table tbody tr:nth-child(even) td.sticky-col-2::before,
+.stats-table tbody tr:nth-child(even) td.sticky-col-3::before {
+  background: #0b0f24;
+}
+
+.stats-table tbody tr:hover td.sticky-col-1,
+.stats-table tbody tr:hover td.sticky-col-2,
+.stats-table tbody tr:hover td.sticky-col-3,
+.stats-table tbody tr:hover td.sticky-col-1::before,
+.stats-table tbody tr:hover td.sticky-col-2::before,
+.stats-table tbody tr:hover td.sticky-col-3::before {
+  background: rgba(118, 109, 255, 0.1);
 }
 
 .stats-table .sticky-col-1::after,
@@ -637,6 +703,13 @@
 
 .stats-table .sticky-col-3::after {
   background: rgba(128, 138, 189, 0.28);
+}
+
+@supports (content-visibility: auto) {
+  .stats-table tbody tr {
+    content-visibility: auto;
+    contain-intrinsic-size: 28px;
+  }
 }
 
 .stats-table .player-tag.modal-pos-tag {
@@ -689,9 +762,12 @@
   }
 
   .stats-controls {
-    flex-direction: column;
     align-items: stretch;
     gap: 0.55rem;
+  }
+
+  .stats-controls-body {
+    flex-direction: column;
   }
 
   .stats-search-block {
@@ -709,10 +785,10 @@
 
 @media (max-width: 600px) {
   :root {
-    --stats-col-player-width: 5rem;
-    --stats-col-pos-width: 3rem;
+    --stats-col-player-width: 4.7rem;
+    --stats-col-pos-width: 2.5rem;
     --stats-col-rk-width: 1.4rem;
-    --stats-col-standard-width: clamp(3rem, 3.4vw, 4rem);
+    --stats-col-standard-width: clamp(2.5rem, 3vw, 4rem);
   }
 
   .stats-controls-panel {
@@ -740,6 +816,11 @@
     max-width: min(90vw, 300px);
   }
 
+  .stats-controls-body {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
   .stats-tabs {
     width: 100%;
     max-width: 100%;
@@ -750,7 +831,7 @@
   }
 
   .stats-table {
-    font-size: 0.64rem;
+    font-size: 0.56rem;
   }
 
   .stats-table thead th,
