@@ -1,0 +1,701 @@
+<!DOCTYPE html> 
+ <html lang="en"> 
+ <head> 
+  <meta charset="UTF-8"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <title>2025 PLAYER STATS</title> 
+  <script src="https://cdn.tailwindcss.com"></script> 
+  <link rel="preconnect" href="https://fonts.googleapis.com"> 
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin> 
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet"> 
+  <style> 
+   body { 
+    font-family: 'Quicksand', sans-serif; 
+    background-color: #0f172a; /* slate-900 */ 
+    color: #f8fafc; /* slate-50 */ 
+   } 
+   .table-container { 
+    max-height: 75vh; 
+    overflow-y: auto; 
+    overflow-x: auto;  
+   } 
+   /* Custom Scrollbar */ 
+   .table-container::-webkit-scrollbar { 
+    width: 8px; 
+    height: 8px; 
+   } 
+   .table-container::-webkit-scrollbar-track { 
+    background: #1e293b; /* slate-800 */ 
+   } 
+   .table-container::-webkit-scrollbar-thumb { 
+    background: #4f46e5; /* indigo-600 */ 
+    border-radius: 4px; 
+   } 
+   .table-container::-webkit-scrollbar-thumb:hover { 
+    background: #6366f1; /* indigo-500 */ 
+   } 
+   .header-sortable { 
+    cursor: pointer; 
+    position: relative; 
+    padding-right: 1.5rem;  
+    white-space: nowrap; 
+   } 
+   .header-sortable .sort-arrow { 
+    position: absolute; 
+    right: 0.25rem; 
+    top: 50%; 
+    transform: translateY(-50%); 
+    font-size: 0.8em; 
+    color: #94a3b8; /* slate-400 */ 
+   } 
+   .header-sortable.asc .sort-arrow::after { content: ' ▲'; color: #f8fafc; } 
+   .header-sortable.desc .sort-arrow::after { content: ' ▼'; color: #f8fafc; } 
+    
+   /* Sticky Column Styles */
+   .th-sticky, .td-sticky {
+    position: -webkit-sticky; /* For Safari */
+    position: sticky;
+    z-index: 1;
+   }
+   .th-sticky {
+    background-color: #1a1d25; /* Match thead background */
+   }
+   /* Ensure sticky header stays on top of sticky body cells when scrolling vertically */
+   thead.sticky {
+    z-index: 10;
+   }
+   #playerTableBody-1qb tr:nth-child(odd) .td-sticky, 
+   #playerTableBody-sflx tr:nth-child(odd) .td-sticky {
+    background-color: #212635; /* Match odd row background */
+   }
+   #playerTableBody-1qb tr:nth-child(even) .td-sticky, 
+   #playerTableBody-sflx tr:nth-child(even) .td-sticky {
+    background-color: #1e232d; /* Match even row background */
+   }
+   /* Final fix for sticky column seams using ::before pseudo-elements */
+   .td-sticky::before, .th-sticky::before {
+       content: '';
+       position: absolute;
+       top: 0;
+       /* Extend slightly left and right to cover any browser rendering gaps */
+       left: -1px;
+       right: -1px;
+       bottom: 0;
+       z-index: -1; /* Place it behind the cell's content */
+   }
+   .th-sticky::before {
+       background-color: #1a1d25; /* Match header background */
+   }
+   #playerTableBody-1qb tr:nth-child(odd) .td-sticky::before,
+   #playerTableBody-sflx tr:nth-child(odd) .td-sticky::before {
+       background-color: #212635; /* Match odd row background */
+   }
+   #playerTableBody-1qb tr:nth-child(even) .td-sticky::before,
+   #playerTableBody-sflx tr:nth-child(even) .td-sticky::before {
+       background-color: #1e232d; /* Match even row background */
+   }
+   .col-rank {
+    width: 40px;
+    min-width: 40px;
+    left: 0;
+    z-index: 3; /* To overlap and hide scroll seam */
+   }
+   .col-player {
+    width: 110px;
+    min-width: 110px;
+    left: 40px; /* New width of col-rank */
+    z-index: 2; /* To overlap and hide scroll seam */
+   }
+   .col-pos {
+    width: 55px;
+    min-width: 55px;
+    left: 150px; /* New width of rank + player */
+   }
+
+   /* Compact cell styles for mobile */ 
+   .td-compact { 
+    padding: 0.25rem 0.3rem; /* Tighter vertical padding */ 
+    font-size: 0.8rem; /* Reduced font size */ 
+    white-space: nowrap; /* Prevent wrapping */ 
+   } 
+   .player-name-no-wrap { 
+     white-space: nowrap; 
+     max-width: 120px; 
+     overflow: hidden; 
+     text-overflow: ellipsis; 
+   } 
+   /* Position colors */ 
+   .pos-QB { color: #ff1d7b; } 
+   .pos-RB { color: #26eba7; } 
+   .pos-WR { color: #4a86e8; } 
+   .pos-TE { color: #7300ff; } 
+   .pos-RDP { color: #ffdcef; text-shadow: 0 0 2px rgba(0,0,0,0.7); } 
+
+   thead { 
+    background-color: #1a1d25; 
+   } 
+
+   #playerTableBody-1qb tr:nth-child(odd), #playerTableBody-sflx tr:nth-child(odd) { 
+    background-color: #212635;  
+   } 
+   #playerTableBody-1qb tr:nth-child(even), #playerTableBody-sflx tr:nth-child(even) { 
+    background-color: #1e232d; 
+   } 
+   
+   /* Performance optimization for smoother scrolling in long tables */
+   #playerTableBody-1qb tr, #playerTableBody-sflx tr {
+    content-visibility: auto;
+    contain-intrinsic-size: 28px; /* Prevents lag when scrolling by giving the browser a placeholder size */
+   }
+
+   .rookie-filter-btn.active-filter { 
+    background-color: #ec4899; 
+    color: white; 
+    box-shadow: 0 0 10px rgba(236, 72, 153, 0.5); 
+   } 
+
+   .filter-btn-FLX { background-color: #90a1c9; } /* amber-500 */
+   .filter-btn-FLX.active-filter { border-color: #e6ebf8; } /* amber-400 */
+   /* Tab Styles */
+   .tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+    gap: 0.5rem;
+   }
+   .tab-btn {
+    padding: 0.5rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    border: 2px solid transparent;
+    transition: all 0.2s ease-in-out;
+    color: #94a3b8; /* slate-400 */
+    background-color: #1e293b; /* slate-800 */
+    cursor: pointer;
+    border-radius: 0.5rem;
+   }
+   .tab-btn:hover {
+     background-color: #334155; /* slate-700 */
+   }
+   .tab-btn.active {
+    color: white;
+   }
+   .tab-btn-1qb.active {
+    background-color: rgba(0, 158, 253, 0.15);
+    box-shadow: 0 0 15px rgba(0, 158, 253, 0.5), inset 0 0 5px rgba(0, 158, 253, 0.4);
+    border-color: rgba(0, 158, 253, 0.6);
+   }
+   .tab-btn-sflx.active {
+    background-color: rgba(236, 72, 153, 0.15);
+    box-shadow: 0 0 15px rgba(236, 72, 153, 0.5), inset 0 0 5px rgba(236, 72, 153, 0.4);
+    border-color: rgba(236, 72, 153, 0.6);
+   }
+
+  </style> 
+ </head> 
+ <body class="p-2 sm:p-4 md:p-6"> 
+
+  <!-- Tab Navigation -->
+  <div class="tabs max-w-7xl mx-auto">
+   <button class="tab-btn tab-btn-1qb active" onclick="showPage('page-1qb', this)">1QB</button>
+   <button class="tab-btn tab-btn-sflx" onclick="showPage('page-sflx', this)">SFLX</button>
+  </div>
+
+  <!-- Page 1: 1QB Rankings --> 
+  <div id="page-1qb"> 
+   <div class="relative max-w-7xl mx-auto bg-slate-800/50 rounded-2xl shadow-2xl p-3 sm:p-6"> 
+    <header class="flex flex-col items-center gap-2 mb-4 pt-4 sm:pt-0"> 
+     <h1 class="text-2xl sm:text-3xl text-white"> 
+      2025 <B><span style="background-image: linear-gradient(to right, #009efd, #2af598); -webkit-background-clip: text; background-clip: text; color: transparent;">1QB</span></B> Stats 
+     </h1> 
+    </header> 
+
+    <div class="flex flex-col md:flex-row gap-4 mb-4"> 
+     <div class="flex-grow flex items-center gap-2"> 
+      <div class="relative flex-grow"> 
+       <input type="text" id="searchInput-1qb" placeholder="Search..." class="w-full bg-slate-900 border-2 border-slate-700 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg py-2 px-4 text-white placeholder-slate-500 transition-colors"> 
+       <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+        <svg id="searchIcon-1qb" class="w-5 h-5 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"></path>
+        </svg>
+        <svg id="clearIcon-1qb" class="w-5 h-5 text-slate-500 cursor-pointer hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+       </div>
+      </div> 
+      <div class="flex items-start justify-center gap-2">
+       <div class="flex flex-col gap-1">
+        <button id="rookieFilterBtn-1qb" class="rookie-filter-btn bg-slate-700 hover:bg-slate-600 text-white font-semibold py-1 px-3 rounded-lg text-xs transition-colors whitespace-nowrap w-24 text-center">Rookies</button>
+       </div>
+      </div>
+     </div> 
+     <div id="filterContainer-1qb" class="flex items-center justify-center gap-2 flex-wrap"> 
+      <button class="filter-btn filter-btn-RDP" data-position="RDP">RDP</button> 
+      <button class="filter-btn filter-btn-QB" data-position="QB">QB</button> 
+      <button class="filter-btn filter-btn-RB" data-position="RB">RB</button> 
+      <button class="filter-btn filter-btn-WR" data-position="WR">WR</button> 
+      <button class="filter-btn filter-btn-TE" data-position="TE">TE</button> 
+      <button class="filter-btn filter-btn-FLX" data-position="FLX">FLX</button>
+      <div class="flex gap-2 items-center ml-2 border-l border-slate-600 pl-2"> 
+       <button id="clearAllBtn-1qb" class="text-xs text-slate-400 hover:text-white underline transition-colors">CLEAR</button> 
+      </div> 
+     </div> 
+    </div> 
+
+    <div class="table-container rounded-lg border border-slate-700"> 
+     <table class="w-full"> 
+      <thead class="sticky top-0"> 
+       <tr> 
+        <th class="td-compact header-sortable text-center th-sticky col-rank" data-sort="RANK">RK <span class="sort-arrow"></span></th> 
+        <th class="td-compact header-sortable text-center th-sticky col-player" data-sort="PLAYER NAME">Player <span class="sort-arrow"></span></th> 
+        <th class="td-compact header-sortable text-center th-sticky col-pos" data-sort="POS">Pos <span class="sort-arrow"></span></th> 
+        <th class="td-compact header-sortable text-center" data-sort="AGE">Age <span class="sort-arrow"></span></th> 
+        <th class="td-compact header-sortable text-center" data-sort="VALUE">Value<span class="sort-arrow"></span></th> 
+        <th class="td-compact header-sortable text-center" data-sort="ADP">ADP <span class="sort-arrow"></span></th> 
+        <th class="td-compact header-sortable text-center" data-sort="TM">TM <span class="sort-arrow"></span></th> 
+        <th class="td-compact header-sortable text-center" data-sort="POS | RK">Pos Rk <span class="sort-arrow"></span></th>
+        <th class="td-compact header-sortable text-center" data-sort="RY">RY <span class="sort-arrow"></span></th> 
+        <th class="td-compact header-sortable text-center" data-sort="EXP">Exp <span class="sort-arrow"></span></th> 
+        <th class="td-compact header-sortable text-center" data-sort="TIER">Tier <span class="sort-arrow"></span></th> 
+        <th class="td-compact header-sortable text-center" data-sort="TREND">Trend <span class="sort-arrow"></span></th> 
+       </tr> 
+      </thead> 
+      <tbody id="playerTableBody-1qb"></tbody> 
+     </table> 
+    </div> 
+    <div id="loading-1qb" class="text-center p-8 text-slate-400">Loading and preparing data...</div> 
+   </div> 
+  </div> 
+
+  <!-- Page 2: SFLX Rankings --> 
+  <div id="page-sflx" style="display: none;"> 
+   <div class="relative max-w-7xl mx-auto bg-slate-800/50 rounded-2xl shadow-2xl p-3 sm:p-6"> 
+    <header class="relative text-center mb-4 pt-4 sm:pt-0"> 
+     <h1 class="text-2xl sm:text-3xl text-white"> 
+      2025 <b><span style="background-image: linear-gradient(to right, #c084fc, #ec4899); -webkit-background-clip: text; background-clip: text; color: transparent;">SFLX</span></b> Stats 
+     </h1> 
+    </header> 
+
+    <div class="flex flex-col md:flex-row gap-4 mb-4"> 
+     <div class="flex-grow flex items-center gap-2"> 
+      <div class="relative flex-grow"> 
+       <input type="text" id="searchInput-sflx" placeholder="Search..." class="w-full bg-slate-900 border-2 border-slate-700 focus:border-indigo-500 focus:ring-indigo-500 rounded-lg py-2 px-4 text-white placeholder-slate-500 transition-colors"> 
+       <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
+        <svg id="searchIcon-sflx" class="w-5 h-5 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"></path>
+        </svg>
+        <svg id="clearIcon-sflx" class="w-5 h-5 text-slate-500 cursor-pointer hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+       </div>
+      </div> 
+      <div class="flex items-start justify-center gap-2">
+       <div class="flex flex-col gap-1">
+        <button id="rookieFilterBtn-sflx" class="rookie-filter-btn bg-slate-700 hover:bg-slate-600 text-white font-semibold py-1 px-3 rounded-lg text-xs transition-colors whitespace-nowrap w-24 text-center">Rookies</button>
+       </div>
+      </div>
+     </div> 
+     <div id="filterContainer-sflx" class="flex items-center justify-center gap-2 flex-wrap"> 
+      <button class="filter-btn filter-btn-RDP" data-position="RDP">RDP</button> 
+      <button class="filter-btn filter-btn-QB" data-position="QB">QB</button> 
+      <button class="filter-btn filter-btn-RB" data-position="RB">RB</button> 
+      <button class="filter-btn filter-btn-WR" data-position="WR">WR</button> 
+      <button class="filter-btn filter-btn-TE" data-position="TE">TE</button> 
+      <button class="filter-btn filter-btn-FLX" data-position="FLX">FLX</button>
+      <div class="flex gap-2 items-center ml-2 border-l border-slate-600 pl-2"> 
+       <button id="clearAllBtn-sflx" class="text-xs text-slate-400 hover:text-white underline transition-colors">CLEAR</button> 
+      </div> 
+     </div> 
+    </div> 
+
+    <div class="table-container rounded-lg border border-slate-700"> 
+     <table class="w-full"> 
+      <thead class="sticky top-0"> 
+       <tr> 
+        <th class="td-compact header-sortable text-center th-sticky col-rank" data-sort="RANK">RK <span class="sort-arrow"></span></th> 
+        <th class="td-compact header-sortable text-center th-sticky col-player" data-sort="PLAYER NAME">Player <span class="sort-arrow"></span></th> 
+        <th class="td-compact header-sortable text-center th-sticky col-pos" data-sort="POS">Pos <span class="sort-arrow"></span></th> 
+        <th class="td-compact header-sortable text-center" data-sort="AGE">Age <span class="sort-arrow"></span></th> 
+        <th class="td-compact header-sortable text-center" data-sort="VALUE">Value<span class="sort-arrow"></span></th> 
+        <th class="td-compact header-sortable text-center" data-sort="ADP">ADP <span class="sort-arrow"></span></th> 
+        <th class="td-compact header-sortable text-center" data-sort="TM">TM <span class="sort-arrow"></span></th> 
+        <th class="td-compact header-sortable text-center" data-sort="POS | RK">Pos Rk <span class="sort-arrow"></span></th>
+        <th class="td-compact header-sortable text-center" data-sort="RY">RY <span class="sort-arrow"></span></th> 
+        <th class="td-compact header-sortable text-center" data-sort="EXP">Exp <span class="sort-arrow"></span></th> 
+        <th class="td-compact header-sortable text-center" data-sort="TIER">Tier <span class="sort-arrow"></span></th> 
+        <th class="td-compact header-sortable text-center" data-sort="TREND">Trend <span class="sort-arrow"></span></th> 
+       </tr> 
+      </thead> 
+      <tbody id="playerTableBody-sflx"></tbody> 
+     </table> 
+    </div> 
+    <div id="loading-sflx" class="text-center p-8 text-slate-400">Loading and preparing data...</div> 
+   </div> 
+  </div> 
+
+
+  <script> 
+   if (typeof window.myAppInitialized === 'undefined') {
+    window.myAppInitialized = true;
+
+   // --- Page Switching Logic --- 
+   function showPage(pageId, clickedTab) { 
+    // Hide all pages
+    document.getElementById('page-1qb').style.display = 'none'; 
+    document.getElementById('page-sflx').style.display = 'none'; 
+    
+    // Remove 'active' from all tabs
+    document.querySelectorAll('.tab-btn').forEach(tab => tab.classList.remove('active'));
+
+    // Show the selected page
+    document.getElementById(pageId).style.display = 'block'; 
+    
+    // Add 'active' to the clicked tab
+    if (clickedTab) {
+        clickedTab.classList.add('active');
+    }
+   } 
+
+   // --- Common Color/Style Logic (moved to global scope)--- 
+   const TAG_BASE_STYLES = 'display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 18px; border-radius: 4px; font-weight: 600;';
+   const TM_TAG_BASE_STYLES = 'display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 18px; border-radius: 4px;';
+   const teamColors = { 'SF': '#B3995D', 'CHI': '#071d46', 'CIN': '#FB4F14', 'BUF': '#C60C30', 'DEN': '#FB4F14', 'CLE': '#311D00', 'TB': '#DC4405', 'ARI': '#97233F', 'LAC': '#0080C6', 'SD': '#0080C6', 'KC': '#E31837', 'IND': '#002C5F', 'WAS': '#5A1414', 'DAL': '#869397', 'MIA': '#008E97', 'PHI': '#2B8C4E', 'ATL': '#A71930', 'NYG': '#0D2266', 'JAX': '#006778', 'NYJ': '#125740', 'DET': '#0076B6', 'GB': '#203731', 'CAR': '#0085CA', 'NE': '#002244', 'LV': '#A5ACAF', 'OAK': '#A5ACAF', 'LAR': '#003594', 'STL': '#003594', 'BAL': '#241773', 'NO': '#D3BC8D', 'SEA': '#69BE28', 'PIT': '#FFB612', 'HOU': '#00143f', 'TEN': '#4B92DB', 'MIN': '#4F2683' }; 
+   const rankColorScale = [ { value: 12, color: '#00EEB6' }, { value: 24, color: '#14D7CB' }, { value: 36, color: '#0599AA' }, { value: 48, color: '#03a8ce' }, { value: 60, color: '#0690DC' }, { value: 72, color: '#066CDC' }, { value: 84, color: '#1350fd' }, { value: 108, color: '#5e41ff' }, { value: 132, color: '#7158ff' }, { value: 156, color: '#964eff' }, { value: 180, color: '#9200ff' }, { value: 224, color: '#b70fff' }, { value: 268, color: '#ba00cc' }, { value: 312, color: '#e800ff' }, { value: 356, color: '#db00af' }, { value: 400, color: '#c70097' }, { value: 500, color: '#FF0080' }]; 
+   const adpColorScale = [ { value: 12, color: '#00EEB6' }, { value: 24, color: '#14D7CB' }, { value: 36, color: '#0599AA' }, { value: 48, color: '#03a8ce' }, { value: 60, color: '#0690DC' }, { value: 72, color: '#066CDC' }, { value: 84, color: '#1350fd' }, { value: 96, color: '#5e41ff' }, { value: 108, color: '#7158ff' }, { value: 120, color: '#964eff' }, { value: 144, color: '#9200ff' }, { value: 168, color: '#b70fff' }, { value: 192, color: '#ba00cc' }, { value: 216, color: '#e800ff' }, { value: 240, color: '#db00af' }, { value: 280, color: '#c70097' }, { value: 320, color: '#FF0080' }]; 
+   const valueColorScale = [ { value: 9000, color: '#00EEB6' }, { value: 8000, color: '#14D7CB' }, { value: 7000, color: '#0599AA' }, { value: 6000, color: '#03a8ce' }, { value: 5500, color: '#0690DC' }, { value: 5000, color: '#066CDC' }, { value: 4500, color: '#1350fd' }, { value: 4000, color: '#5e41ff' }, { value: 3750, color: '#7158ff' }, { value: 3500, color: '#964eff' }, { value: 3250, color: '#9200ff' }, { value: 3000, color: '#b70fff' }, { value: 2750, color: '#ba00cc' }, { value: 2500, color: '#e800ff' }, { value: 2250, color: '#db00af' }, { value: 2000, color: '#c70097' }, { value: 0, color: '#FF0080' }]; 
+   const ageScales = { wrTe: [ { value: 22.5, color: '#00ffc4' }, { value: 25, color: '#85fff3' }, { value: 26, color: '#56dfe8' }, { value: 27, color: '#7dd1ff' }, { value: 29, color: '#89a3ff' }, { value: 30, color: '#957cff' }, { value: 31, color: '#a642ff' }, { value: 32, color: '#cf60ff' }, { value: 33, color: '#ff6fe1' }], rb: [ { value: 22.5, color: '#00ffc4' }, { value: 24, color: '#85fff3' }, { value: 25, color: '#56dfe8' }, { value: 26, color: '#7dd1ff' }, { value: 27, color: '#89a3ff' }, { value: 28, color: '#957cff' }, { value: 29, color: '#a642ff' }, { value: 30, color: '#cf60ff' }, { value: 31, color: '#ff6fe1' }], qb: [ { value: 25.5, color: '#00ffc4' }, { value: 28, color: '#85fff3' }, { value: 29, color: '#7dd1ff' }, { value: 31, color: '#48a6ff' }, { value: 33, color: '#957cff' }, { value: 36, color: '#a642ff' }, { value: 40, color: '#cf60ff' }, { value: 44, color: '#ff6fe1' }]}; 
+    
+   function getTeamStyles(team) { 
+    if (teamColors[team]) { 
+     const textColor = teamColors[team]; 
+     return `${TM_TAG_BASE_STYLES} background-color: #e8eaed; color: ${textColor}; font-weight: 600;`; 
+    } 
+    return `${TM_TAG_BASE_STYLES} background-color: #64748b; color: #ffffff; font-weight: 200;`; 
+   } 
+   function getRankColor(rank) { if (rank === Infinity) return null; for (const tier of rankColorScale) { if (rank <= tier.value) { return tier.color; } } if (rankColorScale.length > 0) { return rankColorScale[rankColorScale.length - 1].color; } return null; } 
+   function getAdpColor(adp) { if (!adp || adp === 0) return null; for (const tier of adpColorScale) { if (adp <= tier.value) { return tier.color; } } if (adpColorScale.length > 0) { return adpColorScale[adpColorScale.length - 1].color; } return null; } 
+   function getValueStyles(value) { if (value === null || value === 0) return 'color: white;'; let bgColor = null; for (const tier of valueColorScale) { if (value >= tier.value) { bgColor = tier.color; break; } } if (bgColor) { return `${TAG_BASE_STYLES} background-color: ${bgColor}; color: black;`; } return 'color: white;'; } 
+   function getAgeColor(pos, age) { let scale; if (pos === 'WR' || pos === 'TE') { scale = ageScales.wrTe; } else if (pos === 'RB') { scale = ageScales.rb; } else if (pos === 'QB') { scale = ageScales.qb; } else { return null; } if (age === 0) return '#666666'; for (const tier of scale) { if (age <= tier.value) { return tier.color; } } if (scale.length > 0) { return scale[scale.length - 1].color; } return null; } 
+
+   /** * Creates a self-contained, interactive ranking table instance. 
+    * @param {object} config - Configuration object for the instance. 
+    * @param {string} config.pageId - The ID of the main page container div. 
+    * @param {string} config.csvData - The raw CSV data string. 
+    */ 
+   function createRankingsInstance(config) { 
+    let playerData = []; 
+    let filteredData = []; 
+    let currentSort = { column: null, state: 0 }; 
+    let selectedPositions = new Set(); 
+    let currentSearchTerm = ''; 
+    let rookieFilterActive = false; 
+
+    const pageElement = document.getElementById(config.pageId); 
+    const tableBody = pageElement.querySelector('tbody'); 
+    const searchInput = pageElement.querySelector('input[type="text"]'); 
+    const filterContainer = pageElement.querySelector('[id^="filterContainer"]'); 
+    const loadingIndicator = pageElement.querySelector('[id^="loading"]'); 
+    const headers = pageElement.querySelectorAll('.header-sortable'); 
+    const rookieFilterBtn = pageElement.querySelector('.rookie-filter-btn'); 
+    const clearAllBtn = pageElement.querySelector('[id^="clearAllBtn"]'); 
+    const positionFilterBtns = filterContainer.querySelectorAll('.filter-btn'); 
+    const searchIcon = pageElement.querySelector('[id^="searchIcon"]');
+    const clearIcon = pageElement.querySelector('[id^="clearIcon"]');
+
+    function abbreviateName(fullName) {
+      if (!fullName || typeof fullName !== 'string') return 'N/A';
+      const parts = fullName.trim().split(' ');
+      if (parts.length < 2) {
+        return fullName.slice(0, 13);
+      }
+      const firstName = parts[0];
+      const restOfName = parts.slice(1).join(' ');
+      let finalName = `${firstName.charAt(0)}. ${restOfName}`;
+      if (finalName.length > 13) {
+        finalName = finalName.substring(0, 13);
+      }
+      return finalName;
+    }
+
+    function parseAndLoadData() {
+      try {
+        const lines = (config.csvData || '').trim().split(/\r?\n/).filter(Boolean);
+        if (lines.length === 0) throw new Error('Empty CSV data');
+
+        // CSV splitter that respects quoted fields
+        const splitCsv = (line) => (line.match(/("([^"]|"")*"|[^,]+)(?=,|$)/g) || [])
+          .map(s => s.replace(/^"|"$/g, '').replace(/""/g, '"').trim());
+
+        const rawHeaders = splitCsv(lines[0]);
+        const headerAliases = { 'POS·RK': 'POS | RK', 'POS RK': 'POS | RK', 'Pos Rk': 'POS | RK' };
+        const csvHeaders = rawHeaders.map(h => headerAliases[h] || h);
+
+        playerData = lines.slice(1).map(line => {
+          const values = splitCsv(line);
+          const player = {};
+          csvHeaders.forEach((header, i) => {
+            player[header] = (values[i] !== undefined && values[i] !== null) ? String(values[i]).trim() : '';
+          });
+
+          const parseNumeric = (val, isFloat = false) => {
+            if (val === '' || val === null || val === undefined) return null;
+            const parsed = isFloat ? parseFloat(val) : parseInt(val, 10);
+            return isNaN(parsed) ? null : parsed;
+          };
+
+          player['RANK'] = parseNumeric(player['RANK']) ?? Infinity;
+          player['AGE'] = parseNumeric(player['AGE'], true) || 0;
+          player['TIER'] = parseNumeric(player['TIER']);
+          player['TREND'] = parseNumeric(player['TREND']);
+          player['VALUE'] = parseNumeric(player['VALUE']);
+          player['RY'] = parseNumeric(player['RY']);
+          player['EXP'] = parseNumeric(player['EXP']);
+          player['ADP'] = parseNumeric(player['ADP'], true);
+
+          return player;
+        }).filter(p => p['PLAYER NAME']);
+
+        filteredData = [...playerData];
+        applyFiltersAndSort();
+        loadingIndicator.style.display = 'none';
+      } catch (error) {
+        console.error('Error parsing CSV data:', error);
+      }
+    } 
+
+    function renderTable() { 
+     tableBody.innerHTML = ''; 
+     if (filteredData.length === 0) { 
+        tableBody.innerHTML = `<tr><td colspan="12" class="text-center p-8 text-slate-400">No players found matching your criteria.</td></tr>`; 
+        return; 
+     } 
+
+     const fragment = document.createDocumentFragment(); 
+     filteredData.forEach(player => { 
+        const row = document.createElement('tr'); 
+        row.className = 'hover:bg-slate-700/50 transition-colors duration-200'; 
+
+        if (player['POS'] === 'RDP') { 
+            row.style.backgroundColor = '#2d314b'; 
+        } 
+
+        const trendValue = player['TREND']; 
+        let trendIcon = `<span class="text-slate-500">▬</span>`; 
+        if (trendValue > 0) trendIcon = `<span class="text-green-400">▲</span>`; 
+        else if (trendValue < 0) trendIcon = `<span class="text-red-400">▼</span>`; 
+        
+        const formattedAge = player['AGE'] > 0 ? player['AGE'].toFixed(1) : 'N/A'; 
+        const ageStyle = `style="color: ${getAgeColor(player['POS'], player['AGE']) || 'inherit'};"`; 
+        const rankStyle = `style="color: ${getRankColor(player['RANK']) || 'inherit'}; font-weight: 600;"`; 
+        const adpStyle = `style="color: ${getAdpColor(player['ADP']) || 'inherit'};"`; 
+        const displayNA = (value) => value === null ? 'N/A' : value; 
+        const formattedADP = player['ADP'] !== null ? player['ADP'].toFixed(1) : 'N/A'; 
+
+        let formattedPosRk = displayNA(player['POS | RK']); 
+        const posRkValue = player['POS | RK']; 
+        if (posRkValue && posRkValue.includes(' | ')) { 
+            const parts = posRkValue.split(' | '); 
+            const pos = parts[0].trim(); 
+            const rk = parts[1].trim(); 
+            formattedPosRk = `<span class="pos-${pos} font-semibold">${pos}</span> | ${rk}`; 
+        } 
+
+        row.innerHTML = ` 
+            <td class="td-compact text-center font-medium td-sticky col-rank" ${rankStyle}>${player['RANK'] === Infinity ? 'N/A' : player['RANK']}</td> 
+            <td class="td-compact font-bold player-name-no-wrap td-sticky col-player" title="${player['PLAYER NAME'] || 'N/A'}">${abbreviateName(player['PLAYER NAME'])}</td> 
+            <td class="td-compact text-center font-semibold pos-${player['POS']} td-sticky col-pos">${player['POS'] || 'N/A'}</td> 
+            <td class="td-compact text-center" ${ageStyle}>${formattedAge}</td> 
+            <td class="td-compact text-center"><span style="${getValueStyles(player['VALUE'])}">${displayNA(player['VALUE'])}</span></td> 
+            <td class="td-compact text-center font-bold" ${adpStyle}>${formattedADP}</td> 
+            <td class="td-compact text-center"><span style="${getTeamStyles(player['TM'])}">${player['TM'] || 'N/A'}</span></td> 
+            <td class="td-compact text-center text-slate-300">${formattedPosRk}</td>
+            <td class="td-compact text-center text-slate-400">${displayNA(player['RY'])}</td> 
+            <td class="td-compact text-center text-slate-400">${displayNA(player['EXP'])}</td> 
+            <td class="td-compact text-center">${displayNA(player['TIER'])}</td> 
+            <td class="td-compact text-center">${trendIcon} ${displayNA(trendValue)}</td> 
+        `; 
+        fragment.appendChild(row); 
+     }); 
+     tableBody.appendChild(fragment); 
+    } 
+
+    function applyFiltersAndSort() { 
+        let data = [...playerData];
+
+        if (selectedPositions.size > 0) {
+            data = data.filter(p => selectedPositions.has(p.POS));
+        }
+
+        const sortExcludesPicks = ['AGE', 'ADP', 'RY', 'EXP'].includes(currentSort.column); 
+        if (sortExcludesPicks) data = data.filter(p => p.POS !== 'RDP'); 
+        if (currentSearchTerm) data = data.filter(p => p['PLAYER NAME'].toLowerCase().includes(currentSearchTerm)); 
+        if (rookieFilterActive) data = data.filter(p => p['RY'] === 2025); 
+
+        if (currentSort.state !== 0 && currentSort.column) { 
+            data.sort((a, b) => { 
+                const valA = a[currentSort.column]; 
+                const valB = b[currentSort.column]; 
+                if (valA === null) return 1; 
+                if (valB === null) return -1; 
+                const comparison = typeof valA === 'number' ? valA - valB : String(valA).localeCompare(String(valB)); 
+                return currentSort.state === 1 ? comparison : -comparison; 
+            }); 
+        } else { 
+            data.sort((a,b) => a['RANK'] - b['RANK']); 
+        } 
+        
+        filteredData = data; 
+        renderTable(); 
+        updateHeaderStyles(); 
+    } 
+
+    function updateHeaderStyles() { 
+     headers.forEach(header => { 
+        const sortKey = header.dataset.sort; 
+        header.classList.remove('asc', 'desc'); 
+        if (sortKey === currentSort.column) { 
+            if (currentSort.state === 1) header.classList.add('asc'); 
+            else if (currentSort.state === 2) header.classList.add('desc'); 
+        } 
+     }); 
+    } 
+    
+    searchInput.addEventListener('input', (e) => {
+        currentSearchTerm = e.target.value.toLowerCase();
+        applyFiltersAndSort();
+        if (e.target.value) {
+            searchIcon.classList.add('hidden');
+            clearIcon.classList.remove('hidden');
+        } else {
+            searchIcon.classList.remove('hidden');
+            clearIcon.classList.add('hidden');
+        }
+    });
+
+    clearIcon.addEventListener('click', () => {
+        searchInput.value = '';
+        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+        searchInput.focus();
+    });
+
+    filterContainer.addEventListener('click', (e) => {
+        if (!e.target.classList.contains('filter-btn')) return;
+
+        const clickedBtn = e.target;
+        const position = clickedBtn.dataset.position;
+        const isFlxClick = position === 'FLX';
+        const flxBtn = filterContainer.querySelector('.filter-btn-FLX');
+        const flexPositions = ['RB', 'WR', 'TE'];
+
+        if (isFlxClick) {
+            const isActivating = !clickedBtn.classList.contains('active-filter');
+            clickedBtn.classList.toggle('active-filter', isActivating);
+            flexPositions.forEach(pos => {
+                filterContainer.querySelector(`.filter-btn-${pos}`).classList.toggle('active-filter', isActivating);
+            });
+            if (isActivating) {
+                ['QB', 'RDP'].forEach(pos => filterContainer.querySelector(`.filter-btn-${pos}`).classList.remove('active-filter'));
+            }
+        } else {
+            clickedBtn.classList.toggle('active-filter');
+        }
+
+        selectedPositions.clear();
+        const activeButtons = filterContainer.querySelectorAll('.filter-btn.active-filter');
+        let activeFlexCount = 0;
+        activeButtons.forEach(btn => {
+            const pos = btn.dataset.position;
+            if (pos !== 'FLX') {
+                selectedPositions.add(pos);
+                if (flexPositions.includes(pos)) {
+                    activeFlexCount++;
+                }
+            }
+        });
+
+        if (flxBtn) {
+            const allFlexSelected = activeFlexCount === flexPositions.length;
+            const noOtherSelected = selectedPositions.size === activeFlexCount;
+            flxBtn.classList.toggle('active-filter', allFlexSelected && noOtherSelected);
+        }
+
+        applyFiltersAndSort();
+    });
+    
+    clearAllBtn.addEventListener('click', () => {
+        positionFilterBtns.forEach(btn => btn.classList.remove('active-filter'));
+        selectedPositions.clear();
+        applyFiltersAndSort();
+    });
+
+    headers.forEach(header => { header.addEventListener('click', () => { const sortKey = header.dataset.sort; if (currentSort.column !== sortKey) { currentSort.column = sortKey; currentSort.state = 1; } else { currentSort.state = (currentSort.state + 1) % 3; if (currentSort.state === 0) currentSort.column = null; } applyFiltersAndSort(); }); }); 
+    rookieFilterBtn.addEventListener('click', () => { rookieFilterActive = !rookieFilterActive; rookieFilterBtn.classList.toggle('active-filter', rookieFilterActive); applyFiltersAndSort(); }); 
+    
+    parseAndLoadData(); 
+   } 
+
+   // --- Initialize Pages --- 
+   document.addEventListener('DOMContentLoaded', () => { 
+    /* csvData1QB removed: now loaded from Google Sheet */ 
+    /* csvDataSFLX removed: now loaded from Google Sheet */ 
+
+    // --- Load KTC data from Google Sheets (same ID used in index.html) ---
+const SHEET_ID = (window.GOOGLE_SHEET_ID ?? '1MDTf1IouUIrm4qabQT9E5T0FsJhQtmaX55P32XK5c_0');
+
+async function fetchSheetCsv(sheetName) {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+  const res = await fetch(url, { cache: 'no-cache' });
+  if (!res.ok) throw new Error(`Failed to fetch ${sheetName}: ${res.status}`);
+  return await res.text();
+}
+
+(async () => {
+  try {
+    const [oneQbCsv, sflxCsv] = await Promise.all([
+      fetchSheetCsv('KTC_1QB'),
+      fetchSheetCsv('KTC_SFLX'),
+    ]);
+
+    createRankingsInstance({ pageId: 'page-1qb', csvData: oneQbCsv });
+    createRankingsInstance({ pageId: 'page-sflx', csvData: sflxCsv });
+  } catch (e) {
+    console.error('Failed to load sheet data:', e);
+    const err = document.createElement('div');
+    err.className = 'text-red-400 text-sm mt-2 text-center';
+    err.textContent = 'Error: could not load Google Sheet data. Check sharing & sheet names.';
+    document.body.appendChild(err);
+  }
+})();}); 
+  }
+  </script> 
+  <style> 
+   .filter-btn { 
+    padding: 0.2rem 0.55rem; 
+    font-size: 0.82rem; 
+    border-radius: 0.45rem; 
+    font-weight: 700; 
+    border: 2px solid transparent; 
+    transition: all 0.2s ease-in-out;
+    color: white; 
+   } 
+   .filter-btn:hover { 
+    /* Add a subtle hover effect if desired, e.g., a slight brightness change */
+    filter: brightness(1.1);
+   } 
+   .filter-btn.active-filter { 
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.3); 
+   } 
+   .filter-btn-RDP { background-color: #334155; } 
+   .filter-btn-RDP.active-filter { border-color: #64748b; } 
+   .filter-btn-QB { background-color: #ff1d7b; } 
+   .filter-btn-QB.active-filter { border-color: #ff7ab2; } 
+   .filter-btn-RB { background-color: #0EE7AC; } 
+   .filter-btn-RB.active-filter { border-color: #BBF7E0; } 
+   .filter-btn-WR { background-color: #4a86e8; } 
+   .filter-btn-WR.active-filter { border-color: #a0c2f7; } 
+   .filter-btn-TE { background-color: #7300ff; } 
+   .filter-btn-TE.active-filter { border-color: #b380ff; } 
+  </style> 
+ </body> 
+ </html>
+
