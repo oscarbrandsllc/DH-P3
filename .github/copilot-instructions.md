@@ -1,3 +1,6 @@
+If chat session just started with initial prompt, follow complete instructions below along with prompt. 
+If session is continuing, follow prompt instructions only!
+
 Before starting to code. Thoroughly review the code in files listed at bottom of the page. We had just recently built the stats page, and a lot of what i wanted was done incorrectly and its far from where i want it, although it is ok for a start. I need you to fully understand the Reference Folder/CDX_FullConversation.md file which has the entire conversation i had with codex about building the stats page, from original prompt to most recent changes.
 i want you to understand the full structure and everything of both of the js and css files, because it is important that you have a working knowledge of the code for the changes we will be making.
 
