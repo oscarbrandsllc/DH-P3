@@ -2952,41 +2952,38 @@ const wrTeStatOrder = [
                 tableCore = await ensureTableCoreLoaded();
             } catch (error) {
                 console.error('Failed to load TanStack Table library', error);
-            }
-            if (!tableCore) {
-                modalBody.innerHTML = '<p class="text-center p-4">Unable to load game logs right now.</p>';
-                return;
+                tableCore = null;
             }
 
-            const initialColumnOrder = tableColumns.map(c => c.id);
-            const tableInstance = tableCore.createTable({
-                data: tableRows,
-                columns: tableColumns,
-                // Provide a concrete state object so TanStack features
-                // that read table.getState().columnOrder never see undefined.
-                state: { columnOrder: initialColumnOrder },
-                onStateChange: () => {},
-                defaultColumn: { size: DEFAULT_COLUMN_WIDTH, minSize: 64 },
-                columnResizeMode: 'onChange',
-                getCoreRowModel: tableCore.getCoreRowModel(),
-                renderFallbackValue: ''
-            });
-
-            const leafColumns = tableInstance.getVisibleLeafColumns();
-            const columnSizeById = new Map(tableColumns.map(col => {
-                const size = Number.isFinite(col.size) ? col.size : DEFAULT_COLUMN_WIDTH;
-                return [col.id, size];
-            }));
-
-            const resolveColumnSize = (column, fallbackSize) => {
-                const fromColumn = column?.columnDef?.size;
-                if (Number.isFinite(fromColumn)) return fromColumn;
-                const fromMap = columnSizeById.get(column?.id);
-                if (Number.isFinite(fromMap)) return fromMap;
-                return Number.isFinite(fallbackSize) ? fallbackSize : DEFAULT_COLUMN_WIDTH;
-            };
-
-            const columnSizes = tableColumns.map(col => Number.isFinite(col.size) ? col.size : DEFAULT_COLUMN_WIDTH);
+            let tableInstance = null;
+            let columnSizes = tableColumns.map(col => Number.isFinite(col.size) ? col.size : DEFAULT_COLUMN_WIDTH);
+            if (tableCore) {
+                try {
+                    const initialColumnOrder = tableColumns.map(c => c.id);
+                    tableInstance = tableCore.createTable({
+                        data: tableRows,
+                        columns: tableColumns,
+                        state: { columnOrder: initialColumnOrder },
+                        onStateChange: () => {},
+                        defaultColumn: { size: DEFAULT_COLUMN_WIDTH, minSize: 64 },
+                        columnResizeMode: 'onChange',
+                        getCoreRowModel: tableCore.getCoreRowModel(),
+                        renderFallbackValue: ''
+                    });
+                    if (typeof tableInstance.getVisibleLeafColumns === 'function') {
+                        const leaf = tableInstance.getVisibleLeafColumns();
+                        if (Array.isArray(leaf) && leaf.length === tableColumns.length) {
+                            columnSizes = leaf.map((col, i) => {
+                                const s = typeof col.getSize === 'function' ? col.getSize() : undefined;
+                                return Number.isFinite(s) ? s : (Number.isFinite(tableColumns[i].size) ? tableColumns[i].size : DEFAULT_COLUMN_WIDTH);
+                            });
+                        }
+                    }
+                } catch (e) {
+                    console.error('TanStack createTable failed; using manual renderer', e);
+                    tableInstance = null;
+                }
+            }
 
             const createSectionTable = () => {
                 const table = document.createElement('table');
@@ -3029,60 +3026,71 @@ const wrTeStatOrder = [
                 if (typeof descriptor.render === 'function') descriptor.render(td);
             };
 
-            tableInstance.getHeaderGroups().forEach(group => {
+            if (tableInstance && typeof tableInstance.getHeaderGroups === 'function') {
+                tableInstance.getHeaderGroups().forEach(group => {
+                    const tr = document.createElement('tr');
+                    group.headers.forEach((header, idx) => {
+                        const th = document.createElement('th');
+                        const meta = header.column.columnDef.meta;
+                        if (meta?.headerClass) meta.headerClass.split(' ').forEach(cls => { if (cls) th.classList.add(cls); });
+                        if (!header.isPlaceholder) {
+                            const hv = header.column.columnDef.header;
+                            th.textContent = typeof hv === 'function' ? hv(header.getContext()) : (hv || '');
+                        }
+                        const w = columnSizes[idx] || DEFAULT_COLUMN_WIDTH;
+                        th.style.width = `${w}px`; th.style.minWidth = `${w}px`; th.style.maxWidth = `${w}px`;
+                        tr.appendChild(th);
+                    });
+                    tableHeaderThead.appendChild(tr);
+                });
+            } else {
                 const tr = document.createElement('tr');
-                group.headers.forEach(header => {
+                tableColumns.forEach((col, idx) => {
                     const th = document.createElement('th');
-                    const meta = header.column.columnDef.meta;
-                    if (meta?.headerClass) {
-                        meta.headerClass.split(' ').forEach(cls => {
-                            if (cls) th.classList.add(cls);
-                        });
-                    }
-                    if (!header.isPlaceholder) {
-                        const headerValue = header.column.columnDef.header;
-                        th.textContent = typeof headerValue === 'function'
-                            ? headerValue(header.getContext())
-                            : (headerValue || '');
-                    }
-                    const headerSize = header.getSize ? header.getSize() : undefined;
-                    const resolvedSize = resolveColumnSize(header.column, headerSize);
-                    th.style.width = `${resolvedSize}px`;
-                    th.style.minWidth = `${resolvedSize}px`;
-                    th.style.maxWidth = `${resolvedSize}px`;
+                    if (col.meta?.headerClass) col.meta.headerClass.split(' ').forEach(cls => { if (cls) th.classList.add(cls); });
+                    const label = typeof col.header === 'function' ? col.header({}) : col.header;
+                    th.textContent = label || '';
+                    const w = columnSizes[idx] || DEFAULT_COLUMN_WIDTH;
+                    th.style.width = `${w}px`; th.style.minWidth = `${w}px`; th.style.maxWidth = `${w}px`;
                     tr.appendChild(th);
                 });
                 tableHeaderThead.appendChild(tr);
-            });
+            }
 
-            const rowModel = tableInstance.getRowModel();
-            rowModel.rows.forEach((row, index) => {
-                const tr = document.createElement('tr');
-                const meta = rowsMeta[index];
-                if (meta) {
-                    meta.domRow = tr;
-                    meta.rowClasses.forEach(cls => tr.classList.add(cls));
-                }
-
-                row.getVisibleCells().forEach(cell => {
-                    const td = document.createElement('td');
-                    const columnMeta = cell.column.columnDef.meta;
-                    if (columnMeta?.cellClass) {
-                        columnMeta.cellClass.split(' ').forEach(cls => {
-                            if (cls) td.classList.add(cls);
-                        });
-                    }
-                    applyCellDescriptor(td, cell.getValue());
-                    const cellSize = cell.column.getSize ? cell.column.getSize() : undefined;
-                    const resolvedSize = resolveColumnSize(cell.column, cellSize);
-                    td.style.width = `${resolvedSize}px`;
-                    td.style.minWidth = `${resolvedSize}px`;
-                    td.style.maxWidth = `${resolvedSize}px`;
-                    tr.appendChild(td);
+            if (tableInstance && typeof tableInstance.getRowModel === 'function') {
+                const rowModel = tableInstance.getRowModel();
+                rowModel.rows.forEach((row, index) => {
+                    const tr = document.createElement('tr');
+                    const meta = rowsMeta[index];
+                    if (meta) { meta.domRow = tr; meta.rowClasses.forEach(cls => tr.classList.add(cls)); }
+                    row.getVisibleCells().forEach((cell, cIdx) => {
+                        const td = document.createElement('td');
+                        const columnMeta = cell.column.columnDef.meta;
+                        if (columnMeta?.cellClass) columnMeta.cellClass.split(' ').forEach(cls => { if (cls) td.classList.add(cls); });
+                        applyCellDescriptor(td, cell.getValue());
+                        const w = columnSizes[cIdx] || DEFAULT_COLUMN_WIDTH;
+                        td.style.width = `${w}px`; td.style.minWidth = `${w}px`; td.style.maxWidth = `${w}px`;
+                        tr.appendChild(td);
+                    });
+                    tableBodyTbody.appendChild(tr);
                 });
-
-                tableBodyTbody.appendChild(tr);
-            });
+            } else {
+                tableRows.forEach((rowData, index) => {
+                    const tr = document.createElement('tr');
+                    const meta = rowsMeta[index];
+                    if (meta) { meta.domRow = tr; meta.rowClasses.forEach(cls => tr.classList.add(cls)); }
+                    tableColumns.forEach((col, cIdx) => {
+                        const td = document.createElement('td');
+                        if (col.meta?.cellClass) col.meta.cellClass.split(' ').forEach(cls => { if (cls) td.classList.add(cls); });
+                        const descriptor = rowData[col.id];
+                        if (descriptor && typeof descriptor.render === 'function') descriptor.render(td);
+                        const w = columnSizes[cIdx] || DEFAULT_COLUMN_WIDTH;
+                        td.style.width = `${w}px`; td.style.minWidth = `${w}px`; td.style.maxWidth = `${w}px`;
+                        tr.appendChild(td);
+                    });
+                    tableBodyTbody.appendChild(tr);
+                });
+            }
 
             const totalTableWidth = columnSizes.reduce((sum, size) => sum + size, 0);
             if (Number.isFinite(totalTableWidth) && totalTableWidth > 0) {
