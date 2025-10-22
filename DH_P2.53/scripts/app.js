@@ -3259,14 +3259,13 @@ const wrTeStatOrder = [
                 tableFooterContainer.classList.add('hidden');
             }
 
-            const syncScrollPositions = (source) => {
-                const { scrollLeft } = source;
-                if (tableHeaderContainer.scrollLeft !== scrollLeft) tableHeaderContainer.scrollLeft = scrollLeft;
-                if (tableFooterContainer.scrollLeft !== scrollLeft) tableFooterContainer.scrollLeft = scrollLeft;
-                if (tableBodyContainer.scrollLeft !== scrollLeft && source !== tableBodyContainer) tableBodyContainer.scrollLeft = scrollLeft;
+            const updateHorizontalTransforms = () => {
+                const scrollLeft = tableBodyContainer.scrollLeft;
+                tableHeader.style.transform = `translateX(${-scrollLeft}px)`;
+                tableFooter.style.transform = `translateX(${-scrollLeft}px)`;
             };
 
-            tableBodyContainer.addEventListener('scroll', () => syncScrollPositions(tableBodyContainer));
+            tableBodyContainer.addEventListener('scroll', updateHorizontalTransforms, { passive: true });
 
             const adjustScrollOffsets = () => {
                 const scrollbarWidth = tableBodyContainer.offsetWidth - tableBodyContainer.clientWidth;
@@ -3277,6 +3276,7 @@ const wrTeStatOrder = [
 
             adjustScrollOffsets();
             requestAnimationFrame(adjustScrollOffsets);
+            updateHorizontalTransforms();
 
             container.appendChild(tableHeaderContainer);
             container.appendChild(tableBodyContainer);
@@ -3285,6 +3285,7 @@ const wrTeStatOrder = [
             modalBody.appendChild(container);
             tableBodyContainer.scrollLeft = 0;
             tableBodyContainer.scrollTop = 0;
+            updateHorizontalTransforms();
 
             // Set player vitals width to match summary chips
             const summaryChipsWidth = summaryChipsContainer.offsetWidth;

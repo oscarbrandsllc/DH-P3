@@ -4027,12 +4027,37 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
       max-height: 200px;
       overflow-y: auto;
       overflow-x: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(160, 170, 210, 0.45) transparent;
     }
 
     #game-logs-modal .game-logs-table-header table,
     #game-logs-modal .game-logs-table-body table,
     #game-logs-modal .game-logs-table-footer table {
       width: 100%;
+      will-change: transform;
+    }
+
+    #game-logs-modal .game-logs-table-body::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    #game-logs-modal .game-logs-table-body::-webkit-scrollbar-thumb {
+      background: rgba(160, 170, 210, 0.45);
+      border-radius: 999px;
+    }
+
+    #game-logs-modal .game-logs-table-body::-webkit-scrollbar-thumb:hover {
+      background: rgba(187, 193, 232, 0.6);
+    }
+
+    #game-logs-modal .game-logs-table-body::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    #game-logs-modal .game-logs-table-body::-webkit-scrollbar-corner {
+      background: transparent;
     }
     
     #modal-body th,
