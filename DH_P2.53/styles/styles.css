@@ -4024,6 +4024,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
       overflow-y: hidden;
       -webkit-overflow-scrolling: touch;
     }
+    #game-logs-modal .game-logs-hscroll-content { display: inline-block; }
 
     #game-logs-modal .game-logs-table-header,
     #game-logs-modal .game-logs-table-footer {

@@ -3310,9 +3310,12 @@ const wrTeStatOrder = [
             // Wrap header/body/footer in a single horizontal scroller so they move in perfect unison
             const hScroll = document.createElement('div');
             hScroll.className = 'game-logs-hscroll';
-            hScroll.appendChild(headerWrapper);
-            hScroll.appendChild(bodyWrapper);
-            hScroll.appendChild(footerWrapper);
+            const hContent = document.createElement('div');
+            hContent.className = 'game-logs-hscroll-content';
+            hContent.appendChild(headerWrapper);
+            hContent.appendChild(bodyWrapper);
+            hContent.appendChild(footerWrapper);
+            hScroll.appendChild(hContent);
             container.appendChild(hScroll);
 
             modalBody.appendChild(container);
