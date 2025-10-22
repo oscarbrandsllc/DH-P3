@@ -2660,10 +2660,44 @@ const wrTeStatOrder = [
             tableFooter.appendChild(tableFooterTfoot);
             tableFooterContainer.appendChild(tableFooter);
 
+            const COLUMN_WIDTHS = {
+                week: 128,
+                proj: 84,
+                snp_pct: 92,
+                ts_per_rr: 104,
+                first_down_rec_rate: 116,
+                yds_total: 104,
+                rush_att: 98,
+                rush_td: 98,
+                rush_yd: 104,
+                rec_tgt: 98,
+                rec: 92,
+                rec_yd: 104,
+                rec_td: 98,
+                ypr: 104,
+                yprr: 104,
+                imp_per_g: 110,
+                pass_rtg: 110,
+                pass_yd: 110,
+                pass_td: 110,
+                pass_att: 110,
+                pass_cmp: 110,
+                pass_imp_per_att: 120,
+                prs_pct: 104,
+                ttt: 104,
+                yco_per_att: 120,
+                ypc: 104,
+                mtf_per_att: 120,
+                fpts: 96,
+                ktc: 110
+            };
+            const DEFAULT_COLUMN_WIDTH = 96;
+
             const tableColumns = [{
                 id: 'week',
                 accessorKey: 'week',
                 header: () => 'WK  ·  VS ',
+                size: COLUMN_WIDTHS.week,
                 meta: {
                     headerClass: 'week-column-header',
                     cellClass: 'week-cell',
@@ -2679,6 +2713,7 @@ const wrTeStatOrder = [
                     id: key,
                     accessorKey: key,
                     header: () => statLabels[key],
+                    size: COLUMN_WIDTHS[key] || DEFAULT_COLUMN_WIDTH,
                     meta: {
                         headerClass: statGroup ? `gamelog-header-${statGroup}` : undefined,
                         cellClass: key === 'proj' ? 'proj-cell' : undefined,
@@ -2933,134 +2968,100 @@ const wrTeStatOrder = [
             if (!rowsMeta.some(meta => meta.isPlayed)) dividerIndex = 0;
             dividerIndex = Math.max(0, Math.min(dividerIndex, rowsMeta.length));
 
-            let tableCore = null;
+            let tableCore;
             try {
                 tableCore = await ensureTableCoreLoaded();
             } catch (error) {
                 console.error('Failed to load TanStack Table library', error);
             }
-
-            let renderedWithTableCore = false;
-            if (tableCore) {
-                try {
-                    const tableInstance = tableCore.createTable({
-                        data: tableRows,
-                        columns: tableColumns,
-                        getCoreRowModel: tableCore.getCoreRowModel(),
-                        renderFallbackValue: ''
-                    });
-
-                    const applyCellDescriptor = (td, descriptor) => {
-                        td.textContent = '';
-                        td.innerHTML = '';
-                        if (!descriptor) return;
-                        if (typeof descriptor.render === 'function') descriptor.render(td);
-                    };
-
-                    const headerGroups = tableInstance.getHeaderGroups();
-                    headerGroups.forEach(group => {
-                        const tr = document.createElement('tr');
-                        group.headers.forEach(header => {
-                            const th = document.createElement('th');
-                            const meta = header.column.columnDef.meta;
-                            if (meta?.headerClass) {
-                                meta.headerClass.split(' ').forEach(cls => {
-                                    if (cls) th.classList.add(cls);
-                                });
-                            }
-                            if (!header.isPlaceholder) {
-                                const headerValue = header.column.columnDef.header;
-                                if (typeof headerValue === 'function') {
-                                    th.textContent = headerValue(header.getContext());
-                                } else {
-                                    th.textContent = headerValue || '';
-                                }
-                            }
-                            tr.appendChild(th);
-                        });
-                        tableHeaderThead.appendChild(tr);
-                    });
-
-                    const rowModel = tableInstance.getRowModel();
-                    rowModel.rows.forEach((row, index) => {
-                        const tr = document.createElement('tr');
-                        const meta = rowsMeta[index];
-                        if (meta) {
-                            meta.domRow = tr;
-                            meta.rowClasses.forEach(cls => tr.classList.add(cls));
-                        }
-
-                        row.getVisibleCells().forEach(cell => {
-                            const td = document.createElement('td');
-                            const columnMeta = cell.column.columnDef.meta;
-                            if (columnMeta?.cellClass) {
-                                columnMeta.cellClass.split(' ').forEach(cls => {
-                                    if (cls) td.classList.add(cls);
-                                });
-                            }
-                            applyCellDescriptor(td, cell.getValue());
-                            tr.appendChild(td);
-                        });
-
-                        tableBodyTbody.appendChild(tr);
-                    });
-
-                    renderedWithTableCore = rowModel.rows.length > 0;
-                } catch (tableCoreRenderError) {
-                    console.error('TanStack Table rendering failed, falling back to manual rendering', tableCoreRenderError);
-                    tableHeaderThead.innerHTML = '';
-                    tableBodyTbody.innerHTML = '';
-                    renderedWithTableCore = false;
-                }
+            if (!tableCore) {
+                modalBody.innerHTML = '<p class="text-center p-4">Unable to load game logs right now.</p>';
+                return;
             }
 
-            if (!renderedWithTableCore) {
-                tableHeaderThead.innerHTML = '';
-                tableBodyTbody.innerHTML = '';
-                const headerRow = document.createElement('tr');
-                tableColumns.forEach(column => {
+            const tableInstance = tableCore.createTable({
+                data: tableRows,
+                columns: tableColumns,
+                defaultColumn: { size: DEFAULT_COLUMN_WIDTH, minSize: 64 },
+                columnResizeMode: 'onChange',
+                getCoreRowModel: tableCore.getCoreRowModel(),
+                renderFallbackValue: ''
+            });
+
+            const leafColumns = tableInstance.getVisibleLeafColumns();
+
+            const applyCellDescriptor = (td, descriptor) => {
+                td.textContent = '';
+                td.innerHTML = '';
+                if (!descriptor) return;
+                if (typeof descriptor.render === 'function') descriptor.render(td);
+            };
+
+            tableInstance.getHeaderGroups().forEach(group => {
+                const tr = document.createElement('tr');
+                group.headers.forEach(header => {
                     const th = document.createElement('th');
-                    const meta = column.meta;
+                    const meta = header.column.columnDef.meta;
                     if (meta?.headerClass) {
                         meta.headerClass.split(' ').forEach(cls => {
                             if (cls) th.classList.add(cls);
                         });
                     }
-                    const headerValue = typeof column.header === 'function' ? column.header() : column.header;
-                    th.textContent = headerValue || '';
-                    headerRow.appendChild(th);
-                });
-                tableHeaderThead.appendChild(headerRow);
-
-                tableRows.forEach((rowData, index) => {
-                    const tr = document.createElement('tr');
-                    const meta = rowsMeta[index];
-                    if (meta) {
-                        meta.domRow = tr;
-                        meta.rowClasses.forEach(cls => tr.classList.add(cls));
+                    if (!header.isPlaceholder) {
+                        const headerValue = header.column.columnDef.header;
+                        th.textContent = typeof headerValue === 'function'
+                            ? headerValue(header.getContext())
+                            : (headerValue || '');
                     }
-
-                    tableColumns.forEach(column => {
-                        const td = document.createElement('td');
-                        const columnMeta = column.meta;
-                        if (columnMeta?.cellClass) {
-                            columnMeta.cellClass.split(' ').forEach(cls => {
-                                if (cls) td.classList.add(cls);
-                            });
-                        }
-                        const descriptor = rowData[column.id];
-                        if (descriptor && typeof descriptor.render === 'function') {
-                            descriptor.render(td);
-                        } else if (descriptor !== undefined && descriptor !== null) {
-                            td.textContent = String(descriptor);
-                        } else {
-                            td.textContent = '';
-                        }
-                        tr.appendChild(td);
-                    });
-
-                    tableBodyTbody.appendChild(tr);
+                    const headerSize = header.getSize ? header.getSize() : header.column.getSize?.();
+                    if (Number.isFinite(headerSize)) {
+                        th.style.width = `${headerSize}px`;
+                        th.style.minWidth = `${headerSize}px`;
+                        th.style.maxWidth = `${headerSize}px`;
+                    }
+                    tr.appendChild(th);
                 });
+                tableHeaderThead.appendChild(tr);
+            });
+
+            const rowModel = tableInstance.getRowModel();
+            rowModel.rows.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                const meta = rowsMeta[index];
+                if (meta) {
+                    meta.domRow = tr;
+                    meta.rowClasses.forEach(cls => tr.classList.add(cls));
+                }
+
+                row.getVisibleCells().forEach(cell => {
+                    const td = document.createElement('td');
+                    const columnMeta = cell.column.columnDef.meta;
+                    if (columnMeta?.cellClass) {
+                        columnMeta.cellClass.split(' ').forEach(cls => {
+                            if (cls) td.classList.add(cls);
+                        });
+                    }
+                    applyCellDescriptor(td, cell.getValue());
+                    const cellSize = cell.column.getSize ? cell.column.getSize() : undefined;
+                    if (Number.isFinite(cellSize)) {
+                        td.style.width = `${cellSize}px`;
+                        td.style.minWidth = `${cellSize}px`;
+                        td.style.maxWidth = `${cellSize}px`;
+                    }
+                    tr.appendChild(td);
+                });
+
+                tableBodyTbody.appendChild(tr);
+            });
+
+            const totalTableWidth = typeof tableInstance.getTotalSize === 'function'
+                ? tableInstance.getTotalSize()
+                : leafColumns.reduce((sum, col) => sum + (col.getSize ? col.getSize() : 0), 0);
+            if (Number.isFinite(totalTableWidth) && totalTableWidth > 0) {
+                const widthPx = `${totalTableWidth}px`;
+                tableHeader.style.width = widthPx;
+                tableBody.style.width = widthPx;
+                tableFooter.style.width = widthPx;
             }
 
             if (rowsMeta.length > 0) {
@@ -3081,6 +3082,13 @@ const wrTeStatOrder = [
                 totalTh.className = 'modal-table-footer-label week-column-header';
                 const gamesPlayed = getAdjustedGamesPlayed(player.id, scoringSettings);
                 totalTh.innerHTML = `<span class="season-label">2025</span><br><span class="gp-label">(GP: ${gamesPlayed})</span>`;
+                const weekColumn = leafColumns[0];
+                const weekColumnSize = weekColumn?.getSize?.();
+                if (Number.isFinite(weekColumnSize)) {
+                    totalTh.style.width = `${weekColumnSize}px`;
+                    totalTh.style.minWidth = `${weekColumnSize}px`;
+                    totalTh.style.maxWidth = `${weekColumnSize}px`;
+                }
                 footerRow.appendChild(totalTh);
 
                 const seasonTotals = state.playerSeasonStats?.[player.id] || null;
@@ -3106,6 +3114,13 @@ const wrTeStatOrder = [
                     const key = column.meta?.statKey;
                     if (!key || !statLabels[key]) continue;
                     const td = document.createElement('td');
+                    const leafColumn = leafColumns[i];
+                    const columnSize = leafColumn?.getSize?.();
+                    if (Number.isFinite(columnSize)) {
+                        td.style.width = `${columnSize}px`;
+                        td.style.minWidth = `${columnSize}px`;
+                        td.style.maxWidth = `${columnSize}px`;
+                    }
                     if (column.meta?.cellClass) {
                         column.meta.cellClass.split(' ').forEach(cls => {
                             if (cls) td.classList.add(cls);
@@ -3259,33 +3274,6 @@ const wrTeStatOrder = [
                 tableFooterContainer.classList.add('hidden');
             }
 
-            const syncColumnWidths = () => {
-                const bodyScrollWidth = tableBody.scrollWidth;
-                tableHeader.style.width = `${bodyScrollWidth}px`;
-                tableFooter.style.width = `${bodyScrollWidth}px`;
-
-                const dataRow = tableBodyTbody.querySelector('tr:not(.week-divider-row)');
-                const headerRow = tableHeaderThead.querySelector('tr');
-                if (!dataRow || !headerRow) return;
-                const bodyCells = Array.from(dataRow.children);
-                const headerCells = Array.from(headerRow.children);
-                const footerRow = tableFooterTfoot.querySelector('tr');
-                const footerCells = footerRow ? Array.from(footerRow.children) : [];
-
-                bodyCells.forEach((bodyCell, index) => {
-                    const width = bodyCell.getBoundingClientRect().width;
-                    const applyWidth = (cell) => {
-                        if (!cell) return;
-                        cell.style.width = `${width}px`;
-                        cell.style.minWidth = `${width}px`;
-                        cell.style.maxWidth = `${width}px`;
-                    };
-                    applyWidth(bodyCell);
-                    applyWidth(headerCells[index]);
-                    applyWidth(footerCells[index]);
-                });
-            };
-
             const updateHorizontalTransforms = () => {
                 const scrollLeft = tableBodyContainer.scrollLeft;
                 tableHeader.style.transform = `translateX(${-scrollLeft}px)`;
@@ -3303,20 +3291,7 @@ const wrTeStatOrder = [
 
             adjustScrollOffsets();
             requestAnimationFrame(adjustScrollOffsets);
-            requestAnimationFrame(syncColumnWidths);
             updateHorizontalTransforms();
-
-            const resizeObserver = new ResizeObserver(() => {
-                syncColumnWidths();
-                adjustScrollOffsets();
-            });
-            resizeObserver.observe(tableBody);
-
-            const handleResize = () => {
-                syncColumnWidths();
-                adjustScrollOffsets();
-            };
-            window.addEventListener('resize', handleResize, { passive: true });
 
             container.appendChild(tableHeaderContainer);
             container.appendChild(tableBodyContainer);
@@ -3326,15 +3301,6 @@ const wrTeStatOrder = [
             tableBodyContainer.scrollLeft = 0;
             tableBodyContainer.scrollTop = 0;
             updateHorizontalTransforms();
-            syncColumnWidths();
-
-            const cleanup = () => {
-                resizeObserver.disconnect();
-                window.removeEventListener('resize', handleResize);
-                tableBodyContainer.removeEventListener('scroll', updateHorizontalTransforms);
-                gameLogsModal.removeEventListener('gamelogs:closed', cleanup);
-            };
-            gameLogsModal.addEventListener('gamelogs:closed', cleanup, { once: true });
 
             // Set player vitals width to match summary chips
             const summaryChipsWidth = summaryChipsContainer.offsetWidth;
@@ -5597,7 +5563,6 @@ const wrTeStatOrder = [
             }
             // Reset the flag
             state.isGameLogModalOpenFromComparison = false;
-            gameLogsModal.dispatchEvent(new CustomEvent('gamelogs:closed'));
         }
 
         function openComparisonModal() {
