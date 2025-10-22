@@ -4036,6 +4036,8 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
       border-collapse: collapse;
       font-size: 0.7rem;
       table-layout: fixed;
+      will-change: transform;
+      transform: translateZ(0);
     }
 
     #game-logs-modal .game-logs-table thead,

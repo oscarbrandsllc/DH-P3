@@ -2640,37 +2640,37 @@ const wrTeStatOrder = [
             container.className = 'game-logs-table-container';
 
             const COLUMN_WIDTHS = {
-                week: 128,
-                proj: 84,
-                snp_pct: 92,
-                ts_per_rr: 104,
-                first_down_rec_rate: 116,
-                yds_total: 104,
-                rush_att: 98,
-                rush_td: 98,
-                rush_yd: 104,
-                rec_tgt: 98,
-                rec: 92,
-                rec_yd: 104,
-                rec_td: 98,
-                ypr: 104,
-                yprr: 104,
-                imp_per_g: 110,
-                pass_rtg: 110,
-                pass_yd: 110,
-                pass_td: 110,
-                pass_att: 110,
-                pass_cmp: 110,
-                pass_imp_per_att: 120,
-                prs_pct: 104,
-                ttt: 104,
-                yco_per_att: 120,
-                ypc: 104,
-                mtf_per_att: 120,
-                fpts: 96,
-                ktc: 110
+                week: 78,
+                proj: 64,
+                snp_pct: 74,
+                ts_per_rr: 86,
+                first_down_rec_rate: 94,
+                yds_total: 88,
+                rush_att: 76,
+                rush_td: 76,
+                rush_yd: 88,
+                rec_tgt: 76,
+                rec: 70,
+                rec_yd: 88,
+                rec_td: 76,
+                ypr: 80,
+                yprr: 84,
+                imp_per_g: 92,
+                pass_rtg: 92,
+                pass_yd: 96,
+                pass_td: 92,
+                pass_att: 90,
+                pass_cmp: 90,
+                pass_imp_per_att: 96,
+                prs_pct: 84,
+                ttt: 82,
+                yco_per_att: 96,
+                ypc: 82,
+                mtf_per_att: 96,
+                fpts: 80,
+                ktc: 90
             };
-            const DEFAULT_COLUMN_WIDTH = 96;
+            const DEFAULT_COLUMN_WIDTH = 78;
 
             const tableColumns = [{
                 id: 'week',
@@ -3309,8 +3309,9 @@ const wrTeStatOrder = [
 
             const syncHorizontalScroll = () => {
                 const scrollLeft = bodyWrapper.scrollLeft;
-                headerTable.style.transform = `translateX(${-scrollLeft}px)`;
-                footerTable.style.transform = `translateX(${-scrollLeft}px)`;
+                const t = `translate3d(${-scrollLeft}px,0,0)`;
+                headerTable.style.transform = t;
+                footerTable.style.transform = t;
             };
             bodyWrapper.addEventListener('scroll', syncHorizontalScroll, { passive: true });
             syncHorizontalScroll();
