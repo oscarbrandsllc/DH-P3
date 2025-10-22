@@ -2382,7 +2382,7 @@ const SEASON_META_HEADERS = {
 
             const gameLogs = await fetchGameLogs(player.id);
             const playerRanks = calculatePlayerStatsAndRanks(player.id);
-            renderGameLogs(gameLogs, player, playerRanks);
+            await renderGameLogs(gameLogs, player, playerRanks);
         }
 
         function getOpponentRankColor(rank) {
@@ -2395,7 +2395,53 @@ const SEASON_META_HEADERS = {
             return null;
         }
 
-        function renderGameLogs(gameLogs, player, playerRanks) {
+        let tableCoreLoaderPromise = null;
+        function ensureTableCoreLoaded() {
+            if (window.TableCore) return Promise.resolve(window.TableCore);
+            if (tableCoreLoaderPromise) return tableCoreLoaderPromise;
+
+            const existingScript = document.querySelector('script[data-tanstack-table-core="true"]');
+            if (existingScript) {
+                tableCoreLoaderPromise = new Promise((resolve, reject) => {
+                    existingScript.addEventListener('load', () => {
+                        if (window.TableCore) resolve(window.TableCore);
+                        else {
+                            tableCoreLoaderPromise = null;
+                            reject(new Error('TanStack Table library loaded but TableCore global is unavailable.'));
+                        }
+                    }, { once: true });
+                    existingScript.addEventListener('error', () => {
+                        tableCoreLoaderPromise = null;
+                        reject(new Error('TanStack Table library failed to load.'));
+                    }, { once: true });
+                });
+                return tableCoreLoaderPromise;
+            }
+
+            tableCoreLoaderPromise = new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/@tanstack/table-core@8.11.0/build/umd/index.production.min.js';
+                script.async = true;
+                script.dataset.tanstackTableCore = 'true';
+                script.onload = () => {
+                    if (window.TableCore) resolve(window.TableCore);
+                    else {
+                        tableCoreLoaderPromise = null;
+                        reject(new Error('TanStack Table library loaded but TableCore global is unavailable.'));
+                    }
+                };
+                script.onerror = () => {
+                    script.remove();
+                    tableCoreLoaderPromise = null;
+                    reject(new Error('TanStack Table library failed to load.'));
+                };
+                document.head.appendChild(script);
+            });
+
+            return tableCoreLoaderPromise;
+        }
+
+        async function renderGameLogs(gameLogs, player, playerRanks) {
             const league = state.leagues.find(l => l.league_id === state.currentLeagueId);
             if (!league) return;
             const scoringSettings = league.scoring_settings;
@@ -2887,9 +2933,16 @@ const wrTeStatOrder = [
             if (!rowsMeta.some(meta => meta.isPlayed)) dividerIndex = 0;
             dividerIndex = Math.max(0, Math.min(dividerIndex, rowsMeta.length));
 
-            const tableCore = window.TableCore;
+            let tableCore;
+            try {
+                tableCore = await ensureTableCoreLoaded();
+            } catch (error) {
+                console.error('Failed to load TanStack Table library', error);
+                modalBody.innerHTML = '<p class="text-center p-4">Unable to load game logs right now.</p>';
+                return;
+            }
             if (!tableCore) {
-                console.error('TanStack Table core library unavailable');
+                modalBody.innerHTML = '<p class="text-center p-4">Unable to load game logs right now.</p>';
                 return;
             }
 
