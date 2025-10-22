@@ -3318,6 +3318,13 @@ const wrTeStatOrder = [
             modalBody.appendChild(container);
             hScroll.scrollLeft = 0;
             bodyWrapper.scrollTop = 0;
+            // Route horizontal wheel/trackpad gestures on tbody to the shared scroller
+            bodyWrapper.addEventListener('wheel', (e) => {
+                if (Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey) {
+                    hScroll.scrollLeft += e.deltaX !== 0 ? e.deltaX : e.deltaY;
+                    e.preventDefault();
+                }
+            }, { passive: false });
 
             // Set player vitals width to match summary chips
             const summaryChipsWidth = summaryChipsContainer.offsetWidth;
