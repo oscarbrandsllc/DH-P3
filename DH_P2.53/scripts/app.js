@@ -2446,6 +2446,8 @@ const SEASON_META_HEADERS = {
             if (!league) return;
             const scoringSettings = league.scoring_settings;
 
+            gameLogsModal.dispatchEvent(new Event('gamelogs:cleanup'));
+
             const fullPlayer = state.players[player.id];
             const playerName = fullPlayer ? `${fullPlayer.first_name} ${fullPlayer.last_name}` : player.name;
 
@@ -3013,7 +3015,7 @@ const wrTeStatOrder = [
             bodyWrapper.appendChild(bodyTable);
 
             const footerWrapper = document.createElement('div');
-            footerWrapper.className = 'game-logs-table-footer';
+            footerWrapper.className = 'game-logs-table-footer hidden';
             const footerTable = createSectionTable();
             const tableFooterTfoot = document.createElement('tfoot');
             footerTable.appendChild(tableFooterTfoot);
@@ -3309,6 +3311,15 @@ const wrTeStatOrder = [
             bodyWrapper.addEventListener('scroll', syncHorizontalScroll, { passive: true });
             syncHorizontalScroll();
 
+            const adjustForScrollbar = () => {
+                const scrollbarWidth = bodyWrapper.offsetWidth - bodyWrapper.clientWidth;
+                const padding = scrollbarWidth > 0 ? `${scrollbarWidth}px` : '0px';
+                headerWrapper.style.paddingRight = padding;
+                footerWrapper.style.paddingRight = padding;
+            };
+            adjustForScrollbar();
+            window.addEventListener('resize', adjustForScrollbar, { passive: true });
+
             container.appendChild(headerWrapper);
             container.appendChild(bodyWrapper);
             container.appendChild(footerWrapper);
@@ -3317,6 +3328,13 @@ const wrTeStatOrder = [
             bodyWrapper.scrollLeft = 0;
             bodyWrapper.scrollTop = 0;
             syncHorizontalScroll();
+            adjustForScrollbar();
+
+            const cleanup = () => {
+                window.removeEventListener('resize', adjustForScrollbar);
+                bodyWrapper.removeEventListener('scroll', syncHorizontalScroll);
+            };
+            gameLogsModal.addEventListener('gamelogs:cleanup', cleanup, { once: true });
 
             // Set player vitals width to match summary chips
             const summaryChipsWidth = summaryChipsContainer.offsetWidth;
@@ -5572,6 +5590,7 @@ const wrTeStatOrder = [
         function closeModal() {
             gameLogsModal.classList.add('hidden');
             statsKeyContainer.classList.add('hidden');
+            gameLogsModal.dispatchEvent(new Event('gamelogs:cleanup'));
             if (!state.isGameLogModalOpenFromComparison) {
                 closeComparisonModal();
             } else {
