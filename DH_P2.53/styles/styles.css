@@ -4018,6 +4018,11 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
       gap: 0;
     }
 
+    #game-logs-modal .game-logs-hscroll {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
     #game-logs-modal .game-logs-table-header,
     #game-logs-modal .game-logs-table-footer {
       overflow: hidden;
@@ -4026,7 +4031,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     #game-logs-modal .game-logs-table-body {
       max-height: 200px;
       overflow-y: auto;
-      overflow-x: auto;
+      overflow-x: visible; /* horizontal handled by parent hscroll */
       scrollbar-width: thin;
       scrollbar-color: rgba(160, 170, 210, 0.45) transparent;
     }

@@ -2640,37 +2640,37 @@ const wrTeStatOrder = [
             container.className = 'game-logs-table-container';
 
             const COLUMN_WIDTHS = {
-                week: 78,
-                proj: 64,
-                snp_pct: 74,
-                ts_per_rr: 86,
-                first_down_rec_rate: 94,
-                yds_total: 88,
-                rush_att: 76,
-                rush_td: 76,
-                rush_yd: 88,
-                rec_tgt: 76,
-                rec: 70,
-                rec_yd: 88,
-                rec_td: 76,
-                ypr: 80,
-                yprr: 84,
-                imp_per_g: 92,
-                pass_rtg: 92,
-                pass_yd: 96,
-                pass_td: 92,
-                pass_att: 90,
-                pass_cmp: 90,
-                pass_imp_per_att: 96,
-                prs_pct: 84,
-                ttt: 82,
-                yco_per_att: 96,
-                ypc: 82,
-                mtf_per_att: 96,
-                fpts: 80,
-                ktc: 90
+                week: 92,
+                proj: 60,
+                snp_pct: 66,
+                ts_per_rr: 74,
+                first_down_rec_rate: 80,
+                yds_total: 74,
+                rush_att: 64,
+                rush_td: 64,
+                rush_yd: 74,
+                rec_tgt: 64,
+                rec: 60,
+                rec_yd: 74,
+                rec_td: 64,
+                ypr: 70,
+                yprr: 72,
+                imp_per_g: 78,
+                pass_rtg: 78,
+                pass_yd: 80,
+                pass_td: 78,
+                pass_att: 74,
+                pass_cmp: 74,
+                pass_imp_per_att: 84,
+                prs_pct: 72,
+                ttt: 70,
+                yco_per_att: 84,
+                ypc: 70,
+                mtf_per_att: 84,
+                fpts: 72,
+                ktc: 80
             };
-            const DEFAULT_COLUMN_WIDTH = 78;
+            const DEFAULT_COLUMN_WIDTH = 64;
 
             const tableColumns = [{
                 id: 'week',
@@ -3307,23 +3307,17 @@ const wrTeStatOrder = [
                 footerWrapper.classList.add('hidden');
             }
 
-            const syncHorizontalScroll = () => {
-                const scrollLeft = bodyWrapper.scrollLeft;
-                const t = `translate3d(${-scrollLeft}px,0,0)`;
-                headerTable.style.transform = t;
-                footerTable.style.transform = t;
-            };
-            bodyWrapper.addEventListener('scroll', syncHorizontalScroll, { passive: true });
-            syncHorizontalScroll();
-
-            container.appendChild(headerWrapper);
-            container.appendChild(bodyWrapper);
-            container.appendChild(footerWrapper);
+            // Wrap header/body/footer in a single horizontal scroller so they move in perfect unison
+            const hScroll = document.createElement('div');
+            hScroll.className = 'game-logs-hscroll';
+            hScroll.appendChild(headerWrapper);
+            hScroll.appendChild(bodyWrapper);
+            hScroll.appendChild(footerWrapper);
+            container.appendChild(hScroll);
 
             modalBody.appendChild(container);
-            bodyWrapper.scrollLeft = 0;
+            hScroll.scrollLeft = 0;
             bodyWrapper.scrollTop = 0;
-            syncHorizontalScroll();
 
             // Set player vitals width to match summary chips
             const summaryChipsWidth = summaryChipsContainer.offsetWidth;
