@@ -2958,9 +2958,14 @@ const wrTeStatOrder = [
                 return;
             }
 
+            const initialColumnOrder = tableColumns.map(c => c.id);
             const tableInstance = tableCore.createTable({
                 data: tableRows,
                 columns: tableColumns,
+                // Provide a concrete state object so TanStack features
+                // that read table.getState().columnOrder never see undefined.
+                state: { columnOrder: initialColumnOrder },
+                onStateChange: () => {},
                 defaultColumn: { size: DEFAULT_COLUMN_WIDTH, minSize: 64 },
                 columnResizeMode: 'onChange',
                 getCoreRowModel: tableCore.getCoreRowModel(),
