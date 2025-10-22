@@ -585,10 +585,9 @@
       return formatDecimal(meta.age, 1);
     }
     if (column === 'RK') {
-      const formatted = formatSheetCellValue(column, row[column]);
-      if (formatted !== '') return formatted;
-      if (!Number.isFinite(meta.rank) || meta.rank === Infinity) return '';
-      return formatInteger(meta.rank);
+      const rank = entry.meta.currentRank;
+      if (rank === null || rank === undefined) return '';
+      return formatInteger(rank);
     }
     const raw = row[column];
     const formatted = formatSheetCellValue(column, raw);
@@ -642,6 +641,15 @@
       const sortedPlayers = sortCollection(playerRows);
       rows = [...sortedPlayers, ...pickRows];
     }
+
+    // After sorting and filtering, re-assign ranks
+    rows.forEach((entry, index) => {
+      if (entry.meta.pos !== 'RDP') {
+        entry.meta.currentRank = index + 1;
+      } else {
+        entry.meta.currentRank = null; // Or some other placeholder for picks
+      }
+    });
 
     const wrapper = dom.tableWrappers.find((el) => el.dataset.tabPanel === statsState.currentTab);
     const otherWrappers = dom.tableWrappers.filter((el) => el !== wrapper);
