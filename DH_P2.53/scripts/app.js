@@ -2981,9 +2981,7 @@ const wrTeStatOrder = [
                 return Number.isFinite(fallbackSize) ? fallbackSize : DEFAULT_COLUMN_WIDTH;
             };
 
-            const columnSizes = leafColumns.map(column =>
-                resolveColumnSize(column, column.getSize ? column.getSize() : undefined)
-            );
+            const columnSizes = tableColumns.map(col => Number.isFinite(col.size) ? col.size : DEFAULT_COLUMN_WIDTH);
 
             const createSectionTable = () => {
                 const table = document.createElement('table');
@@ -3081,10 +3079,7 @@ const wrTeStatOrder = [
                 tableBodyTbody.appendChild(tr);
             });
 
-            const totalTableWidth = leafColumns.reduce((sum, col) => {
-                const size = resolveColumnSize(col, col.getSize ? col.getSize() : undefined);
-                return sum + size;
-            }, 0);
+            const totalTableWidth = columnSizes.reduce((sum, size) => sum + size, 0);
             if (Number.isFinite(totalTableWidth) && totalTableWidth > 0) {
                 const widthPx = `${totalTableWidth}px`;
                 headerTable.style.minWidth = widthPx;
@@ -3113,8 +3108,7 @@ const wrTeStatOrder = [
                 totalTh.className = 'modal-table-footer-label week-column-header';
                 const gamesPlayed = getAdjustedGamesPlayed(player.id, scoringSettings);
                 totalTh.innerHTML = `<span class="season-label">2025</span><br><span class="gp-label">(GP: ${gamesPlayed})</span>`;
-                const weekColumn = leafColumns[0];
-                const weekColumnSize = resolveColumnSize(weekColumn, weekColumn?.getSize?.());
+                const weekColumnSize = columnSizes[0] || DEFAULT_COLUMN_WIDTH;
                 totalTh.style.width = `${weekColumnSize}px`;
                 totalTh.style.minWidth = `${weekColumnSize}px`;
                 totalTh.style.maxWidth = `${weekColumnSize}px`;
@@ -3143,8 +3137,7 @@ const wrTeStatOrder = [
                     const key = column.meta?.statKey;
                     if (!key || !statLabels[key]) continue;
                     const td = document.createElement('td');
-                    const leafColumn = leafColumns[i];
-                    const columnSize = resolveColumnSize(leafColumn, leafColumn?.getSize?.());
+                    const columnSize = columnSizes[i] || DEFAULT_COLUMN_WIDTH;
                     td.style.width = `${columnSize}px`;
                     td.style.minWidth = `${columnSize}px`;
                     td.style.maxWidth = `${columnSize}px`;
