@@ -4050,6 +4050,12 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
       scrollbar-color: rgba(160, 170, 210, 0.45) transparent;
       width: 100%;
     }
+    #game-logs-modal .game-logs-table thead tr,
+    #game-logs-modal .game-logs-table tfoot tr {
+      display: table;
+      table-layout: fixed;
+      width: 100%;
+    }
 
     #game-logs-modal .game-logs-table tbody tr {
       display: table;
