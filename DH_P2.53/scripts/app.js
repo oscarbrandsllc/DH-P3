@@ -2933,75 +2933,135 @@ const wrTeStatOrder = [
             if (!rowsMeta.some(meta => meta.isPlayed)) dividerIndex = 0;
             dividerIndex = Math.max(0, Math.min(dividerIndex, rowsMeta.length));
 
-            let tableCore;
+            let tableCore = null;
             try {
                 tableCore = await ensureTableCoreLoaded();
             } catch (error) {
                 console.error('Failed to load TanStack Table library', error);
-                modalBody.innerHTML = '<p class="text-center p-4">Unable to load game logs right now.</p>';
-                return;
-            }
-            if (!tableCore) {
-                modalBody.innerHTML = '<p class="text-center p-4">Unable to load game logs right now.</p>';
-                return;
             }
 
-            const tableInstance = tableCore.createTable({
-                data: tableRows,
-                columns: tableColumns,
-                getCoreRowModel: tableCore.getCoreRowModel(),
-                renderFallbackValue: ''
-            });
+            let renderedWithTableCore = false;
+            if (tableCore) {
+                try {
+                    const tableInstance = tableCore.createTable({
+                        data: tableRows,
+                        columns: tableColumns,
+                        getCoreRowModel: tableCore.getCoreRowModel(),
+                        renderFallbackValue: ''
+                    });
 
-            const applyCellDescriptor = (td, descriptor) => {
-                td.textContent = '';
-                td.innerHTML = '';
-                if (!descriptor) return;
-                if (typeof descriptor.render === 'function') descriptor.render(td);
-            };
+                    const applyCellDescriptor = (td, descriptor) => {
+                        td.textContent = '';
+                        td.innerHTML = '';
+                        if (!descriptor) return;
+                        if (typeof descriptor.render === 'function') descriptor.render(td);
+                    };
 
-            tableInstance.getHeaderGroups().forEach(group => {
-                const tr = document.createElement('tr');
-                group.headers.forEach(header => {
+                    const headerGroups = tableInstance.getHeaderGroups();
+                    headerGroups.forEach(group => {
+                        const tr = document.createElement('tr');
+                        group.headers.forEach(header => {
+                            const th = document.createElement('th');
+                            const meta = header.column.columnDef.meta;
+                            if (meta?.headerClass) {
+                                meta.headerClass.split(' ').forEach(cls => {
+                                    if (cls) th.classList.add(cls);
+                                });
+                            }
+                            if (!header.isPlaceholder) {
+                                const headerValue = header.column.columnDef.header;
+                                if (typeof headerValue === 'function') {
+                                    th.textContent = headerValue(header.getContext());
+                                } else {
+                                    th.textContent = headerValue || '';
+                                }
+                            }
+                            tr.appendChild(th);
+                        });
+                        tableHeaderThead.appendChild(tr);
+                    });
+
+                    const rowModel = tableInstance.getRowModel();
+                    rowModel.rows.forEach((row, index) => {
+                        const tr = document.createElement('tr');
+                        const meta = rowsMeta[index];
+                        if (meta) {
+                            meta.domRow = tr;
+                            meta.rowClasses.forEach(cls => tr.classList.add(cls));
+                        }
+
+                        row.getVisibleCells().forEach(cell => {
+                            const td = document.createElement('td');
+                            const columnMeta = cell.column.columnDef.meta;
+                            if (columnMeta?.cellClass) {
+                                columnMeta.cellClass.split(' ').forEach(cls => {
+                                    if (cls) td.classList.add(cls);
+                                });
+                            }
+                            applyCellDescriptor(td, cell.getValue());
+                            tr.appendChild(td);
+                        });
+
+                        tableBodyTbody.appendChild(tr);
+                    });
+
+                    renderedWithTableCore = rowModel.rows.length > 0;
+                } catch (tableCoreRenderError) {
+                    console.error('TanStack Table rendering failed, falling back to manual rendering', tableCoreRenderError);
+                    tableHeaderThead.innerHTML = '';
+                    tableBodyTbody.innerHTML = '';
+                    renderedWithTableCore = false;
+                }
+            }
+
+            if (!renderedWithTableCore) {
+                tableHeaderThead.innerHTML = '';
+                tableBodyTbody.innerHTML = '';
+                const headerRow = document.createElement('tr');
+                tableColumns.forEach(column => {
                     const th = document.createElement('th');
-                    const meta = header.column.columnDef.meta;
+                    const meta = column.meta;
                     if (meta?.headerClass) {
                         meta.headerClass.split(' ').forEach(cls => {
                             if (cls) th.classList.add(cls);
                         });
                     }
-                    if (!header.isPlaceholder) {
-                        const headerValue = header.column.columnDef.header;
-                        if (typeof headerValue === 'function') th.textContent = headerValue(header.getContext());
-                        else th.textContent = headerValue || '';
-                    }
-                    tr.appendChild(th);
+                    const headerValue = typeof column.header === 'function' ? column.header() : column.header;
+                    th.textContent = headerValue || '';
+                    headerRow.appendChild(th);
                 });
-                tableHeaderThead.appendChild(tr);
-            });
+                tableHeaderThead.appendChild(headerRow);
 
-            tableInstance.getRowModel().rows.forEach((row, index) => {
-                const tr = document.createElement('tr');
-                const meta = rowsMeta[index];
-                if (meta) {
-                    meta.domRow = tr;
-                    meta.rowClasses.forEach(cls => tr.classList.add(cls));
-                }
-
-                row.getVisibleCells().forEach(cell => {
-                    const td = document.createElement('td');
-                    const columnMeta = cell.column.columnDef.meta;
-                    if (columnMeta?.cellClass) {
-                        columnMeta.cellClass.split(' ').forEach(cls => {
-                            if (cls) td.classList.add(cls);
-                        });
+                tableRows.forEach((rowData, index) => {
+                    const tr = document.createElement('tr');
+                    const meta = rowsMeta[index];
+                    if (meta) {
+                        meta.domRow = tr;
+                        meta.rowClasses.forEach(cls => tr.classList.add(cls));
                     }
-                    applyCellDescriptor(td, cell.getValue());
-                    tr.appendChild(td);
-                });
 
-                tableBodyTbody.appendChild(tr);
-            });
+                    tableColumns.forEach(column => {
+                        const td = document.createElement('td');
+                        const columnMeta = column.meta;
+                        if (columnMeta?.cellClass) {
+                            columnMeta.cellClass.split(' ').forEach(cls => {
+                                if (cls) td.classList.add(cls);
+                            });
+                        }
+                        const descriptor = rowData[column.id];
+                        if (descriptor && typeof descriptor.render === 'function') {
+                            descriptor.render(td);
+                        } else if (descriptor !== undefined && descriptor !== null) {
+                            td.textContent = String(descriptor);
+                        } else {
+                            td.textContent = '';
+                        }
+                        tr.appendChild(td);
+                    });
+
+                    tableBodyTbody.appendChild(tr);
+                });
+            }
 
             if (rowsMeta.length > 0) {
                 const dividerRow = document.createElement('tr');
