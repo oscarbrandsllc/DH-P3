@@ -2396,682 +2396,437 @@ const SEASON_META_HEADERS = {
         }
 
         function renderGameLogs(gameLogs, player, playerRanks) {
-            const league = state.leagues.find(l => l.league_id === state.currentLeagueId);
-            if (!league) return;
-            const scoringSettings = league.scoring_settings;
+    const {
+        createTable,
+        getCoreRowModel,
+        flexRender
+    } = window.TanStackTable;
 
-            const fullPlayer = state.players[player.id];
-            const playerName = fullPlayer ? `${fullPlayer.first_name} ${fullPlayer.last_name}` : player.name;
+    const league = state.leagues.find(l => l.league_id === state.currentLeagueId);
+    if (!league) return;
+    const scoringSettings = league.scoring_settings;
 
-            const modalHeader = document.getElementById('modal-header');
-            const headerContainer = document.createElement('div');
-            headerContainer.className = 'modal-header-left-container';
+    const fullPlayer = state.players[player.id];
+    const playerName = fullPlayer ? `${fullPlayer.first_name} ${fullPlayer.last_name}` : player.name;
 
-            const posTag = document.createElement('div');
-            posTag.className = `player-tag modal-pos-tag ${player.pos}`;
-            posTag.textContent = player.pos;
-            headerContainer.appendChild(posTag);
+    const modalHeader = document.getElementById('modal-header');
+    const headerContainer = document.createElement('div');
+    headerContainer.className = 'modal-header-left-container';
 
-            const teamKey = (player.team || 'FA').toUpperCase();
-            const logoKeyMap = { 'WSH': 'was', 'WAS': 'was', 'JAC': 'jax', 'LA': 'lar' };
-            const normalizedKey = logoKeyMap[teamKey] || teamKey.toLowerCase();
-            const src = `../assets/NFL-Tags_webp/${normalizedKey}.webp`;
-            const teamLogoChip = document.createElement('div');
-            teamLogoChip.className = 'player-tag modal-team-logo-chip';
-            teamLogoChip.dataset.team = teamKey;
-            teamLogoChip.innerHTML = (player.team && player.team !== 'FA')
-              ? `<img class="team-logo glow" src="${src}" alt="${teamKey}" width="24" height="24" loading="eager">`
-              : `<span>FA</span>`;
-            headerContainer.appendChild(teamLogoChip);
-            modalHeader.insertBefore(headerContainer, modalHeader.firstChild);
+    const posTag = document.createElement('div');
+    posTag.className = `player-tag modal-pos-tag ${player.pos}`;
+    posTag.textContent = player.pos;
+    headerContainer.appendChild(posTag);
 
-            if (modalPlayerVitals) {
-                modalPlayerVitals.innerHTML = '';
-                const vitals = getPlayerVitals(player.id);
-                modalPlayerVitals.appendChild(createPlayerVitalsElement(vitals, { variant: 'modal', pos: player.pos }));
-            }
+    const teamKey = (player.team || 'FA').toUpperCase();
+    const logoKeyMap = {
+        'WSH': 'was',
+        'WAS': 'was',
+        'JAC': 'jax',
+        'LA': 'lar'
+    };
+    const normalizedKey = logoKeyMap[teamKey] || teamKey.toLowerCase();
+    const src = `../assets/NFL-Tags_webp/${normalizedKey}.webp`;
+    const teamLogoChip = document.createElement('div');
+    teamLogoChip.className = 'player-tag modal-team-logo-chip';
+    teamLogoChip.dataset.team = teamKey;
+    teamLogoChip.innerHTML = (player.team && player.team !== 'FA') ?
+        `<img class="team-logo glow" src="${src}" alt="${teamKey}" width="24" height="24" loading="eager">` :
+        `<span>FA</span>`;
+    headerContainer.appendChild(teamLogoChip);
+    modalHeader.insertBefore(headerContainer, modalHeader.firstChild);
 
-            // Render summary chips
-            const summaryChipsContainer = document.getElementById('modal-summary-chips');
-            summaryChipsContainer.innerHTML = `
-                <div class="gamelogs-summary-chip">
-                    <h4>
-                        <span class="chip-header-value" style="color: ${getConditionalColorByRank(playerRanks.posRank, player.pos)}">${playerRanks.total_pts} </span>
-                        <span class="chip-unit"> FPTS</span>
-                    </h4>
-                    <div class="chip-values">
-                         <span class="pos-rank-container">
-                            <span class="chip-pos-rank-label pos-color-${player.pos}">${player.pos}·</span>
-                            <span style="color: ${getConditionalColorByRank(playerRanks.posRank, player.pos)}">${playerRanks.posRank || 'NA'}</span>
-                        </span>
-                        <span class="chip-separator">•</span>
-                        <span style="color: ${getRankColor(playerRanks.overallRank)}">${typeof playerRanks.overallRank === 'number' ? '#' + playerRanks.overallRank : 'NA'}</span>
-                    </div>
-                </div>
-                <div class="gamelogs-summary-chip">
-                    <h4>
-                        <span class="chip-header-value" style="color: ${getConditionalColorByRank(playerRanks.ppgPosRank, player.pos)}">${playerRanks.ppg}</span>
-                        <span class="chip-unit"> PPG</span>
-                    </h4>
-                    <div class="chip-values">
-                        <span class="pos-rank-container">
-                            <span class="chip-pos-rank-label pos-color-${player.pos}">${player.pos}·</span>
-                            <span style="color: ${getConditionalColorByRank(playerRanks.ppgPosRank, player.pos)}">${playerRanks.ppgPosRank || 'NA'}</span>
-                        </span>
-                      <span class="chip-separator">•</span>
-                        <span style="color: ${getRankColor(playerRanks.ppgOverallRank)}">${typeof playerRanks.ppgOverallRank === 'number' ? '#' + playerRanks.ppgOverallRank : 'NA'}</span>
-                    </div>
-                </div>
-                <div class="gamelogs-summary-chip">
-                    <h4>
-                        <span class="chip-header-value" style="color: ${getKtcColor(player.ktc)}">${player.ktc}</span>
-                        <span class="chip-unit"> KTC</span>
-                    </h4>
-                    <div class="chip-values">
-                        <span class="pos-rank-container">
-                            <span class="chip-pos-rank-label pos-color-${player.pos}">${player.pos}·</span>
-                            <span style="color: ${getConditionalColorByRank(parseInt(player.posRank?.split('·')[1], 10), player.pos)}">${player.posRank?.split('·')[1] || 'NA'}</span>
-                        </span>
-                        <span class="chip-separator">•</span>
-                        <span style="color: ${getRankColor(player.overallRank)}">${typeof player.overallRank === 'number' ? '#' + player.overallRank : 'NA'}</span>
-                    </div>
-                </div>
+    if (modalPlayerVitals) {
+        modalPlayerVitals.innerHTML = '';
+        const vitals = getPlayerVitals(player.id);
+        modalPlayerVitals.appendChild(createPlayerVitalsElement(vitals, {
+            variant: 'modal',
+            pos: player.pos
+        }));
+    }
+
+    const summaryChipsContainer = document.getElementById('modal-summary-chips');
+    summaryChipsContainer.innerHTML = `
+        <div class="gamelogs-summary-chip">
+            <h4>
+                <span class="chip-header-value" style="color: ${getConditionalColorByRank(playerRanks.posRank, player.pos)}">${playerRanks.total_pts} </span>
+                <span class="chip-unit"> FPTS</span>
+            </h4>
+            <div class="chip-values">
+                 <span class="pos-rank-container">
+                    <span class="chip-pos-rank-label pos-color-${player.pos}">${player.pos}·</span>
+                    <span style="color: ${getConditionalColorByRank(playerRanks.posRank, player.pos)}">${playerRanks.posRank || 'NA'}</span>
+                </span>
+                <span class="chip-separator">•</span>
+                <span style="color: ${getRankColor(playerRanks.overallRank)}">${typeof playerRanks.overallRank === 'number' ? '#' + playerRanks.overallRank : 'NA'}</span>
+            </div>
+        </div>
+        <div class="gamelogs-summary-chip">
+            <h4>
+                <span class="chip-header-value" style="color: ${getConditionalColorByRank(playerRanks.ppgPosRank, player.pos)}">${playerRanks.ppg}</span>
+                <span class="chip-unit"> PPG</span>
+            </h4>
+            <div class="chip-values">
+                <span class="pos-rank-container">
+                    <span class="chip-pos-rank-label pos-color-${player.pos}">${player.pos}·</span>
+                    <span style="color: ${getConditionalColorByRank(playerRanks.ppgPosRank, player.pos)}">${playerRanks.ppgPosRank || 'NA'}</span>
+                </span>
+              <span class="chip-separator">•</span>
+                <span style="color: ${getRankColor(playerRanks.ppgOverallRank)}">${typeof playerRanks.ppgOverallRank === 'number' ? '#' + playerRanks.ppgOverallRank : 'NA'}</span>
+            </div>
+        </div>
+        <div class="gamelogs-summary-chip">
+            <h4>
+                <span class="chip-header-value" style="color: ${getKtcColor(player.ktc)}">${player.ktc}</span>
+                <span class="chip-unit"> KTC</span>
+            </h4>
+            <div class="chip-values">
+                <span class="pos-rank-container">
+                    <span class="chip-pos-rank-label pos-color-${player.pos}">${player.pos}·</span>
+                    <span style="color: ${getConditionalColorByRank(parseInt(player.posRank?.split('·')[1], 10), player.pos)}">${player.posRank?.split('·')[1] || 'NA'}</span>
+                </span>
+                <span class="chip-separator">•</span>
+                <span style="color: ${getRankColor(player.overallRank)}">${typeof player.overallRank === 'number' ? '#' + player.overallRank : 'NA'}</span>
+            </div>
+        </div>
+    `;
+
+    modalBody.innerHTML = '';
+
+    if (!gameLogs || gameLogs.length === 0) {
+        modalBody.innerHTML = `<p class="no-logs">No game logs found for ${playerName} for the current season.</p>`;
+        return;
+    }
+
+    const statLabels = buildStatLabels();
+
+    const qbStatOrder = [
+      'fpts',
+      'proj',
+      'pass_rtg',
+      'pass_yd',
+      'pass_td',
+      'pass_att',
+      'pass_cmp',
+      'yds_total',
+      'rush_yd',
+      'rush_td',
+      'pass_fd',
+      'imp_per_g',
+      'pass_imp',
+      'pass_imp_per_att',
+      'rush_att',
+      'ypc',
+      'ttt',
+      'prs_pct',
+      'pass_sack',
+      'pass_int',
+      'fum',
+      'fpoe'
+    ];
+
+    const rbStatOrder = [
+      'fpts',
+      'proj',
+      'snp_pct',
+      'rush_att',
+      'rush_yd',
+      'ypc',
+      'rush_td',
+      'rec',
+      'rec_yd',
+      'rec_tgt',
+      'yds_total',
+      'elu',
+      'mtf_per_att',
+      'yco_per_att',
+      'mtf',
+      'rush_yac',
+      'rush_fd',
+      'rec_td',
+      'rec_fd',
+      'rec_yar',
+      'imp_per_g',
+      'fum',
+      'fpoe'
+    ];
+
+    const wrTeStatOrder = [
+      'fpts',
+      'proj',
+      'snp_pct',
+      'rec_tgt',
+      'rec',
+      'ts_per_rr',
+      'rec_yd',
+      'rec_td',
+      'yprr',
+      'rec_fd',
+      'first_down_rec_rate',
+      'rec_yar',
+      'ypr',
+      'imp_per_g',
+      'rr',
+      'fpoe',
+      'yds_total',
+      'rush_att',
+      'rush_yd',
+      'rush_td',
+      'ypc',
+      'fum'
+    ];
+
+                const statGroupByKey = new Map();
+                const assignStatGroup = (group, keys) => {
+                    for (const key of keys) statGroupByKey.set(key, group);
+                };
+                assignStatGroup('all', ['fpts', 'proj', 'snp_pct', 'yds_total', 'imp_per_g', 'fum', 'fpoe']);
+                assignStatGroup('passing', [
+                    'pass_rtg', 'pass_yd', 'pass_td', 'pass_att', 'pass_cmp', 'pass_fd',
+                    'pass_imp', 'pass_imp_per_att', 'ttt', 'prs_pct', 'pass_sack', 'pass_int'
+                ]);
+                assignStatGroup('rushing', [
+                    'rush_att', 'rush_yd', 'ypc', 'rush_td', 'rush_fd', 'elu', 'mtf_per_att',
+                    'yco_per_att', 'mtf', 'rush_yac'
+                ]);
+                assignStatGroup('receiving', [
+                    'rec', 'rec_yd', 'rec_tgt', 'rec_td', 'rec_fd', 'rec_yar', 'ypr', 'yprr',
+                    'ts_per_rr', 'first_down_rec_rate', 'rr'
+                ]);
+
+                let orderedStatKeys;
+                if (player.pos === 'QB') orderedStatKeys = qbStatOrder;
+                else if (player.pos === 'RB') orderedStatKeys = rbStatOrder;
+                else if (player.pos === 'WR' || player.pos === 'TE') orderedStatKeys = wrTeStatOrder;
+                else orderedStatKeys = ['fpts', 'pass_att', 'pass_cmp', 'pass_yd', 'pass_td', 'pass_fd', 'imp_per_g', 'pass_rtg', 'pass_imp', 'pass_imp_per_att', 'rush_att', 'rush_yd', 'ypc', 'rush_td', 'rush_fd', 'ttt', 'prs_pct', 'mtf', 'mtf_per_att', 'rush_yac', 'yco_per_att', 'rec_tgt', 'rec', 'rec_yd', 'rec_td', 'rec_fd', 'rec_yar', 'ypr', 'yprr', 'ts_per_rr', 'rr', 'fum', 'snp_pct', 'yds_total', 'fpoe'];
+
+        const data = Array.from({
+        length: MAX_DISPLAY_WEEKS
+    }, (_, i) => {
+        const week = i + 1;
+        const gameLog = gameLogs.find(g => g.week === week);
+        return {
+            week,
+            stats: gameLog ? gameLog.stats : null,
+        };
+    });
+
+    const columns = [{
+        accessorKey: 'week',
+        header: 'WK · VS',
+        cell: info => {
+            const {
+                week,
+                stats
+            } = info.row.original;
+            const opponent = stats ? .opponent || null;
+            const isByeWeek = opponent === 'BYE';
+
+            const weekTd = document.createElement('td');
+            weekTd.className = 'week-cell';
+            const weekTag = document.createElement('div');
+            weekTag.className = 'gamelog-week-tag';
+            weekTag.innerHTML = `
+                <div class="gamelog-week-tag-number">WK-${week}</div>
+                ${opponent ? `<div class="gamelog-week-tag-opponent">${isByeWeek ? 'BYE' : `${opponent} <span class="gamelog-week-tag-separator">•</span> <span class="gamelog-week-tag-rank">${getRankDisplayText(stats.opponent_rank)}</span>`}</div>` : ''}
             `;
-
-            modalBody.innerHTML = ''; // Clear existing content
-
-            if (!gameLogs || gameLogs.length === 0) {
-                const noLogsEl = document.createElement('p');
-                noLogsEl.className = 'no-logs';
-                noLogsEl.textContent = `No game logs found for ${playerName} for the current season.`;
-                modalBody.appendChild(noLogsEl);
-                return;
-            }
-
-            const statLabels = buildStatLabels();
-
-const qbStatOrder = [
-  'fpts',
-  'proj',
-  'pass_rtg',
-  'pass_yd',
-  'pass_td',
-  'pass_att',
-  'pass_cmp',
-  'yds_total',
-  'rush_yd',
-  'rush_td',
-  'pass_fd',
-  'imp_per_g',
-  'pass_imp',
-  'pass_imp_per_att',
-  'rush_att',
-  'ypc',
-  'ttt',
-  'prs_pct',
-  'pass_sack',
-  'pass_int',
-  'fum',
-  'fpoe'
-];
-
-const rbStatOrder = [
-  'fpts',
-  'proj',
-  'snp_pct',
-  'rush_att',
-  'rush_yd',
-  'ypc',
-  'rush_td',
-  'rec',
-  'rec_yd',
-  'rec_tgt',
-  'yds_total',
-  'elu',
-  'mtf_per_att',
-  'yco_per_att',  
-  'mtf',
-  'rush_yac',
-  'rush_fd',
-  'rec_td',
-  'rec_fd',
-  'rec_yar',
-  'imp_per_g',
-  'fum',
-  'fpoe'
-];
-
-const wrTeStatOrder = [
-  'fpts',
-  'proj',
-  'snp_pct',
-  'rec_tgt',
-  'rec',
-  'ts_per_rr',
-  'rec_yd',
-  'rec_td',
-  'yprr',
-  'rec_fd',
-  'first_down_rec_rate',
-  'rec_yar',
-  'ypr',
-  'imp_per_g',
-  'rr',
-  'fpoe',
-  'yds_total',
-  'rush_att',
-  'rush_yd',
-  'rush_td',
-  'ypc',
-  'fum'
-];
-
-            const statGroupByKey = new Map();
-            const assignStatGroup = (group, keys) => {
-                for (const key of keys) statGroupByKey.set(key, group);
-            };
-            assignStatGroup('all', ['fpts', 'proj', 'snp_pct', 'yds_total', 'imp_per_g', 'fum', 'fpoe']);
-            assignStatGroup('passing', [
-                'pass_rtg', 'pass_yd', 'pass_td', 'pass_att', 'pass_cmp', 'pass_fd',
-                'pass_imp', 'pass_imp_per_att', 'ttt', 'prs_pct', 'pass_sack', 'pass_int'
-            ]);
-            assignStatGroup('rushing', [
-                'rush_att', 'rush_yd', 'ypc', 'rush_td', 'rush_fd', 'elu', 'mtf_per_att',
-                'yco_per_att', 'mtf', 'rush_yac'
-            ]);
-            assignStatGroup('receiving', [
-                'rec', 'rec_yd', 'rec_tgt', 'rec_td', 'rec_fd', 'rec_yar', 'ypr', 'yprr',
-                'ts_per_rr', 'first_down_rec_rate', 'rr'
-            ]);
-
-            let orderedStatKeys;
-            if (player.pos === 'QB') orderedStatKeys = qbStatOrder;
-            else if (player.pos === 'RB') orderedStatKeys = rbStatOrder;
-            else if (player.pos === 'WR' || player.pos === 'TE') orderedStatKeys = wrTeStatOrder;
-            else orderedStatKeys = ['fpts', 'pass_att', 'pass_cmp', 'pass_yd', 'pass_td', 'pass_fd', 'imp_per_g', 'pass_rtg', 'pass_imp', 'pass_imp_per_att', 'rush_att', 'rush_yd', 'ypc', 'rush_td', 'rush_fd', 'ttt', 'prs_pct', 'mtf', 'mtf_per_att', 'rush_yac', 'yco_per_att', 'rec_tgt', 'rec', 'rec_yd', 'rec_td', 'rec_fd', 'rec_yar', 'ypr', 'yprr', 'ts_per_rr', 'rr', 'fum', 'snp_pct', 'yds_total', 'fpoe'];
-
-            const container = document.createElement('div');
-            container.className = 'game-logs-table-container';
-
-            const table = document.createElement('table');
-            const thead = document.createElement('thead');
-            const tbody = document.createElement('tbody');
-
-            const headerRow = document.createElement('tr');
-            const wkTh = document.createElement('th');
-            wkTh.classList.add('week-column-header');
-            wkTh.textContent = 'WK  ·  VS ';
-            headerRow.appendChild(wkTh);
-
-            for (const key of orderedStatKeys) {
-                if (statLabels[key]) {
-                    const th = document.createElement('th');
-                    th.textContent = statLabels[key];
-                    const statGroup = statGroupByKey.get(key);
-                    if (statGroup) th.classList.add(`gamelog-header-${statGroup}`);
-                    headerRow.appendChild(th);
+            if (opponent && !isByeWeek) {
+                const opponentText = weekTag.querySelector('.gamelog-week-tag-opponent-text');
+                if (opponentText) {
+                    opponentText.style.color = getOpponentRankColor(stats.opponent_rank);
+                }
+                const rankSpan = weekTag.querySelector('.gamelog-week-tag-rank');
+                if (rankSpan) {
+                    rankSpan.style.color = getOpponentRankColor(stats.opponent_rank);
                 }
             }
-            thead.appendChild(headerRow);
+            weekTd.appendChild(weekTag);
+            return weekTd.innerHTML;
+        }
+    }, ...orderedStatKeys.map(key => ({
+        accessorKey: `stats.${key}`,
+        header: statLabels[key],
+        cell: info => {
+            let value = info.getValue();
+            if (value === undefined || value === null) return '-';
+            if (typeof value === 'number') {
+                if (key === 'yco_per_att' || key === 'mtf_per_att' || key === 'ypc' || key === 'ttt' || key === 'ypr' || key === 'yprr' || key === 'first_down_rec_rate') return value.toFixed(2);
+                if (key === 'pass_imp_per_att' || key === 'prs_pct' || key === 'snp_pct' || key === 'ts_per_rr') return formatPercentage(value);
+                if (key === 'pass_rtg' || key === 'fpts') return value.toFixed(1);
+                return value.toFixed(2).replace(/\.00$/, '');
+            }
+            return value;
+        }
+    }))];
 
-            const gameLogsWithData = [];
-            const gameLogsByWeek = new Map(gameLogs.map(entry => [parseInt(entry.week, 10), entry]));
-            const applyProjectionCellDisplay = (cell, rawValue) => {
-                const display = rawValue === undefined || rawValue === null ? '' : String(rawValue);
-                cell.textContent = display;
-                const designationMeta = parseInjuryDesignation(display);
-                if (designationMeta) {
-                    cell.style.color = designationMeta.color;
+    const table = createTable({
+        data,
+        columns,
+        getCoreRowModel: getCoreRowModel(),
+    });
+
+    const container = document.createElement('div');
+    container.className = 'game-logs-table-container';
+
+    const headerContainerDiv = document.createElement('div');
+    const bodyContainerDiv = document.createElement('div');
+    const footerContainerDiv = document.createElement('div');
+
+    bodyContainerDiv.style.maxHeight = '450px';
+    bodyContainerDiv.style.overflowY = 'auto';
+
+    const headerTable = document.createElement('table');
+    const bodyTable = document.createElement('table');
+    const footerTable = document.createElement('table');
+
+    const thead = document.createElement('thead');
+    headerTable.appendChild(thead);
+    table.getHeaderGroups().forEach(headerGroup => {
+        const tr = document.createElement('tr');
+        thead.appendChild(tr);
+        headerGroup.headers.forEach(header => {
+            const th = document.createElement('th');
+            const statKey = header.column.id.replace('stats.', '');
+            const group = statGroupByKey.get(statKey) || '';
+            if (group) {
+                th.classList.add(`gamelog-header-${group}`);
+            }
+            th.innerHTML = flexRender(header.column.columnDef.header, header.getContext());
+            tr.appendChild(th);
+        });
+    });
+
+    const tbody = document.createElement('tbody');
+    bodyTable.appendChild(tbody);
+    table.getRowModel().rows.forEach(row => {
+        const tr = document.createElement('tr');
+        const { stats } = row.original;
+        const isBye = stats?.opponent === 'BYE';
+        const isUnplayed = !stats;
+        const isLive = stats?.__live === true;
+
+        if (isBye) tr.classList.add('bye-week-row');
+        if (isUnplayed) tr.classList.add('unplayed-week-row');
+        if(isLive) tr.classList.add('live-week-row');
+
+        tbody.appendChild(tr);
+        row.getVisibleCells().forEach(cell => {
+            const td = document.createElement('td');
+             if (cell.column.id === 'stats.proj') {
+                td.classList.add('proj-cell');
+            }
+            td.innerHTML = flexRender(cell.column.columnDef.cell, cell.getContext());
+            tr.appendChild(td);
+        });
+    });
+
+    const tfoot = document.createElement('tfoot');
+    footerTable.appendChild(tfoot);
+    const footerRow = document.createElement('tr');
+    tfoot.appendChild(footerRow);
+    const totalTh = document.createElement('th');
+    totalTh.className = 'modal-table-footer-label week-column-header';
+    const gamesPlayed = getAdjustedGamesPlayed(player.id, scoringSettings);
+    totalTh.innerHTML = `<span class="season-label">2025</span><br><span class="gp-label">(GP: ${gamesPlayed})</span>`;
+    footerRow.appendChild(totalTh);
+
+    const seasonTotals = {};
+    orderedStatKeys.forEach(key => {
+        seasonTotals[key] = 0;
+    });
+
+    const gamesWithStats = gameLogs.filter(g => g.stats && Object.keys(g.stats).length > 0 && g.stats.opponent !== 'BYE');
+    gamesWithStats.forEach(game => {
+        orderedStatKeys.forEach(key => {
+            const statValue = parseFloat(game.stats[key]);
+            if (!isNaN(statValue)) {
+                seasonTotals[key] += statValue;
+            }
+        });
+    });
+
+    orderedStatKeys.forEach(key => {
+        const td = document.createElement('td');
+        let displayValue = '-';
+        let value = seasonTotals[key];
+
+        const statCount = gamesWithStats.filter(g => g.stats[key] !== undefined).length;
+
+        if (key === 'fpts') {
+            displayValue = parseFloat(playerRanks.total_pts).toFixed(1);
+        } else if (key === 'proj') {
+            displayValue = '-';
+        } else if (['pass_rtg', 'ttt', 'prs_pct', 'snp_pct', 'ts_per_rr', 'yprr', 'first_down_rec_rate', 'ypr', 'ypc', 'yco_per_att', 'mtf_per_att'].includes(key)) {
+             if (statCount > 0) {
+                const avg = value / statCount;
+                if (['prs_pct', 'snp_pct', 'ts_per_rr'].includes(key)) {
+                    displayValue = formatPercentage(avg);
                 } else {
-                    cell.style.color = '';
-                }
-            };
-
-            const getProjectionDisplayValue = (statLine, playerId, week) => {
-                // First try the provided statLine (for played weeks)
-                if (statLine && Object.prototype.hasOwnProperty.call(statLine, 'proj')) {
-                    const rawValue = statLine.proj;
-                    // Always return as string, even empty strings
-                    return String(rawValue);
-                }
-                
-                // For unplayed weeks, check weekly stats directly
-                const weeklyStat = state.playerWeeklyStats?.[week]?.[playerId];
-                if (weeklyStat && Object.prototype.hasOwnProperty.call(weeklyStat, 'proj')) {
-                    const rawValue = weeklyStat.proj;
-                    // Always return as string, even empty strings
-                    return String(rawValue);
-                }
-                
-                return '';
-            };
-
-            const totalColumns = 1 + orderedStatKeys.filter(key => Boolean(statLabels[key])).length;
-            const rowsMeta = [];
-
-            for (let week = 1; week <= MAX_DISPLAY_WEEKS; week++) {
-                const weekStatsEntry = gameLogsByWeek.get(week) || null;
-                const stats = weekStatsEntry?.stats || null;
-                const isProjectionWeek = state.playerProjectionWeeks?.[week] === true;
-                const opponent = stats?.opponent || null;
-                const isByeWeek = opponent === 'BYE';
-                const snapPct = typeof stats?.snp_pct === 'number' ? stats.snp_pct : null;
-                const hasNonProjStat = stats
-                    ? orderedStatKeys.some(key => {
-                        if (!statLabels[key] || key === 'proj') return false;
-                        const val = stats[key];
-                        return typeof val === 'number' && val !== 0;
-                    })
-                    : false;
-                // Treat projection, bye, or zero-participation weeks as "unplayed" so we can dim them in the UI.
-                const hasParticipation = Boolean(stats) && (
-                    (typeof snapPct === 'number' && snapPct > 0) ||
-                    hasNonProjStat
-                );
-                const liveFptsValue = typeof stats?.fpts === 'number' && Number.isFinite(stats.fpts) ? stats.fpts : null;
-                const isLiveWeek = stats?.__live === true || (liveFptsValue !== null && !isProjectionWeek);
-                const isUnplayedWeek = !isLiveWeek && (isProjectionWeek || isByeWeek || !hasParticipation);
-
-                const row = document.createElement('tr');
-                if (isByeWeek) row.classList.add('bye-week-row');
-                if (isUnplayedWeek) {
-                    row.classList.add('unplayed-week-row');
-                } else if (isLiveWeek) {
-                    row.classList.add('live-week-row');
-                }
-
-                const weekTd = document.createElement('td');
-                weekTd.classList.add('week-cell');
-
-                // Create tag container
-                const weekTag = document.createElement('div');
-                weekTag.className = 'gamelog-week-tag';
-
-                // Top line: WK-#
-                const weekNumberLine = document.createElement('div');
-                weekNumberLine.className = 'gamelog-week-tag-number';
-                weekNumberLine.textContent = `WK-${week}`;
-                weekTag.appendChild(weekNumberLine);
-
-                // Bottom line: opponent • rank
-                if (opponent) {
-                    const opponentLine = document.createElement('div');
-                    opponentLine.className = 'gamelog-week-tag-opponent';
-
-                    if (isByeWeek) {
-                        opponentLine.textContent = 'BYE';
-                    } else {
-                        // Create opponent text (already has vs or @)
-                        const opponentText = document.createElement('span');
-                        opponentText.className = 'gamelog-week-tag-opponent-text';
-                        opponentText.textContent = opponent;
-                        const color = getOpponentRankColor(stats?.opponent_rank);
-                        if (color) opponentText.style.color = color;
-                        opponentLine.appendChild(opponentText);
-
-                        const opponentRank = stats?.opponent_rank;
-                        const opponentRankDisplay = getRankDisplayText(opponentRank);
-                        if (opponentRankDisplay !== 'NA') {
-                            // Add separator
-                            const separator = document.createElement('span');
-                            separator.className = 'gamelog-week-tag-separator';
-                            separator.textContent = ' • ';
-                            opponentLine.appendChild(separator);
-
-                            // Add rank with ordinal suffix
-                            const rankSpan = document.createElement('span');
-                            rankSpan.className = 'gamelog-week-tag-rank';
-                            rankSpan.style.color = color;
-                            
-                            const rankNumber = document.createElement('span');
-                            rankNumber.className = 'gamelog-week-tag-rank-number';
-                            rankNumber.textContent = opponentRank;
-                            rankSpan.appendChild(rankNumber);
-
-                            const suffix = document.createElement('span');
-                            suffix.className = 'gamelog-week-tag-rank-suffix';
-                            const j = opponentRank % 10;
-                            const k = opponentRank % 100;
-                            if (j === 1 && k !== 11) suffix.textContent = 'st';
-                            else if (j === 2 && k !== 12) suffix.textContent = 'nd';
-                            else if (j === 3 && k !== 13) suffix.textContent = 'rd';
-                            else suffix.textContent = 'th';
-                            rankSpan.appendChild(suffix);
-
-                            opponentLine.appendChild(rankSpan);
-                        }
-                    }
-                    weekTag.appendChild(opponentLine);
-                }
-
-                weekTd.appendChild(weekTag);
-                row.appendChild(weekTd);
-
-                for (const key of orderedStatKeys) {
-                    if (!statLabels[key]) continue;
-
-                    const td = document.createElement('td');
-                    if (key === 'proj') td.classList.add('proj-cell');
-
-                    if (isUnplayedWeek) {
-                            if (key === 'proj') {
-                                const projValue = getProjectionDisplayValue(stats, player.id, week);
-                                applyProjectionCellDisplay(td, projValue);
-                            } else {
-                                td.textContent = '-';
-                                td.style.color = '';
-                            }
-                        row.appendChild(td);
-                        continue;
-                    }
-
-                    if (isLiveWeek && key !== 'fpts') {
-                        td.textContent = 'N/A';
-                        row.appendChild(td);
-                        continue;
-                    }
-
-                    if (!weekStatsEntry || !stats) {
-                        td.textContent = '-';
-                        row.appendChild(td);
-                        continue;
-                    }
-
-                    if (key === 'proj') {
-                        const projValue = getProjectionDisplayValue(stats, player.id, week);
-                        applyProjectionCellDisplay(td, projValue);
-                        row.appendChild(td);
-                        continue;
-                    }
-
-                    let value;
-                    if (NO_FALLBACK_KEYS.has(key)) {
-                        const raw = stats[key];
-                        value = (typeof raw === 'number') ? raw : null;
-                    } else if (key === 'fpts') value = calculateFantasyPoints(stats, scoringSettings);
-                    else if (key === 'ypc') value = (stats['rush_att'] || 0) > 0 ? ((stats['rush_yd'] || 0) / stats['rush_att']) : 0;
-                    else if (key === 'yco_per_att') value = (stats['rush_att'] || 0) > 0 ? ((stats['rush_yac'] || 0) / stats['rush_att']) : 0;
-                    else if (key === 'mtf_per_att') value = (stats['rush_att'] || 0) > 0 ? ((stats['mtf'] || 0) / stats['rush_att']) : 0;
-                    else if (key === 'pass_imp_per_att') {
-                        const passImp = stats['pass_imp'];
-                        const passAtt = stats['pass_att'];
-                        if (typeof stats[key] === 'number') value = stats[key];
-                        else if (typeof passImp === 'number' && typeof passAtt === 'number' && passAtt > 0) value = (passImp / passAtt) * 100;
-                        else value = 0;
-                    }
-                    else if (key === 'ts_per_rr') {
-                        if (typeof stats[key] === 'number') value = stats[key];
-                        else {
-                            const routes = stats['rr'] || 0;
-                            const targets = stats['rec_tgt'] || 0;
-                            value = routes > 0 ? (targets / routes) * 100 : 0;
-                        }
-                    }
-                    else if (key === 'yprr') {
-                        if (typeof stats[key] === 'number') value = stats[key];
-                        else {
-                            const routes = stats['rr'] || 0;
-                            const yards = stats['rec_yd'] || 0;
-                            value = routes > 0 ? yards / routes : 0;
-                        }
-                    }
-                    else if (key === 'ypr') {
-                        if (typeof stats[key] === 'number') value = stats[key];
-                        else {
-                            const receptions = stats['rec'] || 0;
-                            const yards = stats['rec_yd'] || 0;
-                            value = receptions > 0 ? yards / receptions : 0;
-                        }
-                    }
-                    else if (key === 'first_down_rec_rate') {
-                        if (typeof stats[key] === 'number') value = stats[key];
-                        else {
-                            const rec_fd = stats['rec_fd'] || 0;
-                            const rec = stats['rec'] || 0;
-                            value = rec > 0 ? (rec_fd / rec) : 0;
-                        }
-                    }
-                    else if (key === 'imp_per_g') {
-                        if (typeof stats[key] === 'number') value = stats[key];
-                        else value = stats['imp'] || 0;
-                    }
-                    else if (key === 'prs_pct' || key === 'snp_pct') value = typeof stats[key] === 'number' ? stats[key] : 0;
-                    else if (key === 'ttt') value = typeof stats[key] === 'number' ? stats[key] : 0;
-                    else value = stats[key] || 0;
-
-                    let displayValue;
-                    if (value === null || typeof value !== 'number') displayValue = 'N/A';
-                    else if (key === 'yco_per_att') displayValue = value.toFixed(2);
-                    else if (key === 'mtf_per_att' || key === 'ypc' || key === 'ttt' || key === 'ypr' || key === 'yprr' || key === 'first_down_rec_rate') displayValue = value.toFixed(2);
-                    else if (key === 'pass_imp_per_att' || key === 'prs_pct' || key === 'snp_pct' || key === 'ts_per_rr') displayValue = formatPercentage(value);
-                    else if (key === 'pass_rtg' || key === 'fpts') displayValue = value.toFixed(1);
-                    else displayValue = value.toFixed(2).replace(/\.00$/, '');
-
-                    td.textContent = displayValue;
-                    row.appendChild(td);
-                }
-
-                rowsMeta.push({ row, isPlayed: !isUnplayedWeek, week });
-
-                if (!isUnplayedWeek && weekStatsEntry) {
-                    gameLogsWithData.push(weekStatsEntry);
+                    displayValue = avg.toFixed(key === 'pass_rtg' ? 1 : 2);
                 }
             }
-
-            const dividerRow = document.createElement('tr');
-            dividerRow.className = 'week-divider-row';
-            const dividerTd = document.createElement('td');
-            dividerTd.colSpan = totalColumns;
-            dividerRow.appendChild(dividerTd);
-
-            const sleeperCurrentWeek = Number.isFinite(state.currentNflWeek) ? state.currentNflWeek : null;
-            let dividerIndex = rowsMeta.length;
-            if (Number.isFinite(sleeperCurrentWeek)) {
-                const currentWeekIndex = rowsMeta.findIndex(meta => meta.week === sleeperCurrentWeek);
-                if (currentWeekIndex !== -1) {
-                    dividerIndex = rowsMeta[currentWeekIndex].isPlayed ? currentWeekIndex + 1 : currentWeekIndex;
-                }
-            }
-            if (!Number.isFinite(dividerIndex)) dividerIndex = rowsMeta.length;
-            if (!rowsMeta.some(meta => meta.isPlayed)) dividerIndex = 0;
-            dividerIndex = Math.max(0, Math.min(dividerIndex, rowsMeta.length));
-
-            rowsMeta.splice(dividerIndex, 0, { row: dividerRow, isDivider: true });
-
-            rowsMeta.forEach(meta => tbody.appendChild(meta.row));
-
-            table.appendChild(thead);
-            table.appendChild(tbody);
-
-            // Add table footer for totals
-            if (gameLogsWithData.length > 0) {
-                const tfoot = document.createElement('tfoot');
-                const footerRow = document.createElement('tr');
-                const totalTh = document.createElement('th');
-                totalTh.className = 'modal-table-footer-label week-column-header';
-                const gamesPlayed = getAdjustedGamesPlayed(player.id, scoringSettings);
-                totalTh.innerHTML = `<span class="season-label">2025</span><br><span class="gp-label">(GP: ${gamesPlayed})</span>`;
-                footerRow.appendChild(totalTh);
-
-                const seasonTotals = state.playerSeasonStats?.[player.id] || null;
-                const aggregatedTotals = {};
-                const snapPctValues = [];
-                const statValueCounts = {};
-
-                gameLogsWithData.forEach(weekStats => {
-                    for (const key in weekStats.stats) {
-                        const statValue = parseFloat(weekStats.stats[key]);
-                        if (Number.isNaN(statValue)) continue;
-                        if (key === 'snp_pct') {
-                            snapPctValues.push(statValue);
-                        } else {
-                            aggregatedTotals[key] = (aggregatedTotals[key] || 0) + statValue;
-                        }
-                        statValueCounts[key] = (statValueCounts[key] || 0) + 1;
-                    }
-                });
-
-                for (const key of orderedStatKeys) {
-                    if (!statLabels[key]) continue;
-
-                    const td = document.createElement('td');
-                    if (key === 'proj') td.classList.add('proj-cell');
-                    if (key === 'proj') {
-                        td.textContent = '-';
-                        footerRow.appendChild(td);
-                        continue;
-                    }
-                    let displayValue;
-                    if (NO_FALLBACK_KEYS.has(key)) {
-                        const raw = (seasonTotals && typeof seasonTotals[key] === 'number') ? seasonTotals[key] : null;
-                        if (raw === null) {
-                            displayValue = 'N/A';
-                        } else if (key === 'snp_pct' || key === 'prs_pct' || key === 'ts_per_rr') {
-                            displayValue = formatPercentage(raw);
-                        } else {
-                            displayValue = Number(raw).toFixed(2).replace(/\.00$/, '');
-                        }
-                    } else if (key === 'fpts') {
-                        const totalPoints = gameLogsWithData.reduce((sum, week) => sum + calculateFantasyPoints(week.stats, scoringSettings), 0);
-                        displayValue = totalPoints.toFixed(1);
-                    } else if (key === 'ypc') {
-                        const totalYards = seasonTotals && typeof seasonTotals.rush_yd === 'number' ? seasonTotals.rush_yd : (aggregatedTotals['rush_yd'] || 0);
-                        const totalCarries = seasonTotals && typeof seasonTotals.rush_att === 'number' ? seasonTotals.rush_att : (aggregatedTotals['rush_att'] || 0);
-                        const avgYpc = totalCarries > 0 ? totalYards / totalCarries : 0;
-                        displayValue = avgYpc.toFixed(2);
-                    } else if (key === 'yco_per_att') {
-                        const totalYco = seasonTotals && typeof seasonTotals.rush_yac === 'number' ? seasonTotals.rush_yac : (aggregatedTotals['rush_yac'] || 0);
-                        const totalCarries = seasonTotals && typeof seasonTotals.rush_att === 'number' ? seasonTotals.rush_att : (aggregatedTotals['rush_att'] || 0);
-                        const avgYcoPerCar = totalCarries > 0 ? totalYco / totalCarries : 0;
-                        displayValue = avgYcoPerCar.toFixed(2);
-                    } else if (key === 'mtf_per_att') {
-                        const totalMtf = seasonTotals && typeof seasonTotals.mtf === 'number' ? seasonTotals.mtf : (aggregatedTotals['mtf'] || 0);
-                        const totalCarries = seasonTotals && typeof seasonTotals.rush_att === 'number' ? seasonTotals.rush_att : (aggregatedTotals['rush_att'] || 0);
-                        const avgMtfPerAtt = totalCarries > 0 ? totalMtf / totalCarries : 0;
-                        displayValue = avgMtfPerAtt.toFixed(2);
-                    } else if (key === 'pass_rtg') {
-                        if (seasonTotals && typeof seasonTotals.pass_rtg === 'number') {
-                            const rating = seasonTotals.pass_rtg;
-                            displayValue = Number.isInteger(rating) ? String(rating) : rating.toFixed(1);
-                        } else {
-                            const totalPassRtg = aggregatedTotals['pass_rtg'] || 0;
-                            const gamesWithPassAttempts = gameLogsWithData.filter(w => (w.stats['pass_att'] || 0) > 0).length;
-                            const avgPassRtg = gamesWithPassAttempts > 0 ? totalPassRtg / gamesWithPassAttempts : 0;
-                            displayValue = avgPassRtg.toFixed(1);
-                        }
-                    } else if (key === 'pass_imp_per_att') {
-                        let pctValue = seasonTotals && typeof seasonTotals.pass_imp_per_att === 'number' ? seasonTotals.pass_imp_per_att : null;
-                        if (pctValue === null) {
-                            const totalPassImp = seasonTotals && typeof seasonTotals.pass_imp === 'number' ? seasonTotals.pass_imp : (aggregatedTotals['pass_imp'] || 0);
-                            const totalPassAtt = seasonTotals && typeof seasonTotals.pass_att === 'number' ? seasonTotals.pass_att : (aggregatedTotals['pass_att'] || 0);
-                            if (totalPassAtt > 0) pctValue = (totalPassImp / totalPassAtt) * 100;
-                            else if (statValueCounts['pass_imp_per_att']) pctValue = (aggregatedTotals['pass_imp_per_att'] || 0) / statValueCounts['pass_imp_per_att'];
-                            else pctValue = 0;
-                        }
-                        displayValue = formatPercentage(pctValue);
-                    } else if (key === 'ttt') {
-                        let avgTtt = seasonTotals && typeof seasonTotals.ttt === 'number' ? seasonTotals.ttt : null;
-                        if (avgTtt === null) {
-                            const totalTtt = aggregatedTotals['ttt'] || 0;
-                            const count = statValueCounts['ttt'] || 0;
-                            avgTtt = count > 0 ? totalTtt / count : 0;
-                        }
-                        displayValue = Number(avgTtt).toFixed(2).replace(/\.00$/, '');
-                    } else if (key === 'prs_pct') {
-                        let pctValue = seasonTotals && typeof seasonTotals.prs_pct === 'number' ? seasonTotals.prs_pct : null;
-                        if (pctValue === null) {
-                            const total = aggregatedTotals['prs_pct'] || 0;
-                            const count = statValueCounts['prs_pct'] || 0;
-                            pctValue = count > 0 ? total / count : 0;
-                        }
-                        displayValue = formatPercentage(pctValue);
-                    } else if (key === 'snp_pct') {
-                        let pctValue = seasonTotals && typeof seasonTotals.snp_pct === 'number' ? seasonTotals.snp_pct : null;
-                        if (pctValue === null) {
-                            pctValue = snapPctValues.length > 0 ? snapPctValues.reduce((sum, val) => sum + val, 0) / snapPctValues.length : 0;
-                        }
-                        displayValue = formatPercentage(pctValue);
-                    } else if (key === 'imp_per_g') {
-                        let impPerGame = seasonTotals && typeof seasonTotals.imp_per_g === 'number' ? seasonTotals.imp_per_g : null;
-                        if (impPerGame === null) {
-                            const totalImp = seasonTotals && typeof seasonTotals.imp === 'number' ? seasonTotals.imp : (aggregatedTotals['imp'] || 0);
-                            const games = seasonTotals && typeof seasonTotals.games_played === 'number' ? seasonTotals.games_played : gameLogsWithData.length;
-                            impPerGame = games > 0 ? totalImp / games : 0;
-                        }
-                        displayValue = Number(impPerGame).toFixed(2).replace(/\.00$/, '');
-                    } else if (key === 'yprr') {
-                        let value = seasonTotals && typeof seasonTotals.yprr === 'number' ? seasonTotals.yprr : null;
-                        if (value === null) {
-                            const totalRoutes = seasonTotals && typeof seasonTotals.rr === 'number' ? seasonTotals.rr : (aggregatedTotals['rr'] || 0);
-                            const totalRecYds = seasonTotals && typeof seasonTotals.rec_yd === 'number' ? seasonTotals.rec_yd : (aggregatedTotals['rec_yd'] || 0);
-                            value = totalRoutes > 0 ? totalRecYds / totalRoutes : 0;
-                        }
-                        displayValue = Number(value).toFixed(2).replace(/\.00$/, '');
-                    } else if (key === 'ts_per_rr') {
-                        let pctValue = seasonTotals && typeof seasonTotals.ts_per_rr === 'number' ? seasonTotals.ts_per_rr : null;
-                        if (pctValue === null) {
-                            const totalRoutes = seasonTotals && typeof seasonTotals.rr === 'number' ? seasonTotals.rr : (aggregatedTotals['rr'] || 0);
-                            const totalTargets = seasonTotals && typeof seasonTotals.rec_tgt === 'number' ? seasonTotals.rec_tgt : (aggregatedTotals['rec_tgt'] || 0);
-                            pctValue = totalRoutes > 0 ? (totalTargets / totalRoutes) * 100 : 0;
-                        }
-                        displayValue = formatPercentage(pctValue);
-                    } else if (key === 'ypr') {
-                        let value = seasonTotals && typeof seasonTotals.ypr === 'number' ? seasonTotals.ypr : null;
-                        if (value === null) {
-                            const totalReceptions = seasonTotals && typeof seasonTotals.rec === 'number' ? seasonTotals.rec : (aggregatedTotals['rec'] || 0);
-                            const totalRecYds = seasonTotals && typeof seasonTotals.rec_yd === 'number' ? seasonTotals.rec_yd : (aggregatedTotals['rec_yd'] || 0);
-                            value = totalReceptions > 0 ? totalRecYds / totalReceptions : 0;
-                        }
-                        displayValue = Number(value).toFixed(2).replace(/\.00$/, '');
-                    } else if (key === 'first_down_rec_rate') {
-                        let value = seasonTotals && typeof seasonTotals.first_down_rec_rate === 'number' ? seasonTotals.first_down_rec_rate : null;
-                        if (value === null) {
-                            const totalRecFd = seasonTotals && typeof seasonTotals.rec_fd === 'number' ? seasonTotals.rec_fd : (aggregatedTotals['rec_fd'] || 0);
-                            const totalRec = seasonTotals && typeof seasonTotals.rec === 'number' ? seasonTotals.rec : (aggregatedTotals['rec'] || 0);
-                            value = totalRec > 0 ? (totalRecFd / totalRec) : 0;
-                        }
-                        displayValue = Number(value).toFixed(2);
-                    } else {
-                        const totalValue = seasonTotals && typeof seasonTotals[key] === 'number' ? seasonTotals[key] : (aggregatedTotals[key] || 0);
-                        displayValue = Number.isInteger(totalValue) ? String(totalValue) : Number(totalValue || 0).toFixed(2).replace(/\.00$/, '');
-                    }
-                    const rankValue = getSeasonRankValue(player.id, key);
-                    const rankAnnotation = createRankAnnotation(rankValue, { wrapInParens: false, ordinal: true, variant: 'gamelogs-footer' });
-                    rankAnnotation.classList.add('stat-rank-annotation--bulleted');
-                    const bulletPrefix = document.createElement('span');
-                    bulletPrefix.className = 'stat-rank-bullet';
-                    bulletPrefix.textContent = '•';
-                    const bulletSuffix = document.createElement('span');
-                    bulletSuffix.className = 'stat-rank-bullet';
-                    bulletSuffix.textContent = '•';
-                    rankAnnotation.insertBefore(bulletPrefix, rankAnnotation.firstChild);
-                    rankAnnotation.appendChild(bulletSuffix);
-                    // Stack value on first line and rank annotation below with minimal spacing
-                    td.textContent = '';
-                    const valueSpan = document.createElement('span');
-                    valueSpan.className = 'stat-value';
-                    valueSpan.textContent = displayValue;
-                    td.appendChild(valueSpan);
-                    td.appendChild(rankAnnotation);
-                    td.classList.add('has-rank-annotation');
-                    rankAnnotation.style.color = getConditionalColorByRank(rankValue, player.pos);
-                    footerRow.appendChild(td);
-                }
-                tfoot.appendChild(footerRow);
-                table.appendChild(tfoot);
-            }
-
-            container.appendChild(table);
-            modalBody.appendChild(container);
-            modalBody.scrollLeft = 0;
-
-            // Set player vitals width to match summary chips
-            const summaryChipsWidth = summaryChipsContainer.offsetWidth;
-            const playerVitalsElement = document.querySelector('.player-vitals--modal');
-            if (playerVitalsElement) {
-                playerVitalsElement.style.width = `${summaryChipsWidth}px`;
+        } else {
+            if (value > 0) {
+                 displayValue = Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/\.00$/, '');
             }
         }
+
+        td.classList.add('has-rank-annotation');
+        const valueSpan = document.createElement('span');
+        valueSpan.className = 'stat-value';
+        valueSpan.textContent = displayValue;
+        td.appendChild(valueSpan);
+
+        const rankValue = getSeasonRankValue(player.id, key);
+        if (rankValue !== null) {
+            const rankAnnotation = createRankAnnotation(rankValue, { wrapInParens: false, ordinal: true, variant: 'gamelogs-footer' });
+            rankAnnotation.classList.add('stat-rank-annotation--bulleted');
+
+            const posRankSpan = document.createElement('span');
+            posRankSpan.className = 'chip-pos-rank-label';
+            posRankSpan.style.color = getPosRankColor(`${player.pos}·${rankValue}`);
+            posRankSpan.textContent = `${player.pos}`;
+
+            const bullet = document.createElement('span');
+            bullet.className = 'stat-rank-bullet';
+            bullet.innerHTML = '•';
+
+            rankAnnotation.prepend(bullet.cloneNode(true));
+            rankAnnotation.prepend(posRankSpan);
+            rankAnnotation.append(bullet.cloneNode(true));
+            td.appendChild(rankAnnotation);
+        }
+
+        footerRow.appendChild(td);
+    });
+
+
+    headerContainerDiv.appendChild(headerTable);
+    bodyContainerDiv.appendChild(bodyTable);
+    footerContainerDiv.appendChild(footerTable);
+
+    container.appendChild(headerContainerDiv);
+    container.appendChild(bodyContainerDiv);
+    container.appendChild(footerContainerDiv);
+    modalBody.appendChild(container);
+
+    const syncScroll = (scrolled, ...targets) => {
+        scrolled.addEventListener('scroll', () => {
+            for (const target of targets) {
+                target.scrollLeft = scrolled.scrollLeft;
+            }
+        });
+    };
+    syncScroll(bodyContainerDiv, headerContainerDiv, footerContainerDiv);
+    syncScroll(headerContainerDiv, bodyContainerDiv, footerContainerDiv);
+    syncScroll(footerContainerDiv, bodyContainerDiv, headerContainerDiv);
+
+    const summaryChipsWidth = summaryChipsContainer.offsetWidth;
+    const playerVitalsElement = document.querySelector('.player-vitals--modal');
+    if (playerVitalsElement) {
+        playerVitalsElement.style.width = `${summaryChipsWidth}px`;
+    }
+}
 
         async function handlePlayerCompare(e) {
             let selectedPlayersWithTeams = [];
@@ -5495,7 +5250,7 @@ function setLoading(isLoading, message = 'Loading...') {
 })();
 
 // PWA registration (with version bump to bust old caches)
-if ('serviceWorker' in navigator) {
+if ('serviceWorker'in navigator) {
   const swPath = pageType === 'welcome'
     ? 'service-worker.js?v=20250825104842'
     : '../service-worker.js?v=20250825104842';
