@@ -56,6 +56,7 @@
     position: -webkit-sticky; /* For Safari */
     position: sticky;
     z-index: 1;
+    will-change: transform; /* Performance hint for scrolling */
    }
    .th-sticky {
     background-color: #1a1d25; /* Match thead background */
@@ -142,12 +143,6 @@
     background-color: #1e232d; 
    } 
    
-   /* Performance optimization for smoother scrolling in long tables */
-   #playerTableBody-1qb tr, #playerTableBody-sflx tr {
-    content-visibility: auto;
-    contain-intrinsic-size: 28px; /* Prevents lag when scrolling by giving the browser a placeholder size */
-   }
-
    .rookie-filter-btn.active-filter { 
     background-color: #ec4899; 
     color: white; 
@@ -454,6 +449,9 @@
 
           return player;
         }).filter(p => p['PLAYER NAME']);
+        
+        // Cap the data at 200 players
+        playerData = playerData.slice(0, 200);
 
         filteredData = [...playerData];
         applyFiltersAndSort();
@@ -463,61 +461,66 @@
       }
     } 
 
-    function renderTable() { 
-     tableBody.innerHTML = ''; 
-     if (filteredData.length === 0) { 
-        tableBody.innerHTML = `<tr><td colspan="12" class="text-center p-8 text-slate-400">No players found matching your criteria.</td></tr>`; 
-        return; 
-     } 
+    function renderTable() {
+        tableBody.innerHTML = ''; // Clear the table on each render
 
-     const fragment = document.createDocumentFragment(); 
-     filteredData.forEach(player => { 
-        const row = document.createElement('tr'); 
-        row.className = 'hover:bg-slate-700/50 transition-colors duration-200'; 
+        if (filteredData.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="12" class="text-center p-8 text-slate-400">No players found matching your criteria.</td></tr>`;
+            return;
+        }
 
-        if (player['POS'] === 'RDP') { 
-            row.style.backgroundColor = '#2d314b'; 
-        } 
+        const dataToRender = filteredData;
 
-        const trendValue = player['TREND']; 
-        let trendIcon = `<span class="text-slate-500">▬</span>`; 
-        if (trendValue > 0) trendIcon = `<span class="text-green-400">▲</span>`; 
-        else if (trendValue < 0) trendIcon = `<span class="text-red-400">▼</span>`; 
-        
-        const formattedAge = player['AGE'] > 0 ? player['AGE'].toFixed(1) : 'N/A'; 
-        const ageStyle = `style="color: ${getAgeColor(player['POS'], player['AGE']) || 'inherit'};"`; 
-        const rankStyle = `style="color: ${getRankColor(player['RANK']) || 'inherit'}; font-weight: 600;"`; 
-        const adpStyle = `style="color: ${getAdpColor(player['ADP']) || 'inherit'};"`; 
-        const displayNA = (value) => value === null ? 'N/A' : value; 
-        const formattedADP = player['ADP'] !== null ? player['ADP'].toFixed(1) : 'N/A'; 
+        const fragment = document.createDocumentFragment();
 
-        let formattedPosRk = displayNA(player['POS | RK']); 
-        const posRkValue = player['POS | RK']; 
-        if (posRkValue && posRkValue.includes(' | ')) { 
-            const parts = posRkValue.split(' | '); 
-            const pos = parts[0].trim(); 
-            const rk = parts[1].trim(); 
-            formattedPosRk = `<span class="pos-${pos} font-semibold">${pos}</span> | ${rk}`; 
-        } 
+        dataToRender.forEach(player => {
+            const row = document.createElement('tr');
+            row.className = 'hover:bg-slate-700/50 transition-colors duration-200';
 
-        row.innerHTML = ` 
-            <td class="td-compact text-center font-medium td-sticky col-rank" ${rankStyle}>${player['RANK'] === Infinity ? 'N/A' : player['RANK']}</td> 
-            <td class="td-compact font-bold player-name-no-wrap td-sticky col-player" title="${player['PLAYER NAME'] || 'N/A'}">${abbreviateName(player['PLAYER NAME'])}</td> 
-            <td class="td-compact text-center font-semibold pos-${player['POS']} td-sticky col-pos">${player['POS'] || 'N/A'}</td> 
-            <td class="td-compact text-center" ${ageStyle}>${formattedAge}</td> 
-            <td class="td-compact text-center"><span style="${getValueStyles(player['VALUE'])}">${displayNA(player['VALUE'])}</span></td> 
-            <td class="td-compact text-center font-bold" ${adpStyle}>${formattedADP}</td> 
-            <td class="td-compact text-center"><span style="${getTeamStyles(player['TM'])}">${player['TM'] || 'N/A'}</span></td> 
-            <td class="td-compact text-center text-slate-300">${formattedPosRk}</td>
-            <td class="td-compact text-center text-slate-400">${displayNA(player['RY'])}</td> 
-            <td class="td-compact text-center text-slate-400">${displayNA(player['EXP'])}</td> 
-            <td class="td-compact text-center">${displayNA(player['TIER'])}</td> 
-            <td class="td-compact text-center">${trendIcon} ${displayNA(trendValue)}</td> 
-        `; 
-        fragment.appendChild(row); 
-     }); 
-     tableBody.appendChild(fragment); 
-    } 
+            if (player['POS'] === 'RDP') {
+                row.style.backgroundColor = '#2d314b';
+            }
+
+            const trendValue = player['TREND'];
+            let trendIcon = `<span class="text-slate-500">▬</span>`;
+            if (trendValue > 0) trendIcon = `<span class="text-green-400">▲</span>`;
+            else if (trendValue < 0) trendIcon = `<span class="text-red-400">▼</span>`;
+
+            const formattedAge = player['AGE'] > 0 ? player['AGE'].toFixed(1) : 'N/A';
+            const ageStyle = `style="color: ${getAgeColor(player['POS'], player['AGE']) || 'inherit'};"`;
+            const rankStyle = `style="color: ${getRankColor(player['RANK']) || 'inherit'}; font-weight: 600;"`;
+            const adpStyle = `style="color: ${getAdpColor(player['ADP']) || 'inherit'};"`;
+            const displayNA = (value) => value === null ? 'N/A' : value;
+            const formattedADP = player['ADP'] !== null ? player['ADP'].toFixed(1) : 'N/A';
+
+            let formattedPosRk = displayNA(player['POS | RK']);
+            const posRkValue = player['POS | RK'];
+            if (posRkValue && posRkValue.includes(' | ')) {
+                const parts = posRkValue.split(' | ');
+                const pos = parts[0].trim();
+                const rk = parts[1].trim();
+                formattedPosRk = `<span class="pos-${pos} font-semibold">${pos}</span> | ${rk}`;
+            }
+
+            row.innerHTML = ` 
+                <td class="td-compact text-center font-medium td-sticky col-rank" ${rankStyle}>${player['RANK'] === Infinity ? 'N/A' : player['RANK']}</td> 
+                <td class="td-compact font-bold player-name-no-wrap td-sticky col-player" title="${player['PLAYER NAME'] || 'N/A'}">${abbreviateName(player['PLAYER NAME'])}</td> 
+                <td class="td-compact text-center font-semibold pos-${player['POS']} td-sticky col-pos">${player['POS'] || 'N/A'}</td> 
+                <td class="td-compact text-center" ${ageStyle}>${formattedAge}</td> 
+                <td class="td-compact text-center"><span style="${getValueStyles(player['VALUE'])}">${displayNA(player['VALUE'])}</span></td> 
+                <td class="td-compact text-center font-bold" ${adpStyle}>${formattedADP}</td> 
+                <td class="td-compact text-center"><span style="${getTeamStyles(player['TM'])}">${player['TM'] || 'N/A'}</span></td> 
+                <td class="td-compact text-center text-slate-300">${formattedPosRk}</td>
+                <td class="td-compact text-center text-slate-400">${displayNA(player['RY'])}</td> 
+                <td class="td-compact text-center text-slate-400">${displayNA(player['EXP'])}</td> 
+                <td class="td-compact text-center">${displayNA(player['TIER'])}</td> 
+                <td class="td-compact text-center">${trendIcon} ${displayNA(trendValue)}</td> 
+            `;
+            fragment.appendChild(row);
+        });
+
+        tableBody.appendChild(fragment);
+    }
 
     function applyFiltersAndSort() { 
         let data = [...playerData];
