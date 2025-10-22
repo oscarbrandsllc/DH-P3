@@ -4035,6 +4035,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     #game-logs-modal .game-logs-table-body table,
     #game-logs-modal .game-logs-table-footer table {
       width: 100%;
+      table-layout: fixed;
       will-change: transform;
     }
 

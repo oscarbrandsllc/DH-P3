@@ -3259,6 +3259,33 @@ const wrTeStatOrder = [
                 tableFooterContainer.classList.add('hidden');
             }
 
+            const syncColumnWidths = () => {
+                const bodyScrollWidth = tableBody.scrollWidth;
+                tableHeader.style.width = `${bodyScrollWidth}px`;
+                tableFooter.style.width = `${bodyScrollWidth}px`;
+
+                const dataRow = tableBodyTbody.querySelector('tr:not(.week-divider-row)');
+                const headerRow = tableHeaderThead.querySelector('tr');
+                if (!dataRow || !headerRow) return;
+                const bodyCells = Array.from(dataRow.children);
+                const headerCells = Array.from(headerRow.children);
+                const footerRow = tableFooterTfoot.querySelector('tr');
+                const footerCells = footerRow ? Array.from(footerRow.children) : [];
+
+                bodyCells.forEach((bodyCell, index) => {
+                    const width = bodyCell.getBoundingClientRect().width;
+                    const applyWidth = (cell) => {
+                        if (!cell) return;
+                        cell.style.width = `${width}px`;
+                        cell.style.minWidth = `${width}px`;
+                        cell.style.maxWidth = `${width}px`;
+                    };
+                    applyWidth(bodyCell);
+                    applyWidth(headerCells[index]);
+                    applyWidth(footerCells[index]);
+                });
+            };
+
             const updateHorizontalTransforms = () => {
                 const scrollLeft = tableBodyContainer.scrollLeft;
                 tableHeader.style.transform = `translateX(${-scrollLeft}px)`;
@@ -3276,7 +3303,20 @@ const wrTeStatOrder = [
 
             adjustScrollOffsets();
             requestAnimationFrame(adjustScrollOffsets);
+            requestAnimationFrame(syncColumnWidths);
             updateHorizontalTransforms();
+
+            const resizeObserver = new ResizeObserver(() => {
+                syncColumnWidths();
+                adjustScrollOffsets();
+            });
+            resizeObserver.observe(tableBody);
+
+            const handleResize = () => {
+                syncColumnWidths();
+                adjustScrollOffsets();
+            };
+            window.addEventListener('resize', handleResize, { passive: true });
 
             container.appendChild(tableHeaderContainer);
             container.appendChild(tableBodyContainer);
@@ -3286,6 +3326,15 @@ const wrTeStatOrder = [
             tableBodyContainer.scrollLeft = 0;
             tableBodyContainer.scrollTop = 0;
             updateHorizontalTransforms();
+            syncColumnWidths();
+
+            const cleanup = () => {
+                resizeObserver.disconnect();
+                window.removeEventListener('resize', handleResize);
+                tableBodyContainer.removeEventListener('scroll', updateHorizontalTransforms);
+                gameLogsModal.removeEventListener('gamelogs:closed', cleanup);
+            };
+            gameLogsModal.addEventListener('gamelogs:closed', cleanup, { once: true });
 
             // Set player vitals width to match summary chips
             const summaryChipsWidth = summaryChipsContainer.offsetWidth;
@@ -5548,6 +5597,7 @@ const wrTeStatOrder = [
             }
             // Reset the flag
             state.isGameLogModalOpenFromComparison = false;
+            gameLogsModal.dispatchEvent(new CustomEvent('gamelogs:closed'));
         }
 
         function openComparisonModal() {
