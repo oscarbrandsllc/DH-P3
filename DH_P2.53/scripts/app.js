@@ -2450,13 +2450,13 @@ const SEASON_META_HEADERS = {
             const playerName = fullPlayer ? `${fullPlayer.first_name} ${fullPlayer.last_name}` : player.name;
 
             const modalHeader = document.getElementById('modal-header');
-            const headerContainer = document.createElement('div');
-            headerContainer.className = 'modal-header-left-container';
+            const modalHeaderLeftContainer = document.createElement('div');
+            modalHeaderLeftContainer.className = 'modal-header-left-container';
 
             const posTag = document.createElement('div');
             posTag.className = `player-tag modal-pos-tag ${player.pos}`;
             posTag.textContent = player.pos;
-            headerContainer.appendChild(posTag);
+            modalHeaderLeftContainer.appendChild(posTag);
 
             const teamKey = (player.team || 'FA').toUpperCase();
             const logoKeyMap = { 'WSH': 'was', 'WAS': 'was', 'JAC': 'jax', 'LA': 'lar' };
@@ -2468,8 +2468,8 @@ const SEASON_META_HEADERS = {
             teamLogoChip.innerHTML = (player.team && player.team !== 'FA')
               ? `<img class="team-logo glow" src="${src}" alt="${teamKey}" width="24" height="24" loading="eager">`
               : `<span>FA</span>`;
-            headerContainer.appendChild(teamLogoChip);
-            modalHeader.insertBefore(headerContainer, modalHeader.firstChild);
+            modalHeaderLeftContainer.appendChild(teamLogoChip);
+            modalHeader.insertBefore(modalHeaderLeftContainer, modalHeader.firstChild);
 
             if (modalPlayerVitals) {
                 modalPlayerVitals.innerHTML = '';
@@ -2639,26 +2639,26 @@ const wrTeStatOrder = [
             const container = document.createElement('div');
             container.className = 'game-logs-table-container';
 
-            const headerContainer = document.createElement('div');
-            headerContainer.className = 'game-logs-table-header';
-            const headerTable = document.createElement('table');
-            const headerThead = document.createElement('thead');
-            headerTable.appendChild(headerThead);
-            headerContainer.appendChild(headerTable);
+            const tableHeaderContainer = document.createElement('div');
+            tableHeaderContainer.className = 'game-logs-table-header';
+            const tableHeader = document.createElement('table');
+            const tableHeaderThead = document.createElement('thead');
+            tableHeader.appendChild(tableHeaderThead);
+            tableHeaderContainer.appendChild(tableHeader);
 
-            const bodyScrollContainer = document.createElement('div');
-            bodyScrollContainer.className = 'game-logs-table-body';
-            const bodyTable = document.createElement('table');
-            const bodyTbody = document.createElement('tbody');
-            bodyTable.appendChild(bodyTbody);
-            bodyScrollContainer.appendChild(bodyTable);
+            const tableBodyContainer = document.createElement('div');
+            tableBodyContainer.className = 'game-logs-table-body';
+            const tableBody = document.createElement('table');
+            const tableBodyTbody = document.createElement('tbody');
+            tableBody.appendChild(tableBodyTbody);
+            tableBodyContainer.appendChild(tableBody);
 
-            const footerContainer = document.createElement('div');
-            footerContainer.className = 'game-logs-table-footer';
-            const footerTable = document.createElement('table');
-            const footerTfoot = document.createElement('tfoot');
-            footerTable.appendChild(footerTfoot);
-            footerContainer.appendChild(footerTable);
+            const tableFooterContainer = document.createElement('div');
+            tableFooterContainer.className = 'game-logs-table-footer';
+            const tableFooter = document.createElement('table');
+            const tableFooterTfoot = document.createElement('tfoot');
+            tableFooter.appendChild(tableFooterTfoot);
+            tableFooterContainer.appendChild(tableFooter);
 
             const tableColumns = [{
                 id: 'week',
@@ -2977,7 +2977,7 @@ const wrTeStatOrder = [
                     }
                     tr.appendChild(th);
                 });
-                headerThead.appendChild(tr);
+                tableHeaderThead.appendChild(tr);
             });
 
             tableInstance.getRowModel().rows.forEach((row, index) => {
@@ -3000,7 +3000,7 @@ const wrTeStatOrder = [
                     tr.appendChild(td);
                 });
 
-                bodyTbody.appendChild(tr);
+                tableBodyTbody.appendChild(tr);
             });
 
             if (rowsMeta.length > 0) {
@@ -3010,12 +3010,12 @@ const wrTeStatOrder = [
                 dividerTd.colSpan = totalColumns;
                 dividerRow.appendChild(dividerTd);
                 const referenceRow = rowsMeta[dividerIndex]?.domRow || null;
-                bodyTbody.insertBefore(dividerRow, referenceRow);
+                tableBodyTbody.insertBefore(dividerRow, referenceRow);
             }
 
             // Add table footer for totals
             if (gameLogsWithData.length > 0) {
-                footerTfoot.innerHTML = '';
+                tableFooterTfoot.innerHTML = '';
                 const footerRow = document.createElement('tr');
                 const totalTh = document.createElement('th');
                 totalTh.className = 'modal-table-footer-label week-column-header';
@@ -3192,39 +3192,39 @@ const wrTeStatOrder = [
                     rankAnnotation.style.color = getConditionalColorByRank(rankValue, player.pos);
                     footerRow.appendChild(td);
                 }
-                footerTfoot.appendChild(footerRow);
-                footerContainer.classList.remove('hidden');
+                tableFooterTfoot.appendChild(footerRow);
+                tableFooterContainer.classList.remove('hidden');
             } else {
-                footerTfoot.innerHTML = '';
-                footerContainer.classList.add('hidden');
+                tableFooterTfoot.innerHTML = '';
+                tableFooterContainer.classList.add('hidden');
             }
 
             const syncScrollPositions = (source) => {
                 const { scrollLeft } = source;
-                if (headerContainer.scrollLeft !== scrollLeft) headerContainer.scrollLeft = scrollLeft;
-                if (footerContainer.scrollLeft !== scrollLeft) footerContainer.scrollLeft = scrollLeft;
-                if (bodyScrollContainer.scrollLeft !== scrollLeft && source !== bodyScrollContainer) bodyScrollContainer.scrollLeft = scrollLeft;
+                if (tableHeaderContainer.scrollLeft !== scrollLeft) tableHeaderContainer.scrollLeft = scrollLeft;
+                if (tableFooterContainer.scrollLeft !== scrollLeft) tableFooterContainer.scrollLeft = scrollLeft;
+                if (tableBodyContainer.scrollLeft !== scrollLeft && source !== tableBodyContainer) tableBodyContainer.scrollLeft = scrollLeft;
             };
 
-            bodyScrollContainer.addEventListener('scroll', () => syncScrollPositions(bodyScrollContainer));
+            tableBodyContainer.addEventListener('scroll', () => syncScrollPositions(tableBodyContainer));
 
             const adjustScrollOffsets = () => {
-                const scrollbarWidth = bodyScrollContainer.offsetWidth - bodyScrollContainer.clientWidth;
+                const scrollbarWidth = tableBodyContainer.offsetWidth - tableBodyContainer.clientWidth;
                 const offset = scrollbarWidth > 0 ? `${scrollbarWidth}px` : '0px';
-                headerContainer.style.marginRight = offset;
-                footerContainer.style.marginRight = offset;
+                tableHeaderContainer.style.marginRight = offset;
+                tableFooterContainer.style.marginRight = offset;
             };
 
             adjustScrollOffsets();
             requestAnimationFrame(adjustScrollOffsets);
 
-            container.appendChild(headerContainer);
-            container.appendChild(bodyScrollContainer);
-            container.appendChild(footerContainer);
+            container.appendChild(tableHeaderContainer);
+            container.appendChild(tableBodyContainer);
+            container.appendChild(tableFooterContainer);
 
             modalBody.appendChild(container);
-            bodyScrollContainer.scrollLeft = 0;
-            bodyScrollContainer.scrollTop = 0;
+            tableBodyContainer.scrollLeft = 0;
+            tableBodyContainer.scrollTop = 0;
 
             // Set player vitals width to match summary chips
             const summaryChipsWidth = summaryChipsContainer.offsetWidth;
