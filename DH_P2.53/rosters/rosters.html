@@ -28,91 +28,92 @@
 <div class="relative z-10 content-wrapper">
 <div id="header-container">
 <header class="app-header glass-panel">
-    <!-- ROW 1: Logo, Home, Rosters, Ownership, L.Analyze, Research -->
     <div class="header-row" id="primary-header-row">
-        <div class="logo-container">
-            <img src="../assets/welcome/welcome-logo-256.png" alt="Logo" class="app-logo"/>
-        </div>
-        <div class="nav-buttons-container">
-            <button class="nav-button" id="homeButton">
-                <i class="fa-solid fa-house-user"></i>
-                <span>Home</span>
+    <div class="nav-buttons-container">
+      <button class="nav-button" id="homeButton" data-nav="home">
+  <img src="../assets/logos/App_Logo_icon256.png" alt="Dynasty Hub" class="nav-logo" aria-hidden="true" />
+        <span class="nav-label">Home</span>
+      </button>
+            <button class="nav-button active" id="rostersButton" data-nav="rosters">
+                <i class="fa-solid fa-clipboard-list" aria-hidden="true"></i>
+                <span class="nav-label">Rosters</span>
             </button>
-            <button class="nav-button active" id="rostersButton">
-                <i class="fa-solid fa-clipboard-list"></i>
-                <span>Rosters</span>
+            <button class="nav-button" id="ownershipButton" data-nav="ownership">
+                <i class="fa-solid fa-percent" aria-hidden="true"></i>
+                <span class="nav-label">Ownership</span>
             </button>
-            <button class="nav-button" id="ownershipButton">
-                <i class="fa-solid fa-percent"></i>
-                <span>Ownership</span>
+      <button class="nav-button" id="statsButton" data-nav="stats">
+        <i class="fa-solid fa-chart-column" aria-hidden="true"></i>
+        <span class="nav-label">Stats</span>
+      </button>
+            <button class="nav-button" id="analyzerButton" data-nav="analyzer">
+                <i class="fa-solid fa-square-poll-vertical" aria-hidden="true"></i>
+                <span class="nav-label">L.Analyze</span>
             </button>
-            <button class="nav-button" id="analyzerButton">
-                <i class="fa-solid fa-square-poll-vertical"></i>
-                <span>L.Analyze</span>
-            </button>
-            <button class="nav-button" id="researchButton">
-                <i class="fa-solid fa-flask"></i>
-                <span>Research</span>
-            </button>
-        </div>
-    </div>
-
-    <!-- ROW 2: Username, League Selector, Positional/Lineup Toggle -->
-    <div class="header-row" id="secondary-header-row">
-        <div class="username-area">
-            <input autocapitalize="none" autocomplete="username" autocorrect="off" id="usernameInput" inputmode="text" name="username" placeholder="SLPR Username..." type="text" value="The_Oracle"/>
-        </div>
-        <div class="custom-select-wrapper">
-            <select disabled="" id="leagueSelect">
-                <option>Select a league...</option>
-            </select>
-        </div>
-        <div class="view-switcher secondary-switcher">
-            <button id="positionalViewBtn">
-                <i class="fa-solid fa-id-card"></i>
-                <span>Positional</span>
-            </button>
-            <button id="lineupViewBtn">
-                <i class="fa-solid fa-elevator"></i>
-                <span>Lineup</span>
+            <button class="nav-button" id="researchButton" data-nav="research">
+                <i class="fa-solid fa-flask" aria-hidden="true"></i>
+                <span class="nav-label">Research</span>
             </button>
         </div>
     </div>
-
-    <!-- ROW 3: Start/Sit, Filters, Clear, Search -->
-    <div class="header-row" id="filters-row">
-        <div class="start-sit-button-container">
-            <button class="menu-button" id="startSitButton" type="button" aria-label="Start/Sit Tool">
-                <i class="fa-solid fa-elevator"></i>
-                <span>Start/Sit</span>
-            </button>
-        </div>
-        <div class="filters-container">
-            <div id="positional-filters">
-                <button class="filter-btn" data-position="QB">QB</button>
-                <button class="filter-btn" data-position="RB">RB</button>
-                <button class="filter-btn" data-position="WR">WR</button>
-                <button class="filter-btn" data-position="TE">TE</button>
-                <button class="filter-btn" data-position="FLX">FLX</button>
+    <div id="contextual-controls">
+        <div class="header-row" id="secondary-header-row">
+            <div class="username-area">
+                <input autocapitalize="none" autocomplete="username" autocorrect="off" id="usernameInput" inputmode="text" name="username" placeholder="SLPR Username..." type="text" value="The_Oracle"/>
             </div>
-            <button class="control-button-subtle" id="clearFiltersButton">
-                <span class="clear-filters-stack">
-                    <i class="fa-solid fa-filter-circle-xmark" aria-hidden="true"></i>
-                    <span class="sr-only">Clear filters</span>
-                </span>
-            </button>
-            <div class="compare-controls">
-                <button class="control-button hidden" id="compareButton" aria-hidden="true" tabindex="-1" style="display:none;"></button>
-                <button id="compareSearchToggle" class="control-button-subtle compare-search-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="compareSearchPopover">
-                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-                    <span class="sr-only">Search teams</span>
+            <div class="custom-select-wrapper">
+                <select disabled="" id="leagueSelect">
+                    <option>Select a league...</option>
+                </select>
+            </div>
+            <div class="view-switcher secondary-switcher compact-switcher">
+                <button id="positionalViewBtn">
+                    <i class="fa-solid fa-users" aria-hidden="true"></i>
+                    <span class="switcher-label">Positional</span>
                 </button>
-                <div id="compareSearchPopover" class="compare-search-popover hidden" role="dialog" aria-modal="false">
-                    <button type="button" id="compareSearchClose" class="compare-search-close" aria-label="Close search popover">
-                        <i class="fa-solid fa-circle-xmark" aria-hidden="true"></i>
+                <button id="lineupViewBtn">
+                    <i class="fa-solid fa-list-ol" aria-hidden="true"></i>
+                    <span class="switcher-label">Lineup</span>
+                </button>
+            </div>
+        </div>
+        <div class="header-row" id="filters-row">
+            <div class="start-sit-button-slot" id="start-sit-button-slot">
+                <div class="start-sit-button-container">
+                    <button class="menu-button analyzer-button start-sit-button" id="startSitButton" type="button" aria-label="Open Start/Sit recommendations">
+                        <i class="fa-solid fa-elevator analyzer-icon" aria-hidden="true"></i>
+                        <span class="analyzer-label">Start/Sit</span>
                     </button>
-                    <label for="compareSearchInput" class="sr-only">Search teams</label>
-                    <input id="compareSearchInput" type="search" placeholder="Search Players…" autocomplete="off" inputmode="search" />
+                </div>
+            </div>
+            <div class="filters-container">
+                <div id="positional-filters">
+                    <button class="filter-btn" data-position="QB">QB</button>
+                    <button class="filter-btn" data-position="RB">RB</button>
+                    <button class="filter-btn" data-position="WR">WR</button>
+                    <button class="filter-btn" data-position="TE">TE</button>
+                    <button class="filter-btn" data-position="FLX">FLX</button>
+                    <button class="filter-btn" data-position="STAR"><i class="fa-solid fa-ranking-star"></i></button>
+                </div>
+                <button class="control-button-subtle" id="clearFiltersButton">
+                    <span class="clear-filters-stack">
+                        <i class="fa-solid fa-filter-circle-xmark" aria-hidden="true"></i>
+                        <span class="sr-only">Clear filters</span>
+                    </span>
+                </button>
+                <div class="compare-controls">
+                    <button class="control-button hidden" id="compareButton" aria-hidden="true" tabindex="-1" style="display:none;"></button>
+                    <button id="compareSearchToggle" class="control-button-subtle compare-search-toggle" aria-haspopup="true" aria-expanded="false" aria-controls="compareSearchPopover">
+                        <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                        <span class="sr-only">Search teams</span>
+                    </button>
+                    <div id="compareSearchPopover" class="compare-search-popover hidden" role="dialog" aria-modal="false">
+                        <button type="button" id="compareSearchClose" class="compare-search-close" aria-label="Close search popover">
+                            <i class="fa-solid fa-circle-xmark" aria-hidden="true"></i>
+                        </button>
+                        <label for="compareSearchInput" class="sr-only">Search teams</label>
+                        <input id="compareSearchInput" type="search" placeholder="Search Players…" autocomplete="off" inputmode="search" />
+                    </div>
                 </div>
             </div>
         </div>
@@ -220,45 +221,52 @@
     <div id="stats-key-container" class="hidden stats-key-panel">
         <h4> Player Game Log & Stats Key </h4>
         <ul>
-            <li><strong>FPTS:</strong> Fantasy Points</li>
-            <li><strong>paATT:</strong> Passing Attempts</li>
-            <li><strong>COMP:</strong> Completions</li>
-            <li><strong>paYDS:</strong> Passing Yards</li>
-            <li><strong>paTD:</strong> Passing Touchdowns</li>
-            <li><strong>pa1D:</strong> Passing First Downs</li>
-            <li><strong>IMP:</strong> Impact Plays (1D+TD)</li>
-            <li><strong>IMP/G:</strong> Impact Plays per Game</li>
-            <li><strong>paRTG:</strong> Passer Rating</li>
-            <li><strong>pIMP:</strong> Passing Impact</li>
-            <li><strong>pIMP/A:</strong> Passing Impact Plays per Attempt</li>
-            <li><strong>ruYDS:</strong> Rushing Yards</li>
-            <li><strong>ruTD:</strong> Rushing Touchdowns</li>
-            <li><strong>CAR:</strong> Carries</li>
-            <li><strong>YPC:</strong> Yards per Carry</li>
-            <li><strong>ru1D:</strong> Rushing First Downs</li>
-            <li><strong>TTT:</strong> Average Time to Throw</li>
-            <li><strong>PRS%:</strong> QB Pressure Rate</li>
-            <li><strong>SACK:</strong> Sacks Taken</li>
-            <li><strong>INT:</strong> Interceptions</li>
-            <li><strong>ELU:</strong> Elusiveness Rating</li>
-            <li><strong>MTF:</strong> Missed Tackles Forced</li>
-            <li><strong>MTF/A:</strong> Missed Tackles Forced per Attempt</li>
-            <li><strong>YCO:</strong> Yards After Contact</li>
-            <li><strong>YCO/A:</strong> Yards After Contact per Attempt</li>
-            <li><strong>TGT:</strong> Targets</li>
-            <li><strong>REC:</strong> Receptions</li>
-            <li><strong>recYDS:</strong> Receiving Yards</li>
-            <li><strong>recTD:</strong> Receiving Touchdowns</li>
-            <li><strong>rec1D:</strong> Receiving First Downs</li>
-            <li><strong>YAC:</strong> Yards After Catch</li>
-            <li><strong>YPRR:</strong> Yards per Route Run</li>
-            <li><strong>1DRR:</strong> First Downs per Route Run</li>
-            <li><strong>RR:</strong> Routes Run</li>
-            <li><strong>TS%RR:</strong> Target Share on Routes Run</li>
-            <li><strong>YPR:</strong> Yards per Reception</li>
-            <li><strong>SNP%:</strong> Snap Share</li>
-            <li><strong>FUM:</strong> Fumbles Lost</li>
-        </ul>
+						<li><strong>FPTS:</strong> Fantasy Points</li>
+						<li><strong>(t):</strong> Total • Passing, Rushing, & Receiving</li>
+						<li><strong>G | GP:</strong> Game(s) or Games Played</li>
+						<li><strong>SNP%:</strong> Snap Share</li>
+						<li><strong>YDS:</strong> Yards</li>
+						<li><strong>YPG:</strong> Yards per Game</li>
+						<li><strong>IMP:</strong> Impact Plays (1D+TD)</li>
+						<li><strong>IMP/G:</strong> Impact Plays per Game</li>
+						<li><strong>pa:</strong> Passing</li>
+						<li><strong>paATT:</strong> Passing Attempts</li>
+						<li><strong>COMP:</strong> Completions</li>
+						<li><strong>paYDS:</strong> Passing Yards</li>
+						<li><strong>paTD:</strong> Passing Touchdowns</li>
+						<li><strong>pa1D:</strong> Passing First Downs</li>
+						<li><strong>paRTG:</strong> Passer Rating</li>
+						<li><strong>TTT:</strong> Average Time to Throw</li>
+						<li><strong>PRS%:</strong> QB Pressure Rate</li>
+						<li><strong>SACK:</strong> Sacks Taken</li>
+						<li><strong>INT:</strong> Interceptions</li>
+						<li><strong>pIMP:</strong> Passing Impact</li>
+						<li><strong>pIMP/A:</strong> Passing Impact Plays per Attempt</li>
+						<li><strong>ru:</strong> Rushing</li>
+						<li><strong>ruYDS:</strong> Rushing Yards</li>
+						<li><strong>ruTD:</strong> Rushing Touchdowns</li>
+						<li><strong>CAR:</strong> Carries</li>
+						<li><strong>YPC:</strong> Yards per Carry</li>
+						<li><strong>ru1D:</strong> Rushing First Downs</li>
+						<li><strong>ELU:</strong> Elusiveness Rating</li>
+						<li><strong>MTF:</strong> Missed Tackles Forced</li>
+						<li><strong>MTF/A:</strong> Missed Tackles Forced per Attempt</li>
+						<li><strong>YCO:</strong> Yards After Contact</li>
+						<li><strong>YCO/A:</strong> Yards After Contact per Attempt</li>
+						<li><strong>rec:</strong> Receiving</li>
+						<li><strong>TGT:</strong> Targets</li>
+						<li><strong>REC:</strong> Receptions</li>
+						<li><strong>recYDS:</strong> Receiving Yards</li>
+						<li><strong>recTD:</strong> Receiving Touchdowns</li>
+						<li><strong>rec1D:</strong> Receiving First Downs</li>
+						<li><strong>YAC:</strong> Yards After Catch</li>
+						<li><strong>YPRR:</strong> Yards per Route Run</li>
+						<li><strong>1DRR:</strong> First Downs per Route Run</li>
+						<li><strong>RR:</strong> Routes Run</li>
+						<li><strong>TS%:</strong> Target Share on Routes Run</li>
+						<li><strong>YPR:</strong> Yards per Reception</li>
+						<li><strong>FUM:</strong> Fumbles Lost</li>
+      </ul>
     </div>
    <div class="modal-footer">
   <div class="key-chip modal-info-btn">
