@@ -857,11 +857,17 @@
     if (!columnSet.includes(column)) return;
 
     if (statsState.sort.column !== column) {
-      statsState.sort = { column, direction: 1 };
+      statsState.sort = { column, direction: 2 }; // Start with descending
     } else {
-      statsState.sort.direction = (statsState.sort.direction + 1) % 3;
-      if (statsState.sort.direction === 0) {
+      // Cycle: 2 (desc) -> 1 (asc) -> 0 (none)
+      if (statsState.sort.direction === 2) {
+        statsState.sort.direction = 1;
+      } else if (statsState.sort.direction === 1) {
+        statsState.sort.direction = 0;
         statsState.sort.column = null;
+      } else {
+        // This case should ideally not be hit if starting from a sorted state, but as a fallback:
+        statsState.sort.direction = 2;
       }
     }
     renderTable();

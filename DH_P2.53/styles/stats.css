@@ -763,13 +763,6 @@
   box-shadow: inset -1px 0 0 rgba(128, 138, 189, 0.18);
 }
 
-@supports (content-visibility: auto) {
-  .stats-table tbody tr {
-    content-visibility: auto;
-    contain-intrinsic-size: 28px;
-  }
-}
-
 .stats-table .player-tag.modal-pos-tag {
   display: inline-flex;
   align-items: center;
