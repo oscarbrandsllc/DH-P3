@@ -4024,7 +4024,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     }
 
     #game-logs-modal .game-logs-table-body {
-      max-height: 450px;
+      max-height: 200px;
       overflow-y: auto;
       overflow-x: auto;
     }
