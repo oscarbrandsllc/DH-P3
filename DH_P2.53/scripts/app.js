@@ -2639,25 +2639,6 @@ const wrTeStatOrder = [
             const container = document.createElement('div');
             container.className = 'game-logs-table-container';
 
-            const tableWrapper = document.createElement('div');
-            tableWrapper.className = 'game-logs-table-wrapper';
-            const tableScrollContainer = document.createElement('div');
-            tableScrollContainer.className = 'game-logs-table-scroll';
-            const tableElement = document.createElement('table');
-            tableElement.className = 'game-logs-table';
-            const tableColgroup = document.createElement('colgroup');
-            const tableHeaderThead = document.createElement('thead');
-            const tableBodyTbody = document.createElement('tbody');
-            const tableFooterTfoot = document.createElement('tfoot');
-            tableFooterTfoot.style.display = 'none';
-            tableElement.appendChild(tableColgroup);
-            tableElement.appendChild(tableHeaderThead);
-            tableElement.appendChild(tableBodyTbody);
-            tableElement.appendChild(tableFooterTfoot);
-            tableScrollContainer.appendChild(tableElement);
-            tableWrapper.appendChild(tableScrollContainer);
-            container.appendChild(tableWrapper);
-
             const COLUMN_WIDTHS = {
                 week: 128,
                 proj: 84,
@@ -3000,13 +2981,43 @@ const wrTeStatOrder = [
                 return Number.isFinite(fallbackSize) ? fallbackSize : DEFAULT_COLUMN_WIDTH;
             };
 
-            tableColgroup.innerHTML = '';
-            leafColumns.forEach(column => {
-                const colEl = document.createElement('col');
-                const colSize = resolveColumnSize(column, column.getSize ? column.getSize() : undefined);
-                colEl.style.width = `${colSize}px`;
-                tableColgroup.appendChild(colEl);
-            });
+            const columnSizes = leafColumns.map(column =>
+                resolveColumnSize(column, column.getSize ? column.getSize() : undefined)
+            );
+
+            const createSectionTable = () => {
+                const table = document.createElement('table');
+                table.className = 'game-logs-table';
+                const colgroup = document.createElement('colgroup');
+                columnSizes.forEach(size => {
+                    const col = document.createElement('col');
+                    col.style.width = `${size}px`;
+                    colgroup.appendChild(col);
+                });
+                table.appendChild(colgroup);
+                return table;
+            };
+
+            const headerWrapper = document.createElement('div');
+            headerWrapper.className = 'game-logs-table-header';
+            const headerTable = createSectionTable();
+            const tableHeaderThead = document.createElement('thead');
+            headerTable.appendChild(tableHeaderThead);
+            headerWrapper.appendChild(headerTable);
+
+            const bodyWrapper = document.createElement('div');
+            bodyWrapper.className = 'game-logs-table-body';
+            const bodyTable = createSectionTable();
+            const tableBodyTbody = document.createElement('tbody');
+            bodyTable.appendChild(tableBodyTbody);
+            bodyWrapper.appendChild(bodyTable);
+
+            const footerWrapper = document.createElement('div');
+            footerWrapper.className = 'game-logs-table-footer';
+            const footerTable = createSectionTable();
+            const tableFooterTfoot = document.createElement('tfoot');
+            footerTable.appendChild(tableFooterTfoot);
+            footerWrapper.appendChild(footerTable);
 
             const applyCellDescriptor = (td, descriptor) => {
                 td.textContent = '';
@@ -3076,8 +3087,12 @@ const wrTeStatOrder = [
             }, 0);
             if (Number.isFinite(totalTableWidth) && totalTableWidth > 0) {
                 const widthPx = `${totalTableWidth}px`;
-                tableElement.style.minWidth = widthPx;
-                tableElement.style.width = widthPx;
+                headerTable.style.minWidth = widthPx;
+                headerTable.style.width = widthPx;
+                bodyTable.style.minWidth = widthPx;
+                bodyTable.style.width = widthPx;
+                footerTable.style.minWidth = widthPx;
+                footerTable.style.width = widthPx;
             }
 
             if (rowsMeta.length > 0) {
@@ -3279,17 +3294,29 @@ const wrTeStatOrder = [
                     rankAnnotation.style.color = getConditionalColorByRank(rankValue, player.pos);
                     footerRow.appendChild(td);
                 }
-                tableFooterTfoot.style.display = '';
                 tableFooterTfoot.appendChild(footerRow);
+                footerWrapper.classList.remove('hidden');
             } else {
                 tableFooterTfoot.innerHTML = '';
-                tableFooterTfoot.style.display = 'none';
+                footerWrapper.classList.add('hidden');
             }
 
+            const syncHorizontalScroll = () => {
+                const scrollLeft = bodyWrapper.scrollLeft;
+                headerTable.style.transform = `translateX(${-scrollLeft}px)`;
+                footerTable.style.transform = `translateX(${-scrollLeft}px)`;
+            };
+            bodyWrapper.addEventListener('scroll', syncHorizontalScroll, { passive: true });
+            syncHorizontalScroll();
+
+            container.appendChild(headerWrapper);
+            container.appendChild(bodyWrapper);
+            container.appendChild(footerWrapper);
+
             modalBody.appendChild(container);
-            tableFooterTfoot.style.display = tableFooterTfoot.innerHTML.trim() ? '' : 'none';
-            tableScrollContainer.scrollLeft = 0;
-            tableBodyTbody.scrollTop = 0;
+            bodyWrapper.scrollLeft = 0;
+            bodyWrapper.scrollTop = 0;
+            syncHorizontalScroll();
 
             // Set player vitals width to match summary chips
             const summaryChipsWidth = summaryChipsContainer.offsetWidth;
