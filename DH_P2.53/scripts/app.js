@@ -2593,39 +2593,67 @@ const wrTeStatOrder = [
             const container = document.createElement('div');
             container.className = 'game-logs-table-container';
 
-            const table = document.createElement('table');
-            const thead = document.createElement('thead');
-            const tbody = document.createElement('tbody');
+            const headerContainer = document.createElement('div');
+            headerContainer.className = 'game-logs-table-header';
+            const headerTable = document.createElement('table');
+            const headerThead = document.createElement('thead');
+            headerTable.appendChild(headerThead);
+            headerContainer.appendChild(headerTable);
 
-            const headerRow = document.createElement('tr');
-            const wkTh = document.createElement('th');
-            wkTh.classList.add('week-column-header');
-            wkTh.textContent = 'WK  ·  VS ';
-            headerRow.appendChild(wkTh);
+            const bodyScrollContainer = document.createElement('div');
+            bodyScrollContainer.className = 'game-logs-table-body';
+            const bodyTable = document.createElement('table');
+            const bodyTbody = document.createElement('tbody');
+            bodyTable.appendChild(bodyTbody);
+            bodyScrollContainer.appendChild(bodyTable);
+
+            const footerContainer = document.createElement('div');
+            footerContainer.className = 'game-logs-table-footer';
+            const footerTable = document.createElement('table');
+            const footerTfoot = document.createElement('tfoot');
+            footerTable.appendChild(footerTfoot);
+            footerContainer.appendChild(footerTable);
+
+            const tableColumns = [{
+                id: 'week',
+                accessorKey: 'week',
+                header: () => 'WK  ·  VS ',
+                meta: {
+                    headerClass: 'week-column-header',
+                    cellClass: 'week-cell',
+                    footerClass: 'week-column-header',
+                    statKey: null
+                }
+            }];
 
             for (const key of orderedStatKeys) {
-                if (statLabels[key]) {
-                    const th = document.createElement('th');
-                    th.textContent = statLabels[key];
-                    const statGroup = statGroupByKey.get(key);
-                    if (statGroup) th.classList.add(`gamelog-header-${statGroup}`);
-                    headerRow.appendChild(th);
-                }
+                if (!statLabels[key]) continue;
+                const statGroup = statGroupByKey.get(key);
+                tableColumns.push({
+                    id: key,
+                    accessorKey: key,
+                    header: () => statLabels[key],
+                    meta: {
+                        headerClass: statGroup ? `gamelog-header-${statGroup}` : undefined,
+                        cellClass: key === 'proj' ? 'proj-cell' : undefined,
+                        footerClass: key === 'proj' ? 'proj-cell' : undefined,
+                        statKey: key
+                    }
+                });
             }
-            thead.appendChild(headerRow);
 
+            const totalColumns = tableColumns.length;
+            const tableRows = [];
+            const rowsMeta = [];
             const gameLogsWithData = [];
             const gameLogsByWeek = new Map(gameLogs.map(entry => [parseInt(entry.week, 10), entry]));
-            const applyProjectionCellDisplay = (cell, rawValue) => {
-                const display = rawValue === undefined || rawValue === null ? '' : String(rawValue);
-                cell.textContent = display;
-                const designationMeta = parseInjuryDesignation(display);
-                if (designationMeta) {
-                    cell.style.color = designationMeta.color;
-                } else {
-                    cell.style.color = '';
+
+            const createTextDescriptor = (text, style) => ({
+                render: (td) => {
+                    td.textContent = text;
+                    if (style) Object.assign(td.style, style);
                 }
-            };
+            });
 
             const getProjectionDisplayValue = (statLine, playerId, week) => {
                 // First try the provided statLine (for played weeks)
@@ -2645,10 +2673,6 @@ const wrTeStatOrder = [
                 
                 return '';
             };
-
-            const totalColumns = 1 + orderedStatKeys.filter(key => Boolean(statLabels[key])).length;
-            const rowsMeta = [];
-
             for (let week = 1; week <= MAX_DISPLAY_WEEKS; week++) {
                 const weekStatsEntry = gameLogsByWeek.get(week) || null;
                 const stats = weekStatsEntry?.stats || null;
@@ -2663,7 +2687,6 @@ const wrTeStatOrder = [
                         return typeof val === 'number' && val !== 0;
                     })
                     : false;
-                // Treat projection, bye, or zero-participation weeks as "unplayed" so we can dim them in the UI.
                 const hasParticipation = Boolean(stats) && (
                     (typeof snapPct === 'number' && snapPct > 0) ||
                     hasNonProjStat
@@ -2672,115 +2695,109 @@ const wrTeStatOrder = [
                 const isLiveWeek = stats?.__live === true || (liveFptsValue !== null && !isProjectionWeek);
                 const isUnplayedWeek = !isLiveWeek && (isProjectionWeek || isByeWeek || !hasParticipation);
 
-                const row = document.createElement('tr');
-                if (isByeWeek) row.classList.add('bye-week-row');
-                if (isUnplayedWeek) {
-                    row.classList.add('unplayed-week-row');
-                } else if (isLiveWeek) {
-                    row.classList.add('live-week-row');
-                }
+                const rowMeta = {
+                    week,
+                    isPlayed: !isUnplayedWeek,
+                    rowClasses: []
+                };
+                const rowData = { __meta: rowMeta };
 
-                const weekTd = document.createElement('td');
-                weekTd.classList.add('week-cell');
+                if (isByeWeek) rowMeta.rowClasses.push('bye-week-row');
+                if (isUnplayedWeek) rowMeta.rowClasses.push('unplayed-week-row');
+                else if (isLiveWeek) rowMeta.rowClasses.push('live-week-row');
 
-                // Create tag container
-                const weekTag = document.createElement('div');
-                weekTag.className = 'gamelog-week-tag';
+                const opponentRankColor = getOpponentRankColor(stats?.opponent_rank);
+                rowData.week = {
+                    render: (td) => {
+                        const weekTag = document.createElement('div');
+                        weekTag.className = 'gamelog-week-tag';
 
-                // Top line: WK-#
-                const weekNumberLine = document.createElement('div');
-                weekNumberLine.className = 'gamelog-week-tag-number';
-                weekNumberLine.textContent = `WK-${week}`;
-                weekTag.appendChild(weekNumberLine);
+                        const weekNumberLine = document.createElement('div');
+                        weekNumberLine.className = 'gamelog-week-tag-number';
+                        weekNumberLine.textContent = `WK-${week}`;
+                        weekTag.appendChild(weekNumberLine);
 
-                // Bottom line: opponent • rank
-                if (opponent) {
-                    const opponentLine = document.createElement('div');
-                    opponentLine.className = 'gamelog-week-tag-opponent';
+                        if (opponent) {
+                            const opponentLine = document.createElement('div');
+                            opponentLine.className = 'gamelog-week-tag-opponent';
 
-                    if (isByeWeek) {
-                        opponentLine.textContent = 'BYE';
-                    } else {
-                        // Create opponent text (already has vs or @)
-                        const opponentText = document.createElement('span');
-                        opponentText.className = 'gamelog-week-tag-opponent-text';
-                        opponentText.textContent = opponent;
-                        const color = getOpponentRankColor(stats?.opponent_rank);
-                        if (color) opponentText.style.color = color;
-                        opponentLine.appendChild(opponentText);
+                            if (isByeWeek) {
+                                opponentLine.textContent = 'BYE';
+                            } else {
+                                const opponentText = document.createElement('span');
+                                opponentText.className = 'gamelog-week-tag-opponent-text';
+                                opponentText.textContent = opponent;
+                                if (opponentRankColor) opponentText.style.color = opponentRankColor;
+                                opponentLine.appendChild(opponentText);
 
-                        const opponentRank = stats?.opponent_rank;
-                        const opponentRankDisplay = getRankDisplayText(opponentRank);
-                        if (opponentRankDisplay !== 'NA') {
-                            // Add separator
-                            const separator = document.createElement('span');
-                            separator.className = 'gamelog-week-tag-separator';
-                            separator.textContent = ' • ';
-                            opponentLine.appendChild(separator);
+                                const opponentRank = stats?.opponent_rank;
+                                const opponentRankDisplay = getRankDisplayText(opponentRank);
+                                if (opponentRankDisplay !== 'NA') {
+                                    const separator = document.createElement('span');
+                                    separator.className = 'gamelog-week-tag-separator';
+                                    separator.textContent = ' • ';
+                                    opponentLine.appendChild(separator);
 
-                            // Add rank with ordinal suffix
-                            const rankSpan = document.createElement('span');
-                            rankSpan.className = 'gamelog-week-tag-rank';
-                            rankSpan.style.color = color;
-                            
-                            const rankNumber = document.createElement('span');
-                            rankNumber.className = 'gamelog-week-tag-rank-number';
-                            rankNumber.textContent = opponentRank;
-                            rankSpan.appendChild(rankNumber);
+                                    const rankSpan = document.createElement('span');
+                                    rankSpan.className = 'gamelog-week-tag-rank';
+                                    if (opponentRankColor) rankSpan.style.color = opponentRankColor;
 
-                            const suffix = document.createElement('span');
-                            suffix.className = 'gamelog-week-tag-rank-suffix';
-                            const j = opponentRank % 10;
-                            const k = opponentRank % 100;
-                            if (j === 1 && k !== 11) suffix.textContent = 'st';
-                            else if (j === 2 && k !== 12) suffix.textContent = 'nd';
-                            else if (j === 3 && k !== 13) suffix.textContent = 'rd';
-                            else suffix.textContent = 'th';
-                            rankSpan.appendChild(suffix);
+                                    const rankNumber = document.createElement('span');
+                                    rankNumber.className = 'gamelog-week-tag-rank-number';
+                                    rankNumber.textContent = opponentRank;
+                                    rankSpan.appendChild(rankNumber);
 
-                            opponentLine.appendChild(rankSpan);
+                                    const suffix = document.createElement('span');
+                                    suffix.className = 'gamelog-week-tag-rank-suffix';
+                                    const j = opponentRank % 10;
+                                    const k = opponentRank % 100;
+                                    if (j === 1 && k !== 11) suffix.textContent = 'st';
+                                    else if (j === 2 && k !== 12) suffix.textContent = 'nd';
+                                    else if (j === 3 && k !== 13) suffix.textContent = 'rd';
+                                    else suffix.textContent = 'th';
+                                    rankSpan.appendChild(suffix);
+
+                                    opponentLine.appendChild(rankSpan);
+                                }
+                            }
+                            weekTag.appendChild(opponentLine);
                         }
-                    }
-                    weekTag.appendChild(opponentLine);
-                }
 
-                weekTd.appendChild(weekTag);
-                row.appendChild(weekTd);
+                        td.textContent = '';
+                        td.appendChild(weekTag);
+                    }
+                };
 
                 for (const key of orderedStatKeys) {
                     if (!statLabels[key]) continue;
 
-                    const td = document.createElement('td');
-                    if (key === 'proj') td.classList.add('proj-cell');
-
                     if (isUnplayedWeek) {
-                            if (key === 'proj') {
-                                const projValue = getProjectionDisplayValue(stats, player.id, week);
-                                applyProjectionCellDisplay(td, projValue);
-                            } else {
-                                td.textContent = '-';
-                                td.style.color = '';
-                            }
-                        row.appendChild(td);
+                        if (key === 'proj') {
+                            const projValue = getProjectionDisplayValue(stats, player.id, week);
+                            const display = projValue === undefined || projValue === null ? '' : String(projValue);
+                            const designationMeta = parseInjuryDesignation(display);
+                            rowData[key] = createTextDescriptor(display, { color: designationMeta ? designationMeta.color : '' });
+                        } else {
+                            rowData[key] = createTextDescriptor('-', { color: '' });
+                        }
                         continue;
                     }
 
                     if (isLiveWeek && key !== 'fpts') {
-                        td.textContent = 'N/A';
-                        row.appendChild(td);
+                        rowData[key] = createTextDescriptor('N/A');
                         continue;
                     }
 
                     if (!weekStatsEntry || !stats) {
-                        td.textContent = '-';
-                        row.appendChild(td);
+                        rowData[key] = createTextDescriptor('-');
                         continue;
                     }
 
                     if (key === 'proj') {
                         const projValue = getProjectionDisplayValue(stats, player.id, week);
-                        applyProjectionCellDisplay(td, projValue);
-                        row.appendChild(td);
+                        const display = projValue === undefined || projValue === null ? '' : String(projValue);
+                        const designationMeta = parseInjuryDesignation(display);
+                        rowData[key] = createTextDescriptor(display, { color: designationMeta ? designationMeta.color : '' });
                         continue;
                     }
 
@@ -2847,22 +2864,16 @@ const wrTeStatOrder = [
                     else if (key === 'pass_rtg' || key === 'fpts') displayValue = value.toFixed(1);
                     else displayValue = value.toFixed(2).replace(/\.00$/, '');
 
-                    td.textContent = displayValue;
-                    row.appendChild(td);
+                    rowData[key] = createTextDescriptor(displayValue);
                 }
-
-                rowsMeta.push({ row, isPlayed: !isUnplayedWeek, week });
 
                 if (!isUnplayedWeek && weekStatsEntry) {
                     gameLogsWithData.push(weekStatsEntry);
                 }
-            }
 
-            const dividerRow = document.createElement('tr');
-            dividerRow.className = 'week-divider-row';
-            const dividerTd = document.createElement('td');
-            dividerTd.colSpan = totalColumns;
-            dividerRow.appendChild(dividerTd);
+                tableRows.push(rowData);
+                rowsMeta.push(rowMeta);
+            }
 
             const sleeperCurrentWeek = Number.isFinite(state.currentNflWeek) ? state.currentNflWeek : null;
             let dividerIndex = rowsMeta.length;
@@ -2876,16 +2887,82 @@ const wrTeStatOrder = [
             if (!rowsMeta.some(meta => meta.isPlayed)) dividerIndex = 0;
             dividerIndex = Math.max(0, Math.min(dividerIndex, rowsMeta.length));
 
-            rowsMeta.splice(dividerIndex, 0, { row: dividerRow, isDivider: true });
+            const tableCore = window.TableCore;
+            if (!tableCore) {
+                console.error('TanStack Table core library unavailable');
+                return;
+            }
 
-            rowsMeta.forEach(meta => tbody.appendChild(meta.row));
+            const tableInstance = tableCore.createTable({
+                data: tableRows,
+                columns: tableColumns,
+                getCoreRowModel: tableCore.getCoreRowModel(),
+                renderFallbackValue: ''
+            });
 
-            table.appendChild(thead);
-            table.appendChild(tbody);
+            const applyCellDescriptor = (td, descriptor) => {
+                td.textContent = '';
+                td.innerHTML = '';
+                if (!descriptor) return;
+                if (typeof descriptor.render === 'function') descriptor.render(td);
+            };
+
+            tableInstance.getHeaderGroups().forEach(group => {
+                const tr = document.createElement('tr');
+                group.headers.forEach(header => {
+                    const th = document.createElement('th');
+                    const meta = header.column.columnDef.meta;
+                    if (meta?.headerClass) {
+                        meta.headerClass.split(' ').forEach(cls => {
+                            if (cls) th.classList.add(cls);
+                        });
+                    }
+                    if (!header.isPlaceholder) {
+                        const headerValue = header.column.columnDef.header;
+                        if (typeof headerValue === 'function') th.textContent = headerValue(header.getContext());
+                        else th.textContent = headerValue || '';
+                    }
+                    tr.appendChild(th);
+                });
+                headerThead.appendChild(tr);
+            });
+
+            tableInstance.getRowModel().rows.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                const meta = rowsMeta[index];
+                if (meta) {
+                    meta.domRow = tr;
+                    meta.rowClasses.forEach(cls => tr.classList.add(cls));
+                }
+
+                row.getVisibleCells().forEach(cell => {
+                    const td = document.createElement('td');
+                    const columnMeta = cell.column.columnDef.meta;
+                    if (columnMeta?.cellClass) {
+                        columnMeta.cellClass.split(' ').forEach(cls => {
+                            if (cls) td.classList.add(cls);
+                        });
+                    }
+                    applyCellDescriptor(td, cell.getValue());
+                    tr.appendChild(td);
+                });
+
+                bodyTbody.appendChild(tr);
+            });
+
+            if (rowsMeta.length > 0) {
+                const dividerRow = document.createElement('tr');
+                dividerRow.className = 'week-divider-row';
+                const dividerTd = document.createElement('td');
+                dividerTd.colSpan = totalColumns;
+                dividerRow.appendChild(dividerTd);
+                const referenceRow = rowsMeta[dividerIndex]?.domRow || null;
+                bodyTbody.insertBefore(dividerRow, referenceRow);
+            }
 
             // Add table footer for totals
             if (gameLogsWithData.length > 0) {
-                const tfoot = document.createElement('tfoot');
+                footerTfoot.innerHTML = '';
                 const footerRow = document.createElement('tr');
                 const totalTh = document.createElement('th');
                 totalTh.className = 'modal-table-footer-label week-column-header';
@@ -2911,11 +2988,16 @@ const wrTeStatOrder = [
                     }
                 });
 
-                for (const key of orderedStatKeys) {
-                    if (!statLabels[key]) continue;
-
+                for (let i = 1; i < tableColumns.length; i++) {
+                    const column = tableColumns[i];
+                    const key = column.meta?.statKey;
+                    if (!key || !statLabels[key]) continue;
                     const td = document.createElement('td');
-                    if (key === 'proj') td.classList.add('proj-cell');
+                    if (column.meta?.cellClass) {
+                        column.meta.cellClass.split(' ').forEach(cls => {
+                            if (cls) td.classList.add(cls);
+                        });
+                    }
                     if (key === 'proj') {
                         td.textContent = '-';
                         footerRow.appendChild(td);
@@ -3057,13 +3139,39 @@ const wrTeStatOrder = [
                     rankAnnotation.style.color = getConditionalColorByRank(rankValue, player.pos);
                     footerRow.appendChild(td);
                 }
-                tfoot.appendChild(footerRow);
-                table.appendChild(tfoot);
+                footerTfoot.appendChild(footerRow);
+                footerContainer.classList.remove('hidden');
+            } else {
+                footerTfoot.innerHTML = '';
+                footerContainer.classList.add('hidden');
             }
 
-            container.appendChild(table);
+            const syncScrollPositions = (source) => {
+                const { scrollLeft } = source;
+                if (headerContainer.scrollLeft !== scrollLeft) headerContainer.scrollLeft = scrollLeft;
+                if (footerContainer.scrollLeft !== scrollLeft) footerContainer.scrollLeft = scrollLeft;
+                if (bodyScrollContainer.scrollLeft !== scrollLeft && source !== bodyScrollContainer) bodyScrollContainer.scrollLeft = scrollLeft;
+            };
+
+            bodyScrollContainer.addEventListener('scroll', () => syncScrollPositions(bodyScrollContainer));
+
+            const adjustScrollOffsets = () => {
+                const scrollbarWidth = bodyScrollContainer.offsetWidth - bodyScrollContainer.clientWidth;
+                const offset = scrollbarWidth > 0 ? `${scrollbarWidth}px` : '0px';
+                headerContainer.style.marginRight = offset;
+                footerContainer.style.marginRight = offset;
+            };
+
+            adjustScrollOffsets();
+            requestAnimationFrame(adjustScrollOffsets);
+
+            container.appendChild(headerContainer);
+            container.appendChild(bodyScrollContainer);
+            container.appendChild(footerContainer);
+
             modalBody.appendChild(container);
-            modalBody.scrollLeft = 0;
+            bodyScrollContainer.scrollLeft = 0;
+            bodyScrollContainer.scrollTop = 0;
 
             // Set player vitals width to match summary chips
             const summaryChipsWidth = summaryChipsContainer.offsetWidth;

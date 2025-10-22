@@ -4011,6 +4011,29 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
       font-size: 0.7rem;
       margin-bottom:2px;
     }
+
+    #game-logs-modal .game-logs-table-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    #game-logs-modal .game-logs-table-header,
+    #game-logs-modal .game-logs-table-footer {
+      overflow: hidden;
+    }
+
+    #game-logs-modal .game-logs-table-body {
+      max-height: 450px;
+      overflow-y: auto;
+      overflow-x: auto;
+    }
+
+    #game-logs-modal .game-logs-table-header table,
+    #game-logs-modal .game-logs-table-body table,
+    #game-logs-modal .game-logs-table-footer table {
+      width: 100%;
+    }
     
     #modal-body th,
     #modal-body td {
