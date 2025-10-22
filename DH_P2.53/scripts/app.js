@@ -2639,26 +2639,24 @@ const wrTeStatOrder = [
             const container = document.createElement('div');
             container.className = 'game-logs-table-container';
 
-            const tableHeaderContainer = document.createElement('div');
-            tableHeaderContainer.className = 'game-logs-table-header';
-            const tableHeader = document.createElement('table');
+            const tableWrapper = document.createElement('div');
+            tableWrapper.className = 'game-logs-table-wrapper';
+            const tableScrollContainer = document.createElement('div');
+            tableScrollContainer.className = 'game-logs-table-scroll';
+            const tableElement = document.createElement('table');
+            tableElement.className = 'game-logs-table';
+            const tableColgroup = document.createElement('colgroup');
             const tableHeaderThead = document.createElement('thead');
-            tableHeader.appendChild(tableHeaderThead);
-            tableHeaderContainer.appendChild(tableHeader);
-
-            const tableBodyContainer = document.createElement('div');
-            tableBodyContainer.className = 'game-logs-table-body';
-            const tableBody = document.createElement('table');
             const tableBodyTbody = document.createElement('tbody');
-            tableBody.appendChild(tableBodyTbody);
-            tableBodyContainer.appendChild(tableBody);
-
-            const tableFooterContainer = document.createElement('div');
-            tableFooterContainer.className = 'game-logs-table-footer';
-            const tableFooter = document.createElement('table');
             const tableFooterTfoot = document.createElement('tfoot');
-            tableFooter.appendChild(tableFooterTfoot);
-            tableFooterContainer.appendChild(tableFooter);
+            tableFooterTfoot.style.display = 'none';
+            tableElement.appendChild(tableColgroup);
+            tableElement.appendChild(tableHeaderThead);
+            tableElement.appendChild(tableBodyTbody);
+            tableElement.appendChild(tableFooterTfoot);
+            tableScrollContainer.appendChild(tableElement);
+            tableWrapper.appendChild(tableScrollContainer);
+            container.appendChild(tableWrapper);
 
             const COLUMN_WIDTHS = {
                 week: 128,
@@ -2989,6 +2987,26 @@ const wrTeStatOrder = [
             });
 
             const leafColumns = tableInstance.getVisibleLeafColumns();
+            const columnSizeById = new Map(tableColumns.map(col => {
+                const size = Number.isFinite(col.size) ? col.size : DEFAULT_COLUMN_WIDTH;
+                return [col.id, size];
+            }));
+
+            const resolveColumnSize = (column, fallbackSize) => {
+                const fromColumn = column?.columnDef?.size;
+                if (Number.isFinite(fromColumn)) return fromColumn;
+                const fromMap = columnSizeById.get(column?.id);
+                if (Number.isFinite(fromMap)) return fromMap;
+                return Number.isFinite(fallbackSize) ? fallbackSize : DEFAULT_COLUMN_WIDTH;
+            };
+
+            tableColgroup.innerHTML = '';
+            leafColumns.forEach(column => {
+                const colEl = document.createElement('col');
+                const colSize = resolveColumnSize(column, column.getSize ? column.getSize() : undefined);
+                colEl.style.width = `${colSize}px`;
+                tableColgroup.appendChild(colEl);
+            });
 
             const applyCellDescriptor = (td, descriptor) => {
                 td.textContent = '';
@@ -3013,12 +3031,11 @@ const wrTeStatOrder = [
                             ? headerValue(header.getContext())
                             : (headerValue || '');
                     }
-                    const headerSize = header.getSize ? header.getSize() : header.column.getSize?.();
-                    if (Number.isFinite(headerSize)) {
-                        th.style.width = `${headerSize}px`;
-                        th.style.minWidth = `${headerSize}px`;
-                        th.style.maxWidth = `${headerSize}px`;
-                    }
+                    const headerSize = header.getSize ? header.getSize() : undefined;
+                    const resolvedSize = resolveColumnSize(header.column, headerSize);
+                    th.style.width = `${resolvedSize}px`;
+                    th.style.minWidth = `${resolvedSize}px`;
+                    th.style.maxWidth = `${resolvedSize}px`;
                     tr.appendChild(th);
                 });
                 tableHeaderThead.appendChild(tr);
@@ -3043,25 +3060,24 @@ const wrTeStatOrder = [
                     }
                     applyCellDescriptor(td, cell.getValue());
                     const cellSize = cell.column.getSize ? cell.column.getSize() : undefined;
-                    if (Number.isFinite(cellSize)) {
-                        td.style.width = `${cellSize}px`;
-                        td.style.minWidth = `${cellSize}px`;
-                        td.style.maxWidth = `${cellSize}px`;
-                    }
+                    const resolvedSize = resolveColumnSize(cell.column, cellSize);
+                    td.style.width = `${resolvedSize}px`;
+                    td.style.minWidth = `${resolvedSize}px`;
+                    td.style.maxWidth = `${resolvedSize}px`;
                     tr.appendChild(td);
                 });
 
                 tableBodyTbody.appendChild(tr);
             });
 
-            const totalTableWidth = typeof tableInstance.getTotalSize === 'function'
-                ? tableInstance.getTotalSize()
-                : leafColumns.reduce((sum, col) => sum + (col.getSize ? col.getSize() : 0), 0);
+            const totalTableWidth = leafColumns.reduce((sum, col) => {
+                const size = resolveColumnSize(col, col.getSize ? col.getSize() : undefined);
+                return sum + size;
+            }, 0);
             if (Number.isFinite(totalTableWidth) && totalTableWidth > 0) {
                 const widthPx = `${totalTableWidth}px`;
-                tableHeader.style.width = widthPx;
-                tableBody.style.width = widthPx;
-                tableFooter.style.width = widthPx;
+                tableElement.style.minWidth = widthPx;
+                tableElement.style.width = widthPx;
             }
 
             if (rowsMeta.length > 0) {
@@ -3083,12 +3099,10 @@ const wrTeStatOrder = [
                 const gamesPlayed = getAdjustedGamesPlayed(player.id, scoringSettings);
                 totalTh.innerHTML = `<span class="season-label">2025</span><br><span class="gp-label">(GP: ${gamesPlayed})</span>`;
                 const weekColumn = leafColumns[0];
-                const weekColumnSize = weekColumn?.getSize?.();
-                if (Number.isFinite(weekColumnSize)) {
-                    totalTh.style.width = `${weekColumnSize}px`;
-                    totalTh.style.minWidth = `${weekColumnSize}px`;
-                    totalTh.style.maxWidth = `${weekColumnSize}px`;
-                }
+                const weekColumnSize = resolveColumnSize(weekColumn, weekColumn?.getSize?.());
+                totalTh.style.width = `${weekColumnSize}px`;
+                totalTh.style.minWidth = `${weekColumnSize}px`;
+                totalTh.style.maxWidth = `${weekColumnSize}px`;
                 footerRow.appendChild(totalTh);
 
                 const seasonTotals = state.playerSeasonStats?.[player.id] || null;
@@ -3115,12 +3129,10 @@ const wrTeStatOrder = [
                     if (!key || !statLabels[key]) continue;
                     const td = document.createElement('td');
                     const leafColumn = leafColumns[i];
-                    const columnSize = leafColumn?.getSize?.();
-                    if (Number.isFinite(columnSize)) {
-                        td.style.width = `${columnSize}px`;
-                        td.style.minWidth = `${columnSize}px`;
-                        td.style.maxWidth = `${columnSize}px`;
-                    }
+                    const columnSize = resolveColumnSize(leafColumn, leafColumn?.getSize?.());
+                    td.style.width = `${columnSize}px`;
+                    td.style.minWidth = `${columnSize}px`;
+                    td.style.maxWidth = `${columnSize}px`;
                     if (column.meta?.cellClass) {
                         column.meta.cellClass.split(' ').forEach(cls => {
                             if (cls) td.classList.add(cls);
@@ -3267,40 +3279,17 @@ const wrTeStatOrder = [
                     rankAnnotation.style.color = getConditionalColorByRank(rankValue, player.pos);
                     footerRow.appendChild(td);
                 }
+                tableFooterTfoot.style.display = '';
                 tableFooterTfoot.appendChild(footerRow);
-                tableFooterContainer.classList.remove('hidden');
             } else {
                 tableFooterTfoot.innerHTML = '';
-                tableFooterContainer.classList.add('hidden');
+                tableFooterTfoot.style.display = 'none';
             }
 
-            const updateHorizontalTransforms = () => {
-                const scrollLeft = tableBodyContainer.scrollLeft;
-                tableHeader.style.transform = `translateX(${-scrollLeft}px)`;
-                tableFooter.style.transform = `translateX(${-scrollLeft}px)`;
-            };
-
-            tableBodyContainer.addEventListener('scroll', updateHorizontalTransforms, { passive: true });
-
-            const adjustScrollOffsets = () => {
-                const scrollbarWidth = tableBodyContainer.offsetWidth - tableBodyContainer.clientWidth;
-                const offset = scrollbarWidth > 0 ? `${scrollbarWidth}px` : '0px';
-                tableHeaderContainer.style.marginRight = offset;
-                tableFooterContainer.style.marginRight = offset;
-            };
-
-            adjustScrollOffsets();
-            requestAnimationFrame(adjustScrollOffsets);
-            updateHorizontalTransforms();
-
-            container.appendChild(tableHeaderContainer);
-            container.appendChild(tableBodyContainer);
-            container.appendChild(tableFooterContainer);
-
             modalBody.appendChild(container);
-            tableBodyContainer.scrollLeft = 0;
-            tableBodyContainer.scrollTop = 0;
-            updateHorizontalTransforms();
+            tableFooterTfoot.style.display = tableFooterTfoot.innerHTML.trim() ? '' : 'none';
+            tableScrollContainer.scrollLeft = 0;
+            tableBodyTbody.scrollTop = 0;
 
             // Set player vitals width to match summary chips
             const summaryChipsWidth = summaryChipsContainer.offsetWidth;

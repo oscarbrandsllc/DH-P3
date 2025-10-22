@@ -4013,51 +4013,86 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     }
 
     #game-logs-modal .game-logs-table-container {
+      position: relative;
+    }
+
+    #game-logs-modal .game-logs-table-wrapper {
       display: flex;
       flex-direction: column;
       gap: 0;
     }
 
-    #game-logs-modal .game-logs-table-header,
-    #game-logs-modal .game-logs-table-footer {
-      overflow: hidden;
-    }
-
-    #game-logs-modal .game-logs-table-body {
-      max-height: 200px;
-      overflow-y: auto;
+    #game-logs-modal .game-logs-table-scroll {
+      width: 100%;
       overflow-x: auto;
-      scrollbar-width: thin;
-      scrollbar-color: rgba(160, 170, 210, 0.45) transparent;
     }
 
-    #game-logs-modal .game-logs-table-header table,
-    #game-logs-modal .game-logs-table-body table,
-    #game-logs-modal .game-logs-table-footer table {
+    #game-logs-modal .game-logs-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.7rem;
+      table-layout: fixed;
+    }
+
+    #game-logs-modal .game-logs-table thead,
+    #game-logs-modal .game-logs-table tfoot {
+      display: table;
       width: 100%;
       table-layout: fixed;
-      will-change: transform;
     }
 
-    #game-logs-modal .game-logs-table-body::-webkit-scrollbar {
+    #game-logs-modal .game-logs-table tbody {
+      display: block;
+      max-height: 200px;
+      overflow-y: auto;
+      overflow-x: visible;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(160, 170, 210, 0.45) transparent;
+      width: 100%;
+    }
+
+    #game-logs-modal .game-logs-table tbody tr {
+      display: table;
+      table-layout: fixed;
+      width: 100%;
+    }
+
+    #game-logs-modal .game-logs-table tbody::-webkit-scrollbar {
       width: 6px;
       height: 6px;
     }
 
-    #game-logs-modal .game-logs-table-body::-webkit-scrollbar-thumb {
+    #game-logs-modal .game-logs-table tbody::-webkit-scrollbar-thumb {
       background: rgba(160, 170, 210, 0.45);
       border-radius: 999px;
     }
 
-    #game-logs-modal .game-logs-table-body::-webkit-scrollbar-thumb:hover {
+    #game-logs-modal .game-logs-table tbody::-webkit-scrollbar-thumb:hover {
       background: rgba(187, 193, 232, 0.6);
     }
 
-    #game-logs-modal .game-logs-table-body::-webkit-scrollbar-track {
+    #game-logs-modal .game-logs-table tbody::-webkit-scrollbar-track {
       background: transparent;
     }
 
-    #game-logs-modal .game-logs-table-body::-webkit-scrollbar-corner {
+    #game-logs-modal .game-logs-table tbody::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+
+    #game-logs-modal .game-logs-table-scroll::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    #game-logs-modal .game-logs-table-scroll::-webkit-scrollbar-thumb {
+      background: rgba(160, 170, 210, 0.45);
+      border-radius: 999px;
+    }
+
+    #game-logs-modal .game-logs-table-scroll::-webkit-scrollbar-thumb:hover {
+      background: rgba(187, 193, 232, 0.6);
+    }
+
+    #game-logs-modal .game-logs-table-scroll::-webkit-scrollbar-track {
       background: transparent;
     }
     
