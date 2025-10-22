@@ -720,9 +720,7 @@
         const textValue = rawValue === null || rawValue === undefined ? '' : rawValue;
         if (index === 0) {
           td.classList.add('sticky-col-1', 'stats-rank-cell');
-          const rankForColor = Number.isFinite(entry.meta.rank)
-            ? entry.meta.rank
-            : toNumber(textValue, { allowFloat: false });
+          const rankForColor = entry.meta.currentRank;
           if (Number.isFinite(rankForColor)) {
             td.style.color = getRankColorValue(rankForColor);
           }
