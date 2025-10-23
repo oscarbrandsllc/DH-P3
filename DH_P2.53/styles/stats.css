@@ -284,12 +284,11 @@
   background: rgba(13, 14, 35, 0.48);
   color: var(--color-text-primary);
   font-size: 0.74rem;
-  transition: all 0.2s ease;
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
 }
 
 .stats-search-input::placeholder {
-  color: var(--color-text-tertiary);
+  color: #5F67959a;
 }
 
 /* Hide native browser clear (blue X) for search inputs */
@@ -980,6 +979,7 @@
     box-sizing: border-box;
     padding: 0.38rem 2rem 0.38rem 0.8rem; /* restore original padding */
     line-height: 1;
+    font-weight: 300;
   }
 }
 

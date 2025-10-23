@@ -493,31 +493,34 @@
     align-items: center;
     justify-content: center;
     gap: 0.1rem;
-    padding: 0.2rem 0.535rem !important;
-    min-height: 0.25rem;
+    padding: 0.29rem 0.535rem !important;
+    min-height: 2.2rem;
     width: auto;
-    background: rgba(13, 14, 35, 0.25) !important;
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(128, 138, 189, 0.2) !important;
+    background: linear-gradient(to bottom, rgba(101, 97, 97, 0.01), rgba(0, 0, 0, 0.1)) !important;
+    border: 1px solid var(--color-panel-border) !important;
     border-radius: 8px;
     color: var(--color-text-secondary);
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15),
-                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.05),
+                0 2px 8px rgba(0, 0, 0, 0.15);
 }
 .start-sit-button.active {
-    color: var(--color-accent-primary);
     background: rgba(118, 109, 255, 0.1) !important;
-    border-color: rgba(118, 109, 255, 0.3) !important;
-    box-shadow: 0 4px 12px rgba(118, 109, 255, 0.2),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    border-color: rgba(118, 109, 255, 0.93) !important;
+    box-shadow: 0 2px 6px rgba(118, 109, 255, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+
 }
 
 .start-sit-button .analyzer-icon {
-    font-size: 1rem;
+    font-size: 0.91rem;
     line-height: 1;
+    color: var(--color-text-secondary);
     filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+.start-sit-button.active .analyzer-icon {
+    color: var(--color-text-secondary);
 }
 
 .start-sit-button .analyzer-label {
@@ -525,17 +528,13 @@
     font-weight: 500;
     line-height: 1;
     margin-top: 0.05rem;
-    color: inherit;
+    color: var(--color-text-secondary);
 }
 
 .start-sit-button:hover {
     color: var(--color-text-secondary);
-    background: rgba(13, 14, 35, 0.35);
-    border-color: rgba(128, 138, 189, 0.35);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    transform: translateY(-1px);
-}
 
+}
 .start-sit-button:focus-visible {
     outline: 2px solid rgba(118, 109, 255, 0.6);
     outline-offset: 2px;
