@@ -474,6 +474,34 @@
   contain: paint;
 }
 
+/* Remove white square where scrollbars meet */
+.stats-table-scroll::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Narrow, subtle scrollbars for stats page */
+/* WebKit */
+.stats-table-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.stats-table-scroll::-webkit-scrollbar-thumb {
+  background: rgba(144, 150, 208, 0.14);
+  border-radius: 8px;
+}
+.stats-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(144, 150, 208, 0.24);
+}
+.stats-table-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Firefox */
+.stats-table-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(144,150,208,0.14) transparent;
+}
+
 .stats-table-scroll::before {
   content: '';
   position: absolute;
@@ -918,4 +946,21 @@
   .stats-table tbody td {
     padding: 0.18rem 0.35rem;
   }
+
+  /* Prevent iOS zoom by ensuring input font-size >= 16px */
+  .stats-search-input {
+    font-size: 16px;
+  }
+}
+
+/* Stats-specific glass panel override (copied from styles.css, scoped to stats page) */
+body[data-page="stats"] .glass-panel {
+  background-color: rgba(13, 14, 35, 0.21);
+  background-image: linear-gradient(rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03));
+  -webkit-backdrop-filter: blur(6px) saturate(120%) brightness(120%);
+  backdrop-filter: blur(6px) saturate(120%) brightness(120%);
+  box-shadow: inset 0 0 0 0px rgba(255, 255, 255, 0.05), inset 0 0 0 3px rgba(200, 200, 200, 0.025), 0 10px 26px rgba(0, 0, 0, var(--outerA, .22));
+  border: 1px solid rgba(128, 138, 189, 0.2);
+  border-radius: 10px;
+  box-shadow: rgba(255, 255, 255, 0.05) 0px 0px 0px 0px inset, rgba(200, 200, 200, 0.025) 0px 0px 0px 3px inset, rgba(0, 0, 0, 0.22) 0px 10px 26px 0px;
 }
