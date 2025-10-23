@@ -2940,7 +2940,7 @@ const wrTeStatOrder = [
                     else if (key === 'mtf_per_att' || key === 'ypc' || key === 'ttt' || key === 'ypr' || key === 'yprr' || key === 'first_down_rec_rate') displayValue = value.toFixed(2);
                     else if (key === 'pass_imp_per_att' || key === 'prs_pct' || key === 'snp_pct' || key === 'ts_per_rr') displayValue = formatPercentage(value);
                     else if (key === 'pass_rtg' || key === 'fpts') displayValue = value.toFixed(1);
-                    else displayValue = value.toFixed(2).replace(/\.00$/, '');
+                    else displayValue = Number.isInteger(value) ? String(value) : value.toFixed(2);
 
                     rowData[key] = createTextDescriptor(displayValue);
                 }
@@ -3134,6 +3134,22 @@ const wrTeStatOrder = [
             // Add table footer for totals
             if (gameLogsWithData.length > 0) {
                 tableFooterTfoot.innerHTML = '';
+                // Append a footer header row to mirror the column labels
+                const footerHeaderRow = document.createElement('tr');
+                tableColumns.forEach((col, idx) => {
+                    const th = document.createElement('th');
+                    if (idx === 0) th.classList.add('modal-table-footer-label','week-column-header');
+                    if (col.meta?.headerClass) {
+                        col.meta.headerClass.split(' ').forEach(cls => { if (cls) th.classList.add(cls); });
+                    }
+                    const label = typeof col.header === 'function' ? col.header({}) : col.header;
+                    th.textContent = label || '';
+                    const w = columnSizes[idx] || DEFAULT_COLUMN_WIDTH;
+                    th.style.width = `${w}px`; th.style.minWidth = `${w}px`; th.style.maxWidth = `${w}px`;
+                    footerHeaderRow.appendChild(th);
+                });
+                tableFooterTfoot.appendChild(footerHeaderRow);
+
                 const footerRow = document.createElement('tr');
                 const totalTh = document.createElement('th');
                 totalTh.className = 'modal-table-footer-label week-column-header';
@@ -3190,7 +3206,7 @@ const wrTeStatOrder = [
                         } else if (key === 'snp_pct' || key === 'prs_pct' || key === 'ts_per_rr') {
                             displayValue = formatPercentage(raw);
                         } else {
-                            displayValue = Number(raw).toFixed(2).replace(/\.00$/, '');
+                            displayValue = Number.isInteger(raw) ? String(raw) : Number(raw).toFixed(2);
                         }
                     } else if (key === 'fpts') {
                         const totalPoints = gameLogsWithData.reduce((sum, week) => sum + calculateFantasyPoints(week.stats, scoringSettings), 0);
@@ -3237,7 +3253,7 @@ const wrTeStatOrder = [
                             const count = statValueCounts['ttt'] || 0;
                             avgTtt = count > 0 ? totalTtt / count : 0;
                         }
-                        displayValue = Number(avgTtt).toFixed(2).replace(/\.00$/, '');
+                        displayValue = Number.isInteger(avgTtt) ? String(avgTtt) : Number(avgTtt).toFixed(2);
                     } else if (key === 'prs_pct') {
                         let pctValue = seasonTotals && typeof seasonTotals.prs_pct === 'number' ? seasonTotals.prs_pct : null;
                         if (pctValue === null) {
@@ -3259,7 +3275,7 @@ const wrTeStatOrder = [
                             const games = seasonTotals && typeof seasonTotals.games_played === 'number' ? seasonTotals.games_played : gameLogsWithData.length;
                             impPerGame = games > 0 ? totalImp / games : 0;
                         }
-                        displayValue = Number(impPerGame).toFixed(2).replace(/\.00$/, '');
+                        displayValue = Number.isInteger(impPerGame) ? String(impPerGame) : Number(impPerGame).toFixed(2);
                     } else if (key === 'yprr') {
                         let value = seasonTotals && typeof seasonTotals.yprr === 'number' ? seasonTotals.yprr : null;
                         if (value === null) {
@@ -3267,7 +3283,7 @@ const wrTeStatOrder = [
                             const totalRecYds = seasonTotals && typeof seasonTotals.rec_yd === 'number' ? seasonTotals.rec_yd : (aggregatedTotals['rec_yd'] || 0);
                             value = totalRoutes > 0 ? totalRecYds / totalRoutes : 0;
                         }
-                        displayValue = Number(value).toFixed(2).replace(/\.00$/, '');
+                        displayValue = Number.isInteger(value) ? String(value) : Number(value).toFixed(2);
                     } else if (key === 'ts_per_rr') {
                         let pctValue = seasonTotals && typeof seasonTotals.ts_per_rr === 'number' ? seasonTotals.ts_per_rr : null;
                         if (pctValue === null) {
@@ -3283,7 +3299,7 @@ const wrTeStatOrder = [
                             const totalRecYds = seasonTotals && typeof seasonTotals.rec_yd === 'number' ? seasonTotals.rec_yd : (aggregatedTotals['rec_yd'] || 0);
                             value = totalReceptions > 0 ? totalRecYds / totalReceptions : 0;
                         }
-                        displayValue = Number(value).toFixed(2).replace(/\.00$/, '');
+                        displayValue = Number.isInteger(value) ? String(value) : Number(value).toFixed(2);
                     } else if (key === 'first_down_rec_rate') {
                         let value = seasonTotals && typeof seasonTotals.first_down_rec_rate === 'number' ? seasonTotals.first_down_rec_rate : null;
                         if (value === null) {
@@ -3291,10 +3307,10 @@ const wrTeStatOrder = [
                             const totalRec = seasonTotals && typeof seasonTotals.rec === 'number' ? seasonTotals.rec : (aggregatedTotals['rec'] || 0);
                             value = totalRec > 0 ? (totalRecFd / totalRec) : 0;
                         }
-                        displayValue = Number(value).toFixed(2);
+                        displayValue = Number.isInteger(value) ? String(value) : Number(value).toFixed(2);
                     } else {
                         const totalValue = seasonTotals && typeof seasonTotals[key] === 'number' ? seasonTotals[key] : (aggregatedTotals[key] || 0);
-                        displayValue = Number.isInteger(totalValue) ? String(totalValue) : Number(totalValue || 0).toFixed(2).replace(/\.00$/, '');
+                        displayValue = Number.isInteger(totalValue) ? String(totalValue) : Number(totalValue || 0).toFixed(2);
                     }
                     const rankValue = getSeasonRankValue(player.id, key);
                     const rankAnnotation = createRankAnnotation(rankValue, { wrapInParens: false, ordinal: true, variant: 'gamelogs-footer' });
@@ -3780,7 +3796,7 @@ const wrTeStatOrder = [
                         calculatedValue = (raw === null) ? null : raw;
                         if (raw === null) displayValue = 'N/A';
                         else if (statKey === 'snp_pct' || statKey === 'prs_pct' || statKey === 'ts_per_rr') displayValue = formatPercentage(raw);
-                        else displayValue = Number(raw).toFixed(2).replace(/\.00$/, '');
+                        else displayValue = Number.isInteger(raw) ? String(raw) : Number(raw).toFixed(2);
                     } else {
                         const computeStat = (() => {
                             let cv = 0, dv = '0';
@@ -3793,7 +3809,7 @@ const wrTeStatOrder = [
                                     const totalYards = seasonTotals && typeof seasonTotals.rush_yd === 'number' ? seasonTotals.rush_yd : (aggregatedTotals['rush_yd'] || 0);
                                     const totalCarries = seasonTotals && typeof seasonTotals.rush_att === 'number' ? seasonTotals.rush_att : (aggregatedTotals['rush_att'] || 0);
                                     cv = totalCarries > 0 ? totalYards / totalCarries : 0;
-                                    dv = cv.toFixed(2);
+                                    dv = Number.isInteger(cv) ? String(cv) : Number(cv).toFixed(2);
                                     break;
                                 }
                                 case 'ypr': {
@@ -3804,7 +3820,7 @@ const wrTeStatOrder = [
                                         const totalRecYds = seasonTotals && typeof seasonTotals.rec_yd === 'number' ? seasonTotals.rec_yd : (aggregatedTotals['rec_yd'] || 0);
                                         cv = totalReceptions > 0 ? totalRecYds / totalReceptions : 0;
                                     }
-                                    dv = Number(cv).toFixed(2).replace(/\.00$/, '');
+                                    dv = Number.isInteger(cv) ? String(cv) : Number(cv).toFixed(2);
                                     break;
                                 }
                                 case 'snp_pct': {
@@ -3868,7 +3884,7 @@ const wrTeStatOrder = [
                                 }
                                 default: {
                                     const totalValue = seasonTotals && typeof seasonTotals[statKey] === 'number' ? seasonTotals[statKey] : (aggregatedTotals[statKey] || 0);
-                                    cv = totalValue; dv = Number.isInteger(totalValue) ? String(totalValue) : Number(totalValue || 0).toFixed(2).replace(/\.00$/, '');
+                                    cv = totalValue; dv = Number.isInteger(totalValue) ? String(totalValue) : Number(totalValue || 0).toFixed(2);
                                 }
                             }
                             return { cv, dv };
@@ -4996,15 +5012,12 @@ const wrTeStatOrder = [
         }
 
         function formatPercentage(value, decimals = 1) {
-            if (value === null || value === undefined || Number.isNaN(value)) return '0%';
+            // Preserve trailing zeros exactly as specified by `decimals`
+            const fallback = (0).toFixed(decimals) + '%';
+            if (value === null || value === undefined || Number.isNaN(value)) return fallback;
             const numericValue = Number(value);
-            if (Number.isNaN(numericValue)) return '0%';
-            const fixed = numericValue.toFixed(decimals);
-            let trimmed = fixed;
-            if (trimmed.includes('.')) {
-                trimmed = trimmed.replace(/0+$/, '').replace(/\.$/, '');
-            }
-            return `${trimmed}%`;
+            if (Number.isNaN(numericValue)) return fallback;
+            return numericValue.toFixed(decimals) + '%';
         }
 
         function getPlayerVitals(playerId) {
