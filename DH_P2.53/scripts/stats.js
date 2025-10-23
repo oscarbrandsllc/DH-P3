@@ -585,10 +585,9 @@
       return formatDecimal(meta.age, 1);
     }
     if (column === 'RK') {
-      const formatted = formatSheetCellValue(column, row[column]);
-      if (formatted !== '') return formatted;
-      if (!Number.isFinite(meta.rank) || meta.rank === Infinity) return '';
-      return formatInteger(meta.rank);
+      const rank = entry.meta.currentRank;
+      if (rank === null || rank === undefined) return '';
+      return formatInteger(rank);
     }
     const raw = row[column];
     const formatted = formatSheetCellValue(column, raw);
@@ -642,6 +641,15 @@
       const sortedPlayers = sortCollection(playerRows);
       rows = [...sortedPlayers, ...pickRows];
     }
+
+    // After sorting and filtering, re-assign ranks
+    rows.forEach((entry, index) => {
+      if (entry.meta.pos !== 'RDP') {
+        entry.meta.currentRank = index + 1;
+      } else {
+        entry.meta.currentRank = null; // Or some other placeholder for picks
+      }
+    });
 
     const wrapper = dom.tableWrappers.find((el) => el.dataset.tabPanel === statsState.currentTab);
     const otherWrappers = dom.tableWrappers.filter((el) => el !== wrapper);
@@ -712,9 +720,7 @@
         const textValue = rawValue === null || rawValue === undefined ? '' : rawValue;
         if (index === 0) {
           td.classList.add('sticky-col-1', 'stats-rank-cell');
-          const rankForColor = Number.isFinite(entry.meta.rank)
-            ? entry.meta.rank
-            : toNumber(textValue, { allowFloat: false });
+          const rankForColor = entry.meta.currentRank;
           if (Number.isFinite(rankForColor)) {
             td.style.color = getRankColorValue(rankForColor);
           }
@@ -857,11 +863,17 @@
     if (!columnSet.includes(column)) return;
 
     if (statsState.sort.column !== column) {
-      statsState.sort = { column, direction: 1 };
+      statsState.sort = { column, direction: 2 }; // Start with descending
     } else {
-      statsState.sort.direction = (statsState.sort.direction + 1) % 3;
-      if (statsState.sort.direction === 0) {
+      // Cycle: 2 (desc) -> 1 (asc) -> 0 (none)
+      if (statsState.sort.direction === 2) {
+        statsState.sort.direction = 1;
+      } else if (statsState.sort.direction === 1) {
+        statsState.sort.direction = 0;
         statsState.sort.column = null;
+      } else {
+        // This case should ideally not be hit if starting from a sorted state, but as a fallback:
+        statsState.sort.direction = 2;
       }
     }
     renderTable();
