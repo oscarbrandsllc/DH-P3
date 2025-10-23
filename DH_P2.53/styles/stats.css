@@ -312,6 +312,13 @@
   align-items: center;
 }
 
+.stats-search-icon,
+.stats-search-clear {
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2; /* keep above input backdrop */
+}
+
 .stats-search-clear {
   display: none;
   align-items: center;
@@ -948,8 +955,16 @@
   }
 
   /* Prevent iOS zoom by ensuring input font-size >= 16px */
+  /* Prevent iOS zoom by ensuring input font-size >= 16px, but visually scale down
+     so it appears smaller while keeping the browser happy. We compensate the width
+     so the scaled input still fills the available space. */
   .stats-search-input {
-    font-size: 16px !important;
+    font-size: 16px !important; /* keep >=16 to avoid iOS zoom */
+    /* Keep the original control height/padding so the box size doesn't change */
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.38rem 2rem 0.38rem 0.8rem; /* restore original padding */
+    line-height: 1;
   }
 }
 
