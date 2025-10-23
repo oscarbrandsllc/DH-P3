@@ -4646,7 +4646,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
   display: inline-block;
   font-size: 0.75em;
   opacity: 0.7;
-  margin: 0 0.2rem;
+  margin: 0 0.05rem;
 }
 
 /* Divider between completed and upcoming weeks */
