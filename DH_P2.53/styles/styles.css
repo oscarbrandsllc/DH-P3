@@ -4037,8 +4037,9 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
       max-height: 200px;
       overflow-y: auto;
       overflow-x: hidden; /* horizontal handled by parent hscroll */
+      /* Narrow, subtle scrollbars (match stats page) */
       scrollbar-width: thin;
-      scrollbar-color: rgba(160, 170, 210, 0.45) transparent;
+      scrollbar-color: rgba(255,255,255,0.06) transparent;
     }
 
     #game-logs-modal .game-logs-table {
@@ -4061,17 +4062,20 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     }
 
     #game-logs-modal .game-logs-table-body::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
+      width: 8px;
+      height: 8px;
+      background: transparent;
     }
 
     #game-logs-modal .game-logs-table-body::-webkit-scrollbar-thumb {
-      background: rgba(160, 170, 210, 0.45);
-      border-radius: 999px;
+      background-color: rgba(255,255,255,0.06);
+      border-radius: 8px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
     }
 
     #game-logs-modal .game-logs-table-body::-webkit-scrollbar-thumb:hover {
-      background: rgba(187, 193, 232, 0.6);
+      background-color: rgba(255,255,255,0.12);
     }
 
     #game-logs-modal .game-logs-table-body::-webkit-scrollbar-track {
