@@ -292,6 +292,21 @@
   color: var(--color-text-tertiary);
 }
 
+/* Hide native browser clear (blue X) for search inputs */
+.stats-search-input::-webkit-search-cancel-button,
+.stats-search-input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+/* Edge/IE legacy selectors (harmless elsewhere) */
+.stats-search-input::-ms-clear,
+.stats-search-input::-ms-reveal {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 .stats-search-input:focus {
   outline: none;
   border-color: rgba(118, 109, 255, 0.6);

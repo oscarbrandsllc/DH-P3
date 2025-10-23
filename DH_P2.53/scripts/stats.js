@@ -175,8 +175,9 @@
     tableWrappers: Array.from(document.querySelectorAll('.stats-table-wrapper')),
     loading: document.getElementById('statsLoading'),
     emptyState: document.getElementById('statsEmptyState'),
-    searchInput: document.getElementById('statsSearchInput'),
-    searchClear: document.getElementById('statsSearchClear'),
+  searchInput: document.getElementById('statsSearchInput'),
+  searchClear: document.getElementById('statsSearchClear'),
+  searchIcon: document.querySelector('.stats-search-icon'),
     filterGroup: document.getElementById('statsFilterGroup'),
     rookieButton: document.querySelector('.stats-rookie-btn'),
     leagueChip: document.getElementById('statsLeagueContext')
@@ -883,6 +884,7 @@
     const term = event.target.value || '';
     statsState.searchTerm = term.trim().toLowerCase();
     dom.searchClear.classList.toggle('visible', term.length > 0);
+    if (dom.searchIcon) dom.searchIcon.classList.toggle('hidden', term.length > 0);
     renderTable();
   }
 
@@ -890,6 +892,7 @@
     dom.searchInput.value = '';
     statsState.searchTerm = '';
     dom.searchClear.classList.remove('visible');
+    if (dom.searchIcon) dom.searchIcon.classList.remove('hidden');
     renderTable();
     dom.searchInput.focus();
   }
@@ -1025,4 +1028,9 @@
   });
 
   initialise();
+  // Set initial icon/clear visibility based on any prefilled value
+  if (dom.searchInput) {
+    const evt = new Event('input', { bubbles: false });
+    dom.searchInput.dispatchEvent(evt);
+  }
 })();
