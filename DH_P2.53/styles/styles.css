@@ -493,7 +493,7 @@
     align-items: center;
     justify-content: center;
     gap: 0.1rem;
-    padding: 0.29rem 0.535rem !important;
+    padding: 0.25rem 0.535rem !important;
     min-height: 2.2rem;
     width: auto;
     background: linear-gradient(to bottom, rgba(101, 97, 97, 0.01), rgba(0, 0, 0, 0.1)) !important;
