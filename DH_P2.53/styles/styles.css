@@ -3413,8 +3413,8 @@ font-weight: 500 !important;
 .filters-container {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-left: 4px;
+    gap: 0.25rem;
+    margin-left: 2px;
 }
 
 .research-button-container {
@@ -3481,6 +3481,7 @@ font-weight: 500 !important;
     margin-top: 4px;
     font-size: 0.8rem;
     line-height: 1;
+    margin-left: 3px;
 }
 
 .compare-controls .compare-search-toggle i {
