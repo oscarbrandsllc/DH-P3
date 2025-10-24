@@ -178,7 +178,7 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
             }, true);
         } catch (e) {}
         const getPageUrl = (page) => {
-            const username = usernameInput.value.trim();
+            const username = usernameInput?.value?.trim() || '';
             let url = '';
             const base = pageType === 'welcome' ? '' : '../';
 
@@ -232,22 +232,29 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
 
         // Helper wrapper to validate username for non-home pages and navigate.
         async function ensureNavigate(page) {
-            const username = usernameInput?.value?.trim();
-            if (!username && page !== 'home') {
-                showTemporaryTooltip(usernameInput || document.body, 'Enter a valid SLPR username');
-                return;
-            }
             if (page === 'home') {
                 window.location.href = getPageUrl('home');
                 return;
             }
-            try {
-                await ensureValidUser(username);
-            } catch (e) {
-                showTemporaryTooltip(usernameInput || document.body, 'Username not found');
+
+            const username = usernameInput?.value?.trim() || '';
+            const pagesRequiringUsername = new Set(['rosters', 'ownership', 'analyzer']);
+            const needsValidation = pagesRequiringUsername.has(page);
+
+            if (needsValidation && !username) {
+                showTemporaryTooltip(usernameInput || document.body, 'League-Connected Content Requires a Valid Username Input via the Home Page');
                 return;
             }
-            // all good: navigate
+
+            if (needsValidation) {
+                try {
+                    await ensureValidUser(username);
+                } catch (e) {
+                    showTemporaryTooltip(usernameInput || document.body, 'Username not found');
+                    return;
+                }
+            }
+
             window.location.href = getPageUrl(page);
         }
 
@@ -5584,26 +5591,34 @@ const wrTeStatOrder = [
         syncRosterHeaderPosition();
 
         function showTemporaryTooltip(element, message) {
+            const anchor = element || document.body;
+            document.querySelectorAll('.custom-tooltip').forEach(node => node.remove());
+
             const tooltip = document.createElement('div');
             tooltip.className = 'custom-tooltip';
             tooltip.textContent = message;
             document.body.appendChild(tooltip);
 
-            const rect = element.getBoundingClientRect();
-            tooltip.style.position = 'absolute';
-            tooltip.style.left = `${rect.left + window.scrollX}px`;
-            tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`;
-            tooltip.style.background = 'black';
-            tooltip.style.color = 'white';
-            tooltip.style.padding = '5px 10px';
-            tooltip.style.borderRadius = '4px';
-            tooltip.style.zIndex = '1000';
-            tooltip.style.border = '1px solid #ccc';
-            tooltip.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+            const rect = anchor.getBoundingClientRect();
+            const tooltipRect = tooltip.getBoundingClientRect();
+            const viewportLeft = window.scrollX + 8;
+            const viewportRight = window.scrollX + document.documentElement.clientWidth - 8;
 
-            setTimeout(() => {
-                tooltip.remove();
-            }, 2000);
+            let left = rect.left + window.scrollX + (rect.width - tooltipRect.width) / 2;
+            if (left < viewportLeft) left = viewportLeft;
+            if (left + tooltipRect.width > viewportRight) {
+                left = Math.max(viewportLeft, viewportRight - tooltipRect.width);
+            }
+
+            const top = rect.bottom + window.scrollY + 12;
+
+            tooltip.style.left = `${left}px`;
+            tooltip.style.top = `${top}px`;
+
+            requestAnimationFrame(() => tooltip.classList.add('is-visible'));
+
+            setTimeout(() => tooltip.classList.add('is-hiding'), 2000);
+            setTimeout(() => tooltip.remove(), 2400);
         }
 
         function openModal() {
