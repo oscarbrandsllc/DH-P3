@@ -678,7 +678,7 @@
 
 .stats-table .stats-player-btn {
   color: inherit;
-  font-weight: 600;
+  font-weight: 400;
   position: relative;
   padding-left: 0.06rem;
   transition: color 0.2s ease;
@@ -691,7 +691,7 @@
   bottom: -0.08rem;
   width: 100%;
   height: 1px;
-  background: rgba(144, 150, 208, 0.55);
+  background: rgba(144, 150, 208, 0.25);
   transition: background 0.2s ease;
 }
 
@@ -1045,8 +1045,8 @@
 body[data-page="stats"] .glass-panel {
   background-color: rgba(13, 14, 35, 0.21);
   background-image: linear-gradient(rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03));
-  -webkit-backdrop-filter: blur(6px) saturate(120%) brightness(120%);
-  backdrop-filter: blur(6px) saturate(120%) brightness(120%);
+  -webkit-backdrop-filter: blur(2px) saturate(120%) brightness(120%);
+  backdrop-filter: blur(2px) saturate(120%) brightness(120%);
   box-shadow: inset 0 0 0 0px rgba(255, 255, 255, 0.05), inset 0 0 0 3px rgba(200, 200, 200, 0.025), 0 10px 26px rgba(0, 0, 0, var(--outerA, .22));
   border: 1px solid rgba(128, 138, 189, 0.2);
   border-radius: 10px;

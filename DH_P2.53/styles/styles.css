@@ -4431,7 +4431,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     #modal-body tfoot th {
         color: var(--color-accent-primary);
         white-space:nowrap;
-        padding: 0.25rem 0rem 0.08rem 0.02rem;    }
+        padding: 0.25rem 0rem 0.3rem 0.02rem;    }
     
     #modal-body .no-logs {
         text-align: center;
@@ -4891,7 +4891,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 
 
     .modal-table-footer-label .gp-label {
-        font-size: 0.85em;
+        font-size: 0.9em;
         color: var(--color-text-tertiary);
         display: block;
         margin-top: 2px;
