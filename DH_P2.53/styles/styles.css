@@ -624,6 +624,110 @@
         max-width: 6rem;
     }
 }
+
+@media (min-width: 1024px) {
+  body[data-page="rosters"] #header-container {
+    display: flex;
+    justify-content: center;
+    padding: 0.5rem 0 0.9rem;
+  }
+
+  body[data-page="rosters"] #header-container .app-header {
+    --roster-desktop-gap: 0.75rem;
+    --roster-desktop-field-width: 200px;
+    --roster-desktop-max: min(calc(100vw - 3rem), 1060px);
+    display: grid;
+    grid-template-columns: var(--roster-desktop-field-width) repeat(5, auto);
+    grid-template-rows: auto auto;
+    column-gap: var(--roster-desktop-gap);
+    row-gap: 0.85rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0.9rem 1.15rem 1rem;
+    margin: 0 auto;
+    width: fit-content;
+    max-width: var(--roster-desktop-max);
+  }
+
+  body[data-page="rosters"] #primary-header-row,
+  body[data-page="rosters"] #contextual-controls,
+  body[data-page="rosters"] #secondary-header-row,
+  body[data-page="rosters"] #filters-row,
+  body[data-page="rosters"] .filters-container {
+    display: contents !important;
+  }
+
+  body[data-page="rosters"] #contextual-controls .header-row {
+    border-top: 0;
+    padding: 0;
+  }
+
+  body[data-page="rosters"] .username-area {
+    grid-column: 1;
+    grid-row: 1;
+    width: var(--roster-desktop-field-width);
+    max-width: var(--roster-desktop-field-width);
+  }
+
+  body[data-page="rosters"] .nav-buttons-container {
+    grid-column: 2 / span 5;
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: var(--roster-desktop-gap);
+    min-width: 0;
+  }
+
+  body[data-page="rosters"] .nav-buttons-container .nav-button {
+    flex: 0 0 auto;
+    width: 75px;
+  }
+
+  body[data-page="rosters"] .custom-select-wrapper {
+    grid-column: 1;
+    grid-row: 2;
+    width: var(--roster-desktop-field-width);
+    max-width: var(--roster-desktop-field-width);
+  }
+
+  body[data-page="rosters"] .view-switcher {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: flex-start;
+  }
+
+  body[data-page="rosters"] .start-sit-button-slot {
+    grid-column: 3;
+    grid-row: 2;
+    justify-self: flex-start;
+  }
+
+  body[data-page="rosters"] #positional-filters {
+    grid-column: 4;
+    grid-row: 2;
+    justify-content: flex-start;
+  }
+
+  body[data-page="rosters"] #clearFiltersButton {
+    grid-column: 5;
+    grid-row: 2;
+    margin: 0;
+  }
+
+  body[data-page="rosters"] .compare-controls {
+    grid-column: 6;
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    justify-self: flex-start;
+    position: static;
+  }
+
+  body[data-page="rosters"] .compare-controls .compare-search-toggle {
+    margin: 0;
+  }
+}
         .app-header {
             padding: 0.25rem;
             display: flex;
