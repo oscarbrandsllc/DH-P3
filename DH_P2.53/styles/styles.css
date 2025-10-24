@@ -1795,6 +1795,17 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
         .start-sit-total-value {
             font-weight: 600;
         }
+
+    @media (max-width: 768px) {
+        .start-sit-total-label,
+        .start-sit-total-value {
+            display: block;
+        }
+
+        .start-sit-total-value {
+            margin-top: 0.25rem;
+        }
+    }
     .start-sit-preview-column .start-sit-matchup-meta {
       font-size: 0.8rem;
       color: var(--color-text-tertiary);
