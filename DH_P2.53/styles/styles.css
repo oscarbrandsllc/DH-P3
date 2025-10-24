@@ -8230,18 +8230,7 @@ body[data-page="analyzer"] .analyzer-leaderboard table td:nth-child(2) {
 }
 
 body[data-page="analyzer"] .app-header {
-  --header-control-height: 1.65rem;
   --header-field-max-width: 140px;
-}
-
-body[data-page="analyzer"] #usernameInput {
-  font-size: 0.62rem;
-  padding: 0.16rem 0.4rem;
-}
-
-body[data-page="analyzer"] #leagueSelect {
-  font-size: 0.66rem;
-  padding: 0.22rem 1rem 0.22rem 0.4rem;
 }
 
 @media (max-width: 640px) {
