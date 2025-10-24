@@ -675,13 +675,12 @@
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    gap: var(--roster-desktop-gap);
     min-width: 0;
   }
 
   body[data-page="rosters"] .nav-buttons-container .nav-button {
     flex: 0 0 auto;
-    width: 75px;
+    width: 77px;
   }
 
   body[data-page="rosters"] .custom-select-wrapper {
@@ -707,6 +706,7 @@
     grid-column: 4;
     grid-row: 2;
     justify-content: flex-start;
+    margin-left: 3px;
   }
 
   body[data-page="rosters"] #clearFiltersButton {
