@@ -264,7 +264,7 @@
 
         body[data-page="rosters"] #header-container {
             position: fixed;
-            top: 0;
+            top: 7px;
             left: 0;
             right: 0;
             width: 100vw;

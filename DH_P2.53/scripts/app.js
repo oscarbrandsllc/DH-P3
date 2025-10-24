@@ -346,7 +346,7 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
         const PLAYER_STATS_SHEET_ID = '1i-cKqSfYw0iFiV9S-wBw8lwZePwXZ7kcaWMdnaMTHDs';
         const PLAYER_STATS_SHEETS = { season: 'SZN', seasonRanks: 'SZN_RKs', weeks: { 1: 'WK1', 2: 'WK2', 3: 'WK3', 4: 'WK4', 5: 'WK5', 6: 'WK6', 7: 'WK7' } };
         // UPDATE THIS: Total number of weeks to display in game logs (including unplayed weeks with projections)
-        const MAX_DISPLAY_WEEKS = 9; // Currently showing weeks 1-8; increase as more week sheets are added
+        const MAX_DISPLAY_WEEKS = 12; // Currently showing weeks 1-8; increase as more week sheets are added
         const TAG_COLORS = { QB:"var(--pos-qb)", RB:"var(--pos-rb)", WR:"var(--pos-wr)", TE:"var(--pos-te)", BN:"var(--pos-bn)", TX:"var(--pos-tx)", FLX: "var(--pos-flx)", SFLX: "var(--pos-sflx)" };
         const INJURY_DESIGNATION_COLORS = {
             'IR': '#d93d76',
