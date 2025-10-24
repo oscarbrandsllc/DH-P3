@@ -6279,6 +6279,57 @@ body[data-page="research"] .app-header {
   margin-bottom: 1.05rem;
 }
 
+@media (min-width: 869px) {
+  body[data-page="research"] {
+    --research-desktop-panel-width: min(calc(100vw - 3.5rem), 900px);
+    --research-desktop-shell-width: min(calc(100vw - 3rem), 1100px);
+    --research-desktop-nav-button-width: clamp(4.2rem, 4.5vw, 4.85rem);
+  }
+
+  body[data-page="research"] #header-container {
+    display: flex;
+    justify-content: center;
+    padding: 0rem 0 0.25rem;
+  }
+
+  body[data-page="research"] #header-container .app-header {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    width: fit-content;
+    padding: 0.65rem 1.35rem;
+  }
+
+  body[data-page="research"] #header-container .app-header .header-row {
+    width: auto;
+    display: flex;
+    justify-content: center;
+    gap: clamp(0.55rem, 1.4vw, 0.85rem);
+    padding: 0;
+  }
+
+  body[data-page="research"] #header-container .app-header > .header-row:first-of-type {
+    grid-template-columns: none;
+  }
+
+  body[data-page="research"] #header-container .nav-buttons-container {
+    flex: none;
+    width: max-content;
+    justify-content: center;
+    gap: clamp(0.55rem, 1.4vw, 0.85rem);
+  }
+
+  body[data-page="research"] #header-container .nav-button {
+    flex: 1 1 0;
+    width: 6.5rem;
+    max-width: none;
+    min-height: 2.7rem;
+    max-height: 2.7rem;
+    height: 2.7rem;
+  }
+}
+
 .syop-main {
   display: flex;
   flex-direction: column;
