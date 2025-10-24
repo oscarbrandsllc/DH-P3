@@ -264,7 +264,7 @@
 
         body[data-page="rosters"] #header-container {
             position: fixed;
-            top: 7px;
+            top: 3px;
             left: 0;
             right: 0;
             width: 100vw;
@@ -563,10 +563,6 @@
     .app-logo {
         width: 1.8rem;
         height: 1.8rem;
-    }
-
-    #secondary-header-row .username-area,
-    #secondary-header-row .custom-select-wrapper {
     }
 
     .nav-buttons-container {
@@ -1358,12 +1354,13 @@ n {
 
 @media (min-width: 869px) {
   body[data-page="rosters"] .app-header.preview-active {
-    --roster-preview-gap: clamp(0.45rem, 1.4vw, 0.85rem);
-    grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+    --roster-preview-gap: clamp(0.4rem, 1.2vw, 0.7rem);
+    grid-template-columns: auto auto auto auto auto;
     grid-template-rows: auto;
     column-gap: var(--roster-preview-gap);
     row-gap: 0;
     align-items: center;
+    padding: 0.6rem 0.85rem;
   }
 
   body[data-page="rosters"] .app-header.preview-active #primary-header-row {
