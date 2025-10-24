@@ -731,11 +731,11 @@
 }
 
 @media (min-width: 869px) {
-  #homeButton {
+  body[data-page="rosters"] #homeButton {
     margin-left: 20px;
   }
 
-  .nav-button {
+n {
     gap: 0.09rem;
   }
 

@@ -435,6 +435,79 @@
   overflow: hidden;
 }
 
+@media (min-width: 869px) {
+  body[data-page="stats"] {
+    --stats-desktop-panel-width: min(calc(100vw - 3.5rem), 900px);
+    --stats-desktop-shell-width: min(calc(100vw - 3rem), 1100px);
+    --stats-desktop-nav-button-width: clamp(4.2rem, 4.5vw, 4.85rem);
+    --stats-desktop-table-width: var(--stats-desktop-panel-width, 900px);
+  }
+
+  body[data-page="stats"] #header-container {
+    display: flex;
+    justify-content: center;
+    padding: 0rem 0 0.25rem;
+  }
+
+  body[data-page="stats"] #header-container .app-header {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    width: fit-content;
+    padding: 0.65rem 1.35rem;
+  }
+
+  body[data-page="stats"] #header-container .app-header .header-row {
+    width: auto;
+    display: flex;
+    justify-content: center;
+    gap: clamp(0.55rem, 1.4vw, 0.85rem);
+    padding: 0;
+  }
+
+  body[data-page="stats"] #header-container .app-header > .header-row:first-of-type {
+    grid-template-columns: none;
+  }
+
+  body[data-page="stats"] #header-container .nav-buttons-container {
+    flex: none;
+    width: max-content;
+    justify-content: center;
+    gap: clamp(0.55rem, 1.4vw, 0.85rem);
+  }
+
+  body[data-page="stats"] #header-container .nav-button {
+    flex: 1 1 0;
+    width: 6.5rem;
+    max-width: none;
+    min-height: 2.7rem;
+    max-height: 2.7rem;
+    height: 2.7rem;
+  }
+
+  body[data-page="stats"] .stats-page-content {
+    align-items: center;
+  }
+
+  body[data-page="stats"] .stats-page-intro,
+  body[data-page="stats"] .stats-controls-panel,
+  body[data-page="stats"] .stats-table-region {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  body[data-page="stats"] .stats-page-intro,
+  body[data-page="stats"] .stats-controls-panel {
+    width: min(100%, var(--stats-desktop-panel-width, 900px));
+  }
+
+  /* Keep the table container width configurable via its own token for easy future adjustments */
+  body[data-page="stats"] .stats-table-region {
+    width: min(100%, var(--stats-desktop-table-width, 900px));
+  }
+}
+
 .stats-loading {
   display: flex;
   flex-direction: column;
