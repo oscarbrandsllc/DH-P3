@@ -626,7 +626,7 @@
     }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 869px) {
   body[data-page="rosters"] #header-container {
     display: flex;
     justify-content: center;
@@ -730,7 +730,7 @@
   }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 869px) {
   #homeButton {
     margin-left: 20px;
   }
@@ -938,7 +938,7 @@
             display: none;
         }
 
-        @media (min-width: 1024px) {
+    @media (min-width: 869px) {
             .header-quick-links {
                 display: flex;
             }
@@ -6505,7 +6505,7 @@ body[data-page="research"] .app-header {
   backdrop-filter: none;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 869px) {
   .syop-gauges {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     column-gap: clamp(1rem, 2.2vw, 1.75rem);
@@ -6895,7 +6895,7 @@ body[data-page="research"] .app-header {
 }
 
 /* Responsive refinements */
-@media (min-width: 1024px) {
+@media (min-width: 869px) {
   .syop-panel-wide {
     grid-column: 1 / -1;
   }
@@ -7734,7 +7734,7 @@ body[data-page="analyzer"] .analyzer-panels-grid {
   grid-template-columns: 1fr;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 869px) {
   body[data-page="analyzer"] .analyzer-panels-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -7809,7 +7809,7 @@ body[data-page="analyzer"] .analyzer-panel-body--stacked {
   gap: 1.5rem;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 869px) {
   body[data-page="analyzer"] .analyzer-panel-body--stacked {
     flex-direction: row;
     align-items: stretch;
