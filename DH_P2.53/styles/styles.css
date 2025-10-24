@@ -408,14 +408,12 @@
 
 #secondary-header-row .username-area {
     width: auto;
-    flex: 1;
-    max-width: 140px;
+    flex: 1 1 0;
 }
 
 #secondary-header-row .custom-select-wrapper {
     width: auto;
-    flex: 1;
-    max-width: 140px;
+    flex: 1 1 0;
 }
 
 .compact-switcher {
@@ -478,6 +476,7 @@
     align-items: center;
     justify-content: center;
     flex: 1 1 0;
+    margin: 0px 3px;
 }
 
 .start-sit-button-container {
@@ -568,7 +567,6 @@
 
     #secondary-header-row .username-area,
     #secondary-header-row .custom-select-wrapper {
-        max-width: 147px;
     }
 
     .nav-buttons-container {
@@ -863,7 +861,6 @@
         #primary-header-row .username-area,
         #secondary-header-row .custom-select-wrapper {
             justify-self: center;
-            width: 100%;
         }
 
         #primary-header-row .primary-switcher,
@@ -950,7 +947,6 @@
                 .username-area {
                     flex-grow: 1;
                     min-width: 100px; /* prevent it from getting too small */
-                    max-width: 211px;
                     padding: 0;
                     height: var(--header-control-height);
                     display: flex;
@@ -1004,7 +1000,6 @@
             position: relative;
             flex-grow: 1;
             min-width: 0;
-            max-width: var(--header-field-max-width);
             height: var(--header-control-height);
             display: flex;
             align-items: stretch;
