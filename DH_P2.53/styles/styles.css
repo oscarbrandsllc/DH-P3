@@ -8277,6 +8277,121 @@ body[data-page="analyzer"] #leagueSelect {
 #dh-scramble .dh-dud { opacity: 0.55; filter: saturate(70%); }
 /* ========================================= */
 
+/* === Ownership + Analyzer desktop header layout === */
+@media (min-width: 820px) {
+  body[data-page="ownership"] #header-container,
+  body[data-page="analyzer"] #header-container {
+    display: flex;
+    justify-content: center;
+  }
+
+  body[data-page="ownership"] #header-container .app-header,
+  body[data-page="analyzer"] #header-container .app-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.1rem;
+    width: min(100%, 880px);
+    margin: 0 auto;
+    padding: 1.1rem 1.35rem;
+    --header-control-height: 3.4rem;
+    border-radius: 24px;
+  }
+
+  body[data-page="ownership"] #primary-header-row,
+  body[data-page="analyzer"] #primary-header-row {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    padding: 0;
+    margin: 0;
+  }
+
+  body[data-page="ownership"] #primary-header-row .nav-buttons-container,
+  body[data-page="analyzer"] #primary-header-row .nav-buttons-container {
+    width: 100%;
+    flex: 0 0 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 0.95rem;
+    flex-wrap: nowrap;
+    margin: 0 auto;
+  }
+
+  body[data-page="ownership"] .nav-button,
+  body[data-page="analyzer"] .nav-button {
+    flex: 1 1 0;
+    min-width: 120px;
+    max-width: 164px;
+    min-height: 3.4rem;
+    padding: 0.95rem 0.8rem 0.82rem;
+    border-radius: 20px;
+    gap: 0.32rem;
+  }
+
+  body[data-page="ownership"] .nav-button i,
+  body[data-page="analyzer"] .nav-button i {
+    font-size: 1.5rem;
+  }
+
+  body[data-page="ownership"] .nav-label,
+  body[data-page="analyzer"] .nav-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.035em;
+  }
+
+  body[data-page="ownership"] #primary-header-row .nav-logo,
+  body[data-page="analyzer"] #primary-header-row .nav-logo {
+    width: 1.5rem;
+    height: 1.44rem;
+  }
+
+  body[data-page="ownership"] #secondary-header-row,
+  body[data-page="analyzer"] #secondary-header-row {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem;
+    padding-top: 0.95rem;
+    border-top: 1px solid rgba(123, 110, 255, 0.32);
+    box-shadow: inset 0 1px 0 rgba(173, 156, 255, 0.12);
+    align-items: stretch;
+  }
+
+  body[data-page="ownership"] #secondary-header-row .username-area,
+  body[data-page="ownership"] #secondary-header-row .custom-select-wrapper,
+  body[data-page="analyzer"] #secondary-header-row .username-area,
+  body[data-page="analyzer"] #secondary-header-row .custom-select-wrapper {
+    max-width: none;
+    height: var(--header-control-height);
+  }
+
+  body[data-page="ownership"] #usernameInput,
+  body[data-page="analyzer"] #usernameInput {
+    font-size: 1.05rem;
+    padding: 0.6rem 1rem;
+    border-radius: 18px;
+    font-weight: 400;
+  }
+
+  body[data-page="ownership"] #leagueSelect,
+  body[data-page="analyzer"] #leagueSelect {
+    font-size: 1.05rem;
+    padding: 0.6rem 1.8rem 0.6rem 1rem;
+    color: #d5d9ff;
+    border-radius: 18px;
+  }
+
+  body[data-page="ownership"] .custom-select-wrapper::after,
+  body[data-page="analyzer"] .custom-select-wrapper::after {
+    right: 1.05rem;
+    font-size: 0.9rem;
+    transform: translateY(-50%) scale(0.95);
+  }
+}
+
 
 /* === Loading Overlay + Orbit Ring (uses existing theme colors) === */
 #loading.hidden { display: none; }
