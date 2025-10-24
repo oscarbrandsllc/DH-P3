@@ -477,7 +477,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
+    flex: 1 1 0;
 }
 
 .start-sit-button-container {
@@ -485,6 +485,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    flex: 1 1 0 !important;
+    min-width: fit-content;
 }
 
 .start-sit-button {
@@ -494,8 +496,9 @@
     justify-content: center;
     gap: 0.1rem;
     padding: 0.2rem 0.535rem !important;
-    min-height: 0.25rem;
-    width: auto;
+    flex: 1 1 0 !important;   /* take remaining row width */
+    width: 100%;   /* fill its flex cell */
+    min-width: 3.5rem;  /* avoid min-content clamp */
     background: rgba(13, 14, 35, 0.25) !important;
     backdrop-filter: blur(8px);
     border: 1px solid rgba(128, 138, 189, 0.2) !important;
@@ -1102,7 +1105,7 @@
             text-shadow: 0 0 2px rgba(0,0,0,0.2);
         }
         .filter-btn {
-            padding: 0.15rem 0.6rem;
+            padding: 0.15rem 0.5rem;
             font-size: 0.85rem;
             font-weight: 400;
             border: 1px solid transparent;
@@ -3560,7 +3563,7 @@ font-weight: 500 !important;
     align-items: center;
     justify-content: center;
     margin-left: -0.1rem;   /* small space on the left  */
-    margin-right: 0.7rem;  /* larger space on the right */
+    margin-right: 0.27rem;  /* larger space on the right */
     text-decoration: none;
 }
 
