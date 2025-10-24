@@ -1355,6 +1355,99 @@ n {
 .app-header.preview-active #secondary-header-row {
   display: none !important;
 }
+
+@media (min-width: 869px) {
+  body[data-page="rosters"] .app-header.preview-active {
+    --roster-preview-gap: clamp(0.45rem, 1.4vw, 0.85rem);
+    grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+    grid-template-rows: auto;
+    column-gap: var(--roster-preview-gap);
+    row-gap: 0;
+    align-items: center;
+  }
+
+  body[data-page="rosters"] .app-header.preview-active #primary-header-row {
+    display: none !important;
+  }
+
+  body[data-page="rosters"] .app-header.preview-active #contextual-controls {
+    display: contents !important;
+  }
+
+  body[data-page="rosters"] .app-header.preview-active #contextual-controls .header-row {
+    display: contents !important;
+  }
+
+  body[data-page="rosters"] .app-header.preview-active #secondary-header-row {
+    display: contents !important;
+  }
+
+  body[data-page="rosters"] .app-header.preview-active #filters-row {
+    display: contents !important;
+  }
+
+  body[data-page="rosters"] .app-header.preview-active #secondary-header-row .username-area,
+  body[data-page="rosters"] .app-header.preview-active #secondary-header-row .custom-select-wrapper {
+    display: none !important;
+  }
+
+  body[data-page="rosters"] .app-header.preview-active .view-switcher {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: flex-start;
+    margin-left: 0;
+  }
+
+  body[data-page="rosters"] .app-header.preview-active .secondary-switcher {
+    margin-left: 0;
+  }
+
+  body[data-page="rosters"] .app-header.preview-active .start-sit-button-slot {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: flex-start;
+    margin: 0;
+  }
+
+  body[data-page="rosters"] .app-header.preview-active .start-sit-button-container {
+    flex: 0 0 auto !important;
+  }
+
+  body[data-page="rosters"] .app-header.preview-active .filters-container {
+    grid-column: 3;
+    grid-row: 1;
+    display: contents !important;
+  }
+
+  body[data-page="rosters"] .app-header.preview-active #positional-filters {
+    grid-column: 3;
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0;
+    justify-content: flex-start;
+    min-width: 0;
+  }
+
+  body[data-page="rosters"] .app-header.preview-active #clearFiltersButton {
+    grid-column: 4;
+    grid-row: 1;
+    margin: 0;
+    justify-self: flex-start;
+  }
+
+  body[data-page="rosters"] .app-header.preview-active .compare-controls {
+    grid-column: 5;
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    position: static;
+    margin-left: 0;
+    justify-self: flex-end;
+  }
+}
 /* Welcome page: enforce uniform control heights and tighter mobile spacing */
 body[data-page="welcome"] {
   /* single source of truth for header control sizing on the welcome page */
