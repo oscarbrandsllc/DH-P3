@@ -724,6 +724,15 @@
   body[data-page="rosters"] .compare-controls .compare-search-toggle {
     margin: 0;
   }
+
+  body[data-page="rosters"] #header-container {
+    position: fixed;
+    top: 0;
+    top: 7px;
+    left: 0;
+    right: 0;
+    width: 100vw;
+  }
 }
 
 @media (min-width: 869px) {
@@ -1353,14 +1362,22 @@ n {
 }
 
 @media (min-width: 869px) {
-  body[data-page="rosters"] .app-header.preview-active {
+  body[data-page="rosters"] #header-container .app-header.preview-active {
+    --roster-desktop-gap: 0.75rem;
+    --roster-desktop-field-width: 113px;
+    --roster-desktop-max: min(calc(100vw - 3rem), 1060px);
     --roster-preview-gap: clamp(0.4rem, 1.2vw, 0.7rem);
-    grid-template-columns: auto auto auto auto auto;
-    grid-template-rows: auto;
-    column-gap: var(--roster-preview-gap);
-    row-gap: 0;
+    display: grid;
+    grid-template-columns: var(--roster-desktop-field-width) repeat(5, auto);
+    grid-template-rows: auto auto;
+    column-gap: var(--roster-desktop-gap);
+    row-gap: 0.85rem;
     align-items: center;
-    padding: 0.6rem 0.85rem;
+    justify-content: center;
+    padding: 0.9rem 1.15rem 0.21rem;
+    margin: 0 auto;
+    width: fit-content;
+    max-width: var(--roster-desktop-max);
   }
 
   body[data-page="rosters"] .app-header.preview-active #primary-header-row {
@@ -1768,9 +1785,9 @@ body[data-page="welcome"] .enter-label { line-height: 1; }
             border-radius: 8px;                   /* match header */
         }
 
-/* ⬇︎  ENTIRE COLUMN GLOW  ⬇︎ */
-.roster-column:has(.team-compare-checkbox.selected) {
-    box-shadow: inset 0 0 2px #6300ff55, inset 0 0 38px #5300ff35;          /* same highlight as header */
+/* ⬇︎  COMPARE SELECTION GLOW  ⬇︎ */
+.roster-column:has(.team-compare-checkbox.selected) .team-card {
+  box-shadow: inset 0 0 2px #6300ff55, inset 0 0 38px #5300ff35;          /* same highlight as header */
 }
 		
        .team-header-item {
