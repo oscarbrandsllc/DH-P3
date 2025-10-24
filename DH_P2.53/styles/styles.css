@@ -729,6 +729,45 @@
     margin: 0;
   }
 }
+
+@media (min-width: 1024px) {
+  #homeButton {
+    margin-left: 20px;
+  }
+
+  .nav-button {
+    gap: 0.09rem;
+  }
+
+  .compact-switcher button {
+    padding: 0.3rem 0.4rem 0.2rem !important;
+  }
+
+  .compact-switcher button i {
+    font-size: 0.75rem;
+  }
+.switcher-label {
+    font-size: 0.45rem;
+  }
+  .start-sit-button {
+    padding: 0.3rem 0.535rem 0.2rem !important;
+    width: 58px;
+    margin-left: 3px;
+    flex: 0 0 58px !important;
+    min-width: 58px !important;
+  }
+
+  .start-sit-button .analyzer-icon {
+    font-size: 0.951rem;
+  }
+
+  #primary-header-row .primary-switcher,
+  #secondary-header-row .secondary-switcher {
+    min-width: 115px;
+    margin-block: 0.075rem;
+    margin-left: 20px;
+  }
+}
         .app-header {
             padding: 0.25rem;
             display: flex;
