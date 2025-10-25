@@ -1,9 +1,9 @@
 
 Initial Review (Important First Step):
 
-Before modifying any code, thoroughly review the existing structures, functionality, layout, setup, and styles relevant to the task. Start developing a deep understanding of how stats page is set up, how components are implemented, and how to alter every aspect of table and page.
+Before modifying any code, thoroughly review the existing structures, functionality, layout, setup, and styles relevant to the task. Develop a deep understanding of how the pages are set up, how components are implemented, and how to alter each component on every page.
 
-Analyze the relevant sections related to prompt to fully understand the current HTML structure, JavaScript rendering logic, data flow, and CSS styling
+Analyze the relevant sections related to prompt to fully understand the current HTML structure, JavaScript rendering logic, data flow, and CSS styling.
 
 Make sure you are always very thorough, and review files necessary for context, so that you have working knowledge and full understanding of the project.
 
