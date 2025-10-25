@@ -4423,7 +4423,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     }
 
     #modal-body tfoot tr {
-      border-top: 1px solid var(--color-panel-border-glow);
+      border-top: 1px solid rgb(128 138 189 / 18%);
       white-space:nowrap;
       font-size: 0.7rem;
     }
