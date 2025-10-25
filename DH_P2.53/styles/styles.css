@@ -543,19 +543,17 @@
     align-items: center;
     justify-content: center;
     gap: 0.1rem;
-    padding: 0.2rem 0.535rem !important;
+    padding: 0.22rem 0.535rem !important;
     flex: 1 1 0 !important;   /* take remaining row width */
     width: 100%;   /* fill its flex cell */
     min-width: 3.5rem;  /* avoid min-content clamp */
-    background: rgba(13, 14, 35, 0.25) !important;
-    backdrop-filter: blur(8px);
+    background: linear-gradient(to bottom, rgba(0,0,0,0.01), rgba(0,0,0,0.1))!important;
     border: 1px solid rgba(128, 138, 189, 0.2) !important;
     border-radius: 8px;
     color: var(--color-text-secondary);
     cursor: pointer;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15),
-                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15),inset 0 1px 1px rgba(255, 255, 255, 0.05) !important;
 }
 .start-sit-button.active {
     color: var(--color-accent-primary);
@@ -8685,3 +8683,13 @@ body[data-page="research"] #secondary-header-row {
         max-width: 50%; /* Each takes up half the space */
     }
 }
+  @media (max-width: 768px) {
+        .start-sit-total-label,
+        .start-sit-total-value {
+            display: block;
+        }
+
+        .start-sit-total-value {
+            margin-top: 0.25rem;
+        }
+    }
