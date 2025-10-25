@@ -4347,7 +4347,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     }
     /* Reduce any gap above the horizontal scrollbar and ensure footer isn't clipped */
     #game-logs-modal .game-logs-hscroll { padding-bottom: 0; }
-    #game-logs-modal .game-logs-table-footer { padding-bottom: 2px; margin-bottom: 0; }
+    #game-logs-modal .game-logs-table-footer { padding-bottom: 2px; margin-bottom: 0.35rem; }
 
     #game-logs-modal .game-logs-table thead,
     #game-logs-modal .game-logs-table tfoot {
@@ -4430,6 +4430,11 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
         color: var(--color-accent-primary);
         white-space:nowrap;
         padding: 0.25rem 0rem 0.15rem 0.02rem;    }
+
+    #game-logs-modal .game-logs-table-footer tfoot tr:first-child th {
+        padding-top: 0.45rem;
+        padding-bottom: 0.3rem;
+    }
     
     #modal-body .no-logs {
         text-align: center;
@@ -4905,7 +4910,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
 }
 
 #modal-body tbody tr.bye-week-row {
-    opacity: 0.42;
+  opacity: 0.82;
 }
 
 #modal-body tbody tr.bye-week-row td {

@@ -87,5 +87,6 @@
         "enumMember": "#e8738c"
       }
     }
-  }
+  },
+  "liveServer.settings.port": 5501
 }

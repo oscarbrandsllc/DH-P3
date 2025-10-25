@@ -3149,8 +3149,9 @@ const wrTeStatOrder = [
                     if (col.meta?.headerClass) {
                         col.meta.headerClass.split(' ').forEach(cls => { if (cls) th.classList.add(cls); });
                     }
-                    const label = typeof col.header === 'function' ? col.header({}) : col.header;
-                    th.textContent = label || '';
+                    let headerText = typeof col.header === 'function' ? col.header({}) : col.header;
+                    if (col.id === 'week') headerText = 'SZN';
+                    th.textContent = headerText || '';
                     const w = columnSizes[idx] || DEFAULT_COLUMN_WIDTH;
                     th.style.width = `${w}px`; th.style.minWidth = `${w}px`; th.style.maxWidth = `${w}px`;
                     footerHeaderRow.appendChild(th);
