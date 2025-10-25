@@ -1,7 +1,7 @@
 
 Initial Review (Important First Step):
 
-Before modifying any code, thoroughly review the existing structures, functionality, layout, setup, and styles relevant to the task. Start developing a deep understanding of how headers are currently implemented, and how to alter every aspect of them specifically for desktop without impacting mobile views nor any other page headers.
+Before modifying any code, thoroughly review the existing structures, functionality, layout, setup, and styles relevant to the task. Start developing a deep understanding of how stats page is set up, how components are implemented, and how to alter every aspect of table and page.
 
 Analyze the relevant sections related to prompt to fully understand the current HTML structure, JavaScript rendering logic, data flow, and CSS styling
 
