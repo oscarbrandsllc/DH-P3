@@ -5755,224 +5755,192 @@ img.team-logo.glow{
 /* Per-team glow overrides (color + tweakable radii) */
 img.team-logo.glow[alt="ARI"] {
   --team-glow: rgba(151, 35, 63, 0.85) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px;  
                 
 }
 img.team-logo.glow[alt="ATL"] {
   --team-glow: rgba(255, 56, 95, 0.7) !important;
-  --glow-r1: 0.6px;
   --glow-r2: 1.4px;
   --glow-r3: 2.6px;  
                 
 }
 img.team-logo.glow[alt="BAL"] {
   --team-glow: rgba(158, 43, 246, 0.75) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.2px;
   --glow-r3: 2.8px;  
                 
 }
 img.team-logo.glow[alt="BUF"] {
   --team-glow: rgba(198, 12, 48, 0.7) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px;  
                 
 }
 img.team-logo.glow[alt="CAR"] {
   --team-glow: rgba(0, 133, 202, 0.8) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px;  
                 
 }
 img.team-logo.glow[alt="CHI"] {
   --team-glow: rgba(120, 90, 240, 0.7) !important;
-  --glow-r1: 1px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px;  
                 
 }
 img.team-logo.glow[alt="CIN"] {
   --team-glow: rgba(251, 79, 20, 0.8) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px;  
                 
 }
 img.team-logo.glow[alt="CLE"] {
   --team-glow: rgba(225, 135, 0, 0.5) !important;
-  --glow-r1: 0.4px;
   --glow-r2: 1.0px;
   --glow-r3: 2.0px;  
                 
 }
 img.team-logo.glow[alt="DAL"] {
   --team-glow: rgba(134, 147, 151, 0.65) !important;
-  --glow-r1: 0.2px;
   --glow-r2: 1.0px;
   --glow-r3: 2.0px;  
                 
 }
 img.team-logo.glow[alt="DEN"] {
   --team-glow: rgba(251, 79, 20, 0.7) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px;  
                 
 }
 img.team-logo.glow[alt="DET"] {
   --team-glow: rgba(0, 183, 235, 0.65) !important;
-  --glow-r1: 0.4px;
   --glow-r2: 1.2px;
   --glow-r3: 2.4px; 
                 
 }
 img.team-logo.glow[alt="GB"] {
   --team-glow: rgba(0, 235, 150, 0.5) !important;
-  --glow-r1: 0.2px;
   --glow-r2: 1.0px;
   --glow-r3: 2.0px; 
                 
 }
 img.team-logo.glow[alt="HOU"] {
   --team-glow: rgba(167, 25, 48, 0.9) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px; 
                 
 }
 img.team-logo.glow[alt="IND"] {
   --team-glow: rgba(0, 183, 235, 0.7) !important;
-  --glow-r1: 0.6px;
   --glow-r2: 1.0px;
   --glow-r3: 2.0px; 
                 
 }
 img.team-logo.glow[alt="JAX"] {
   --team-glow: rgba(0, 103, 120, 0.85) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px; 
                 
 }
 img.team-logo.glow[alt="KC"] {
   --team-glow: rgba(255, 0, 64, 0.63) !important;
-  --glow-r1: 0.4px;
   --glow-r2: 1.4px;
   --glow-r3: 2.2px; 
                 
 }
 img.team-logo.glow[alt="LAC"] {
   --team-glow: rgba(0, 191, 255, 0.55) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px; 
                 
 }
 img.team-logo.glow[alt="LAR"] {
   --team-glow: rgba(0, 91, 200, 0.7) !important;
-  --glow-r1: 0.6px;
   --glow-r2: 1.2px;
   --glow-r3: 2.2px; 
                 
 }
 img.team-logo.glow[alt="LV"] {
   --team-glow: rgba(165, 172, 175, 0.65) !important;
-  --glow-r1: 0.6px;
   --glow-r2: 1.2px;
   --glow-r3: 2.4px; 
                 
 }
 img.team-logo.glow[alt="MIA"] {
   --team-glow: rgba(0, 142, 151, 0.7) !important;
-  --glow-r1: 0.6px;
   --glow-r2: 1.4px;
   --glow-r3: 2.4px; 
                 
 }
 img.team-logo.glow[alt="MIN"] {
   --team-glow: rgba(115, 0, 255, 0.75) !important;
-  --glow-r1: 0.6px;
   --glow-r2: 1.4px;
   --glow-r3: 2.6px; 
                 
 }
 img.team-logo.glow[alt="NE"] {
   --team-glow: rgba(255, 56, 95, 0.70) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px; 
                 
 }
 img.team-logo.glow[alt="NO"] {
   --team-glow: rgba(160, 148, 101, 0.65) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.4px;
   --glow-r3: 2.2px; 
                 
 }
 img.team-logo.glow[alt="NYG"] {
   --team-glow: rgba(55, 56, 200, 0.85) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px; 
                 
 }
 img.team-logo.glow[alt="NYJ"] {
   --team-glow: rgba(64, 160, 120, 0.85) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px; 
                 
 }
 img.team-logo.glow[alt="PHI"] {
   --team-glow: rgba(43, 140, 78, 0.75) !important;
-  --glow-r1: 0.6px;
   --glow-r2: 1.4px;
   --glow-r3: 2.2px; 
                 
 }
 img.team-logo.glow[alt="PIT"] {
   --team-glow: rgba(255, 182, 18, 0.45) !important;
-  --glow-r1: 0.2px;
   --glow-r2: 1.0px;
   --glow-r3: 2.0px; 
                 
 }
 img.team-logo.glow[alt="SEA"] {
   --team-glow: rgba(105, 190, 40, 0.65) !important;
-  --glow-r1: 0.6px;
   --glow-r2: 1.2px;
   --glow-r3: 2.0px; 
                 
 }
 img.team-logo.glow[alt="SF"] {
   --team-glow: rgba(179, 153, 93, 0.55) !important;
-  --glow-r1: 0.6px;
   --glow-r2: 1.2px;
   --glow-r3: 2.2px; 
                 
 }
 img.team-logo.glow[alt="TB"] {
   --team-glow: rgba(247, 122, 97, 0.55) !important;
-  --glow-r1: 0.6px;
   --glow-r2: 1.2px;
   --glow-r3: 2.0px; 
                 
 }
 img.team-logo.glow[alt="TEN"] {
   --team-glow: rgba(75, 146, 219, 0.85) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px; 
                 
 }
 img.team-logo.glow[alt="WAS"] {
   --team-glow: rgba(180, 36, 36, 0.85) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px; 
                 
@@ -5986,193 +5954,161 @@ img.team-logo.glow[alt="WAS"] {
 
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="ARI"] {
   --team-glow: rgba(151, 35, 63, 0.85) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="ATL"] {
   --team-glow: rgba(255, 56, 95, 0.7) !important;
-  --glow-r1: 0.6px;
   --glow-r2: 1.4px;
   --glow-r3: 2.6px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="BAL"] {
   --team-glow: rgba(158, 43, 246, 0.75) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.2px;
   --glow-r3: 2.8px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="BUF"] {
   --team-glow: rgba(198, 12, 48, 0.7) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="CAR"] {
   --team-glow: rgba(0, 133, 202, 0.8) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="CHI"] {
   --team-glow: rgba(120, 90, 240, 0.7) !important;
-  --glow-r1: 1px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="CIN"] {
   --team-glow: rgba(251, 79, 20, 0.8) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="CLE"] {
   --team-glow: rgba(225, 135, 0, 0.5) !important;
-  --glow-r1: 0.4px;
   --glow-r2: 1.0px;
   --glow-r3: 2.0px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="DAL"] {
   --team-glow: rgba(134, 147, 151, 0.65) !important;
-  --glow-r1: 0.2px;
   --glow-r2: 1.0px;
   --glow-r3: 2.0px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="DEN"] {
   --team-glow: rgba(251, 79, 20, 0.7) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="DET"] {
   --team-glow: rgba(0, 183, 235, 0.65) !important;
-  --glow-r1: 0.4px;
   --glow-r2: 1.2px;
   --glow-r3: 2.4px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="GB"] {
   --team-glow: rgba(0, 235, 150, 0.5) !important;
-  --glow-r1: 0.2px;
   --glow-r2: 1.0px;
   --glow-r3: 2.0px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="HOU"] {
   --team-glow: rgba(167, 25, 48, 0.9) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="IND"] {
   --team-glow: rgba(0, 183, 235, 0.7) !important;
-  --glow-r1: 0.6px;
   --glow-r2: 1.0px;
   --glow-r3: 2.0px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="JAX"] {
   --team-glow: rgba(0, 103, 120, 0.85) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="KC"] {
   --team-glow: rgba(255, 0, 64, 0.63) !important;
-  --glow-r1: 0.4px;
   --glow-r2: 1.4px;
   --glow-r3: 2.2px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="LAC"] {
   --team-glow: rgba(0, 191, 255, 0.55) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="LAR"] {
   --team-glow: rgba(0, 91, 200, 0.7) !important;
-  --glow-r1: 0.6px;
   --glow-r2: 1.2px;
   --glow-r3: 2.2px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="LV"] {
   --team-glow: rgba(165, 172, 175, 0.65) !important;
-  --glow-r1: 0.6px;
   --glow-r2: 1.2px;
   --glow-r3: 2.4px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="MIA"] {
   --team-glow: rgba(0, 142, 151, 0.7) !important;
-  --glow-r1: 0.6px;
   --glow-r2: 1.4px;
   --glow-r3: 2.4px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="MIN"] {
   --team-glow: rgba(115, 0, 255, 0.75) !important;
-  --glow-r1: 0.6px;
   --glow-r2: 1.4px;
   --glow-r3: 2.6px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="NE"] {
   --team-glow: rgba(255, 56, 95, 0.70) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="NO"] {
   --team-glow: rgba(160, 148, 101, 0.65) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.4px;
   --glow-r3: 2.2px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="NYG"] {
   --team-glow: rgba(55, 56, 200, 0.55) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="NYJ"] {
   --team-glow: rgba(64, 160, 120, 0.85) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="PHI"] {
   --team-glow: rgba(43, 140, 78, 0.75) !important;
-  --glow-r1: 0.6px;
   --glow-r2: 1.4px;
   --glow-r3: 2.2px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="PIT"] {
   --team-glow: rgba(255, 182, 18, 0.45) !important;
-  --glow-r1: 0.2px;
   --glow-r2: 1.0px;
   --glow-r3: 2.0px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="SEA"] {
   --team-glow: rgba(105, 190, 40, 0.65) !important;
-  --glow-r1: 0.6px;
   --glow-r2: 1.2px;
   --glow-r3: 2.0px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="SF"] {
   --team-glow: rgba(179, 153, 93, 0.55) !important;
-  --glow-r1: 0.6px;
   --glow-r2: 1.2px;
   --glow-r3: 2.2px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="TB"] {
   --team-glow: rgba(247, 122, 97, 0.55) !important;
-  --glow-r1: 0.6px;
   --glow-r2: 1.2px;
   --glow-r3: 2.0px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="TEN"] {
   --team-glow: rgba(75, 146, 219, 0.85) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px;
 }
 .player-tag.modal-team-logo-chip img.team-logo.glow[alt="WAS"] {
   --team-glow: rgba(180, 36, 36, 0.75) !important;
-  --glow-r1: 0.8px;
   --glow-r2: 1.6px;
   --glow-r3: 2.8px;
 }

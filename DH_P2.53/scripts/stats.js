@@ -742,7 +742,13 @@
           const display = textValue !== '' ? textValue : (Number.isFinite(entry.meta.value) ? Math.round(entry.meta.value) : '');
           td.innerHTML = `<span class="stats-value-chip" style="${entry.meta.valueStyle}">${display}</span>`;
         } else if (column === 'TM') {
-          td.innerHTML = `<span class="stats-team-chip" style="${entry.meta.teamStyle}">${textValue}</span>`;
+          const teamKey = (textValue || 'FA').toUpperCase();
+          const logoKeyMap = { 'WSH': 'was', 'WAS': 'was', 'JAC': 'jax', 'LA': 'lar' };
+          const normalizedKey = logoKeyMap[teamKey] || teamKey.toLowerCase();
+          const src = `../assets/NFL-Tags_webp/${normalizedKey}.webp`;
+          td.innerHTML = (teamKey && teamKey !== 'FA')
+            ? `<img class="team-logo glow" src="${src}" alt="${teamKey}" width="20" height="20" loading="lazy" decoding="async">`
+            : `<span class="stats-team-chip" style="${entry.meta.teamStyle}">${textValue}</span>`;
         } else if (column === 'POS') {
           td.innerHTML = `<span class="player-tag modal-pos-tag ${entry.meta.pos || ''}">${entry.meta.pos || textValue}</span>`;
         } else {
