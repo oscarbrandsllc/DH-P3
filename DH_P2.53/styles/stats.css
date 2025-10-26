@@ -267,7 +267,7 @@
 }
 
 .stats-search-block {
-  flex: 0 1 clamp(240px, 32vw, 340px);
+  flex: 1 1 0;
   display: flex;
   align-items: center;
   width: 100%;
