@@ -2512,7 +2512,7 @@ const wrTeStatOrder = [
                         continue;
                     }
                     if (isLiveWeek && key !== 'fpts' && key !== 'proj') {
-                        rowData[key] = createTextDescriptor('N/A');
+                        rowData[key] = createTextDescriptor('-');
                         continue;
                     }
                     if (!weekStatsEntry || !stats) {
