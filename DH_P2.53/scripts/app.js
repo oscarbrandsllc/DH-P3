@@ -2511,7 +2511,7 @@ const wrTeStatOrder = [
                         }
                         continue;
                     }
-                    if (isLiveWeek && key !== 'fpts') {
+                    if (isLiveWeek && key !== 'fpts' && key !== 'proj') {
                         rowData[key] = createTextDescriptor('N/A');
                         continue;
                     }
