@@ -2538,6 +2538,10 @@ const SEASON_META_HEADERS = {
                 noLogsEl.className = 'no-logs';
                 noLogsEl.textContent = `No game logs found for ${playerName} for the current season.`;
                 modalBody.appendChild(noLogsEl);
+                if (statsKeyContainer) {
+                    statsKeyContainer.classList.add('hidden');
+                    modalBody.appendChild(statsKeyContainer);
+                }
                 return;
             }
 
@@ -3361,6 +3365,10 @@ const wrTeStatOrder = [
             container.appendChild(hScroll);
 
             modalBody.appendChild(container);
+            if (statsKeyContainer) {
+                statsKeyContainer.classList.add('hidden');
+                modalBody.appendChild(statsKeyContainer);
+            }
             hScroll.scrollLeft = 0;
             bodyWrapper.scrollTop = 0;
             // Route horizontal wheel/trackpad gestures on tbody to the shared scroller

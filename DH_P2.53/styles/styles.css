@@ -5040,6 +5040,21 @@ padding: 0.15rem 0rem 0rem 0rem;
 }
 
 
+#game-logs-modal #modal-body .stats-key-panel {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 1rem;
+    max-height: none;
+    overflow-y: auto;
+    border-radius: 9px;
+    background: rgba(13, 14, 27, 0.95);
+    border: 1px solid #444;
+    box-shadow: 0 8px 32px rgba(31, 38, 105, 0.2), inset 0 6px 18px rgba(255, 255, 255, 0.04);
+    z-index: 5;
+}
+
+
 .stats-key-panel h4 {
     font-size: 0.95rem;
     font-weight: 700;
@@ -5676,7 +5691,6 @@ padding: 0.15rem 0rem 0rem 0rem;
 #player-comparison-modal .comparison-bar-right.worse-stat-bar {
   opacity: 0.35;
 }
-
 #player-comparison-modal .best-stat {
     color: var(--color-accent-trade-win) !important;
     text-shadow: 0 0 5px rgba(0, 245, 160, 0.5);
