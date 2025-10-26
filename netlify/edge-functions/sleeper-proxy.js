@@ -5,11 +5,28 @@ export default async (request) => {
     if (!path) return new Response("Missing path", { status: 400 });
     const target = `https://api.sleeper.app/v1/${path}${u.search}`;
 
-    const now = new Date(), d = now.getUTCDay(), h = now.getUTCHours();
-    const live = (d===4&&h>=23)||(d===5&&h<5)||(d===0&&h>=16)||(d===1&&h<6)||(d===1&&h>=23)||(d===2&&h<5);
+    const now = new Date();
+    const pacificDate = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+    const pacificDay = pacificDate.getDay();
+    const pacificHour = pacificDate.getHours();
+    const inLiveWindow = pacificDay === 0 || ((pacificDay === 1 || pacificDay === 4) && pacificHour >= 17 && pacificHour < 22);
+
     const liveish = /stats|rosters|leagues/i.test(path);
-    const sMax = liveish ? (live ? 60 : 300) : 86400;
-    const swr  = liveish ? 3600 : 604800;
+    const isAllPlayers = /players\/all/i.test(path);
+
+    let sMax;
+    let swr;
+
+    if (isAllPlayers) {
+      sMax = 604800; // 7 days
+      swr = 1209600; // 14 days
+    } else if (liveish) {
+      sMax = inLiveWindow ? 300 : 1800; // 5 minutes or 30 minutes
+      swr = inLiveWindow ? 900 : 3600;  // allow short-lived stale responses
+    } else {
+      sMax = 86400;  // 24 hours
+      swr = 604800;  // 7 days
+    }
 
     const upstream = await fetch(target, { headers: { "Accept": "application/json, */*" } });
     const res = new Response(upstream.body, upstream);

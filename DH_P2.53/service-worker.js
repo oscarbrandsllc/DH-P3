@@ -2,6 +2,7 @@
 const CACHE_NAME = 'sleeper-tool-cache-v1.0.0-20251026';
 const IMMUTABLE_ASSETS = [
   '/assets/',
+  'fonts.googleapis.com',
   'fonts.gstatic.com',
   'cdnjs.cloudflare.com',
   '/scripts/syop.js',

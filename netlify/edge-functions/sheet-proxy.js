@@ -18,10 +18,14 @@ export default async (request) => {
         : `https://docs.google.com/spreadsheets/d/${id}/gviz/tq?gid=${encodeURIComponent(gid)}&tqx=out:csv`;
     }
 
-    const now = new Date(), d = now.getUTCDay(), h = now.getUTCHours();
-    const live = (d===4&&h>=23)||(d===5&&h<5)||(d===0&&h>=16)||(d===1&&h<6)||(d===1&&h>=23)||(d===2&&h<5);
-    const sMax = live ? 900 : 3600;
-    const swr  = 86400;
+  const now = new Date();
+  const pacificDate = new Date(now.toLocaleString('en-US', { timeZone: 'America/Los_Angeles' }));
+  const pacificDay = pacificDate.getDay();
+  const pacificHour = pacificDate.getHours();
+  const inLiveWindow = pacificDay === 0 || ((pacificDay === 1 || pacificDay === 4) && pacificHour >= 17 && pacificHour < 22);
+
+  const sMax = inLiveWindow ? 300 : 1800; // 5 minutes or 30 minutes
+  const swr  = inLiveWindow ? 900 : 7200;  // allow modest stale tolerance
 
     const upstream = await fetch(target, { headers: { "Accept": "text/csv, */*" } });
     const res = new Response(upstream.body, upstream);
