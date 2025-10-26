@@ -1,0 +1,91 @@
+{
+  "workbench.colorTheme": "Dracula Theme",
+  "git.confirmSync": false,
+  "editor.wordWrap": "on",
+  "editor.stickyScroll.enabled": false,
+  "notebook.stickyScroll.enabled": true,
+  "window.menuBarVisibility": "classic",
+  "github.copilot.nextEditSuggestions.enabled": true,
+  "githubPullRequests.codingAgent.promptForConfirmation": false,
+  "chat.agent.maxRequests": 50,
+  "chat.agent.thinkingStyle": "collapsedPerItem",
+  "chat.agent.todoList": {
+    "position": "default"
+  },
+  "chat.editing.confirmEditRequestRetry": false,
+  "chat.fontSize": 11,
+  "chat.editor.fontSize": 10,
+  "chat.emptyState.history.enabled": true,
+  "window.nativeTabs": true,
+  "github.copilot.chat.alternateGptPrompt.enabled": true,
+  "editor.fontSize": 11,
+  "markdown.preview.fontSize": 11,
+  "debug.console.fontSize": 11,
+  "scm.inputFontSize": 11,
+  "terminal.integrated.fontSize": 9,
+  "editor.minimap.sectionHeaderFontSize": 11,
+  "liveServer.settings.donotShowInfoMsg": true,
+  "chat.tools.terminal.autoApprove": {
+    "sed": true,
+    "nl": true,
+    "cd \"/Users/oscarboczarski/Library/Mobile Documents/com~apple~CloudDocs/🔬Research+/🧑‍💻 Code.Base/DH-P3-1\" && nl -ba <(git show 8806fbdb612a6cf276cf8d9d001aa6bd9b11c5d1:DH_P2.53/styles/styles.css) | sed -n '1420,1445p'": {
+      "approve": true,
+      "matchCommandLine": true
+    },
+    "git difftool": true,
+    "git checkout": true,
+    "git rev-list": true
+  },
+  "remoteHub.commitDirectlyWarning": "off",
+  "git.enableSmartCommit": true,
+  "chat.edits2.enabled": true,
+  "workbench.editor.enablePreview": false,
+
+  "workbench.colorCustomizations": {
+    "[Dracula Theme]": {
+      "editor.selectionBackground": "#7430a4cb",
+      "editor.inactiveSelectionBackground": "#7430a443",
+      "editor.selectionHighlightBackground": "#8036b58a"
+    }
+  },
+
+  "editor.tokenColorCustomizations": {
+    "[Dracula Theme]": {
+      "textMateRules": [
+        {
+          "name": "Strings → rose",
+          "scope": [
+            "string",
+            "string.quoted",
+            "string.quoted.double",
+            "string.quoted.single",
+            "string.template",
+            "constant.character.escape"
+          ],
+          "settings": { "foreground": "#ff4d97" }
+        },
+        {
+          "name": "HTML/JSX attribute names → rose",
+          "scope": [
+            "entity.other.attribute-name",
+            "meta.tag.attribute",
+            "support.variable.property.dom",
+            "support.variable.property"
+          ],
+          "settings": { "foreground": "#46f8bd" }
+        }
+      ]
+    }
+  },
+
+  "editor.semanticTokenColorCustomizations": {
+    "[Dracula Theme]": {
+      "enabled": true,
+      "rules": {
+        "string": "#bc8692",
+        "property": "#cbd6a2",
+        "enumMember": "#e8738c"
+      }
+    }
+  }
+}
