@@ -2,12 +2,10 @@
   if (typeof document === 'undefined') return;
   const root = document.body;
   if (!root || root.dataset.page !== 'stats') return;
-
   const TAB_CONFIG = {
     oneQb: { sheet: 'STAT_1QB', headingSelector: '[data-tab-heading="oneQb"]' },
     sflx: { sheet: 'STAT_SFLX', headingSelector: '[data-tab-heading="sflx"]' }
   };
-
   const HEADER_ALIASES = new Map([
     ['PLAYER NAME', 'PLAYER'],
     ['POS RK', 'POS | RK'],
@@ -20,7 +18,6 @@
     ['YPG(T)', 'YPG(t)'],
     ['IMP/OPP', 'IMP/OPP']
   ]);
-
   const COLUMN_SETS = {
     default: ['RK', 'PLAYER', 'POS', 'TM', 'AGE', 'G', 'FPTS', 'PPG', 'VALUE', 'YDS(t)', 'YPG(t)', 'OPP', 'IMP', 'IMP/OPP'],
     QB: ['RK', 'PLAYER', 'POS', 'TM', 'AGE', 'G', 'FPTS', 'PPG', 'VALUE', 'paRTG', 'paYDS', 'paTD', 'paATT', 'CMP', 'YDS(t)', 'paYPG', 'ruYDS', 'ruTD', 'pa1D', 'IMP/G', 'pIMP', 'pIMP/A', 'CAR', 'YPC', 'TTT', 'PRS%', 'SAC', 'INT', 'FUM', 'FPOE'],
@@ -28,7 +25,6 @@
     WR: ['RK', 'PLAYER', 'POS', 'TM', 'AGE', 'G', 'FPTS', 'PPG', 'VALUE', 'SNP%', 'TGT', 'REC', 'TS%', 'recYDS', 'recTD', 'YPRR', 'rec1D', '1DRR', 'recYPG', 'YAC', 'YPR', 'IMP/G', 'RR', 'FPOE', 'YDS(t)', 'CAR', 'ruYDS', 'ruTD', 'YPC', 'FUM'],
     TE: ['RK', 'PLAYER', 'POS', 'TM', 'AGE', 'G', 'FPTS', 'PPG', 'VALUE', 'SNP%', 'TGT', 'REC', 'TS%', 'recYDS', 'recTD', 'YPRR', 'rec1D', '1DRR', 'recYPG', 'YAC', 'YPR', 'IMP/G', 'RR', 'FPOE', 'YDS(t)', 'CAR', 'ruYDS', 'ruTD', 'YPC', 'FUM']
   };
-
   const COLUMN_CATEGORY = {
     'FPTS': 'all',
     'PPG': 'all',
@@ -84,12 +80,10 @@
     'FPOE': 'all',
     'FUM': 'all'
   };
-
   const INTEGER_COLUMNS = new Set([
     'RK', 'G', 'VALUE', 'YDS(t)', 'OPP', 'IMP', 'paYDS', 'paTD', 'paATT', 'CMP', 'pa1D', 'ruYDS', 'ruTD',
     'CAR', 'SAC', 'INT', 'FUM', 'REC', 'TGT', 'ru1D', 'recTD', 'rec1D', 'YAC', 'RR', 'MTF', 'YCO'
   ]);
-
   const DECIMAL_PRECISION = new Map([
     ['AGE', 1],
     ['YPG(t)', 1],
@@ -111,13 +105,11 @@
     ['paRTG', 1],
     ['1DRR', 2]
   ]);
-
   const PERCENT_PRECISION = new Map([
     ['SNP%', 1],
     ['PRS%', 1],
     ['TS%', 1]
   ]);
-
   const VALUE_COLOR_SCALE = [
     { value: 9000, color: '#00EEB6' },
     { value: 8000, color: '#14D7CB' },
@@ -137,7 +129,6 @@
     { value: 2000, color: '#c70097' },
     { value: 0, color: '#FF0080' }
   ];
-
   const RK_COLOR_SCALE = [
     { value: 12, color: '#00EEB6' },
     { value: 24, color: '#14D7CB' },
@@ -157,7 +148,6 @@
     { value: 280, color: '#c70097' },
     { value: 500, color: '#FF0080' }
   ];
-
   const statsState = {
     currentTab: 'oneQb',
     activePosition: 'ALL',
@@ -168,7 +158,6 @@
     headerLabels: new Map(),
     availableColumns: new Map()
   };
-
   const dom = {
     tabButtons: Array.from(document.querySelectorAll('.stats-tab-button')),
     tabHeadings: Array.from(document.querySelectorAll('.stats-tab-heading')),
@@ -182,7 +171,6 @@
     secondaryFilterGroup: document.getElementById('statsSecondaryFilterGroup'),
     leagueChip: document.getElementById('statsLeagueContext')
   };
-
   const gameLogDom = {
     modal: document.getElementById('game-logs-modal'),
     closeBtn: document.querySelector('#game-logs-modal .modal-close-btn'),
@@ -190,11 +178,9 @@
     infoBtn: document.querySelector('#game-logs-modal .modal-info-btn'),
     keyPanel: document.getElementById('stats-key-container')
   };
-
   if (dom.leagueChip) {
     dom.leagueChip.textContent = 'DH DATA HUB';
   }
-
   const TEAM_TAG_STYLES = (() => {
     // fallback palette similar to reference
     const defaultStyle = 'background: rgba(255,255,255,0.08); color: #ffffff;';
@@ -208,26 +194,21 @@
       return `background-color: #e8eaed; color: ${color}; font-weight: 600;`;
     };
   })();
-
   const params = new URLSearchParams(window.location.search);
-
   function formatInteger(value) {
     if (!Number.isFinite(value)) return '';
     return Math.round(value).toString();
   }
-
   function formatDecimal(value, decimals) {
     if (!Number.isFinite(value)) return '';
     const fixed = value.toFixed(decimals);
     return fixed;
   }
-
   function formatPercentageValue(value, decimals = 1) {
     if (!Number.isFinite(value)) return '';
     const fixed = value.toFixed(decimals);
     return `${fixed}%`;
   }
-
   function formatSheetCellValue(column, rawValue) {
     if (rawValue === undefined || rawValue === null) return '';
     if (typeof rawValue === 'string') {
@@ -238,30 +219,24 @@
       if (trimmed.includes('%')) return trimmed;
       if (/[^0-9.,\-]/.test(trimmed)) return trimmed;
     }
-
     const numeric = toNumber(rawValue);
     if (numeric === null) {
       return typeof rawValue === 'string' ? rawValue : '';
     }
-
     if (PERCENT_PRECISION.has(column)) {
       const decimals = PERCENT_PRECISION.get(column) ?? 1;
       const scaled = Math.abs(numeric) <= 1 ? numeric * 100 : numeric;
       return formatPercentageValue(scaled, decimals);
     }
-
     if (INTEGER_COLUMNS.has(column)) {
       return formatInteger(numeric);
     }
-
     if (DECIMAL_PRECISION.has(column)) {
       const decimals = DECIMAL_PRECISION.get(column) ?? 2;
       return formatDecimal(numeric, decimals);
     }
-
     return typeof rawValue === 'string' ? rawValue : `${numeric}`;
   }
-
   function parseCsv(text) {
     const lines = (text || '').split(/\r?\n/).filter(Boolean);
     if (!lines.length) return { headers: [], rows: [], headerDisplay: new Map() };
@@ -307,7 +282,6 @@
     const rows = lines.slice(1).map(parseLine);
     return { headers, rows, headerDisplay };
   }
-
   function toNumber(value, { allowFloat = true } = {}) {
     if (value === null || value === undefined) return null;
     let source = value;
@@ -317,7 +291,6 @@
     const numeric = allowFloat ? parseFloat(source) : parseInt(source, 10);
     return Number.isNaN(numeric) ? null : numeric;
   }
-
   function getFullName(playerId, fallback = '') {
     const source = state.players?.[playerId];
     if (source) {
@@ -328,7 +301,6 @@
     }
     return fallback;
   }
-
   function formatDisplayName(playerId, fallback = '') {
     const source = state.players?.[playerId];
     let first = '';
@@ -360,7 +332,6 @@
     if (fallback) return fallback.length > 10 ? `${fallback.slice(0, 10)}…` : fallback;
     return 'Unknown';
   }
-
   function getValueStyle(valueNumeric) {
     if (!Number.isFinite(valueNumeric) || valueNumeric <= 0) {
       return 'background: rgba(255,255,255,0.04); color: var(--color-text-secondary);';
@@ -372,7 +343,6 @@
     }
     return 'background: rgba(255,255,255,0.04); color: var(--color-text-secondary);';
   }
-
   function getRankColorValue(rank) {
     if (!Number.isFinite(rank) || rank <= 0) return 'var(--color-text-secondary)';
     for (const tier of RK_COLOR_SCALE) {
@@ -380,7 +350,6 @@
     }
     return RK_COLOR_SCALE[RK_COLOR_SCALE.length - 1].color;
   }
-
   function normalizeHeadersRow(headers, rowValues) {
     const row = {};
     headers.forEach((header, index) => {
@@ -388,7 +357,6 @@
     });
     return row;
   }
-
   function derivePosRankText(row, pos) {
     const raw = row['POS | RK'];
     if (raw && raw.includes('|')) {
@@ -403,7 +371,6 @@
     }
     return pos ? `${pos}·NA` : 'NA';
   }
-
   function buildRow(row) {
     const playerId = row.SLPR_ID || row.slpr_id || '';
     const name = row.PLAYER || row['PLAYER NAME'] || '';
@@ -418,22 +385,17 @@
     const trend = toNumber(row.TREND);
     const value = toNumber(row.VALUE);
     const posRankText = derivePosRankText(row, pos);
-
     const fullName = getFullName(playerId, name);
     const displayName = formatDisplayName(playerId, name);
-
     const playerRanks = playerId ? calculatePlayerStatsAndRanks(playerId) : null;
     const computedFpts = playerRanks ? toNumber(playerRanks.total_pts) : null;
     const computedPpg = playerRanks ? toNumber(playerRanks.ppg) : null;
     const fptsPosRank = playerRanks ? toNumber(playerRanks.posRank, { allowFloat: false }) : null;
     const ppgPosRank = playerRanks ? toNumber(playerRanks.ppgPosRank, { allowFloat: false }) : null;
-
     const fallbackFpts = toNumber(row.FPTS);
     const fallbackPpg = toNumber(row.PPG);
-
     const fpts = Number.isFinite(computedFpts) ? computedFpts : fallbackFpts;
     const ppg = Number.isFinite(computedPpg) ? computedPpg : fallbackPpg;
-
     const valueStyle = getValueStyle(value);
     const rkColor = getRankColorValue(rank);
     const ageColor = typeof getAgeColorForRoster === 'function' ? (getAgeColorForRoster(pos, age) || 'inherit') : 'inherit';
@@ -443,9 +405,7 @@
     const ppgColor = typeof getConditionalColorByRank === 'function' && Number.isFinite(ppgPosRank)
       ? getConditionalColorByRank(ppgPosRank, pos)
       : 'inherit';
-
     const teamStyle = TEAM_TAG_STYLES(team);
-
     return {
       row,
       meta: {
@@ -477,7 +437,6 @@
       }
     };
   }
-
   function getColumnSet() {
     if (!statsState.activePosition || statsState.activePosition === 'ALL') return COLUMN_SETS.default;
     if (statsState.activePosition === 'QB') return COLUMN_SETS.QB;
@@ -486,18 +445,14 @@
     if (statsState.activePosition === 'TE') return COLUMN_SETS.TE;
     return COLUMN_SETS.default;
   }
-
   function getColumnCategory(column) {
     return COLUMN_CATEGORY[column] || 'all';
   }
-
   function getActiveDataset() {
     return statsState.datasets.get(statsState.currentTab) || [];
   }
-
   function passesFilters(entry) {
     const { meta, row } = entry;
-
     // Positional Filtering
     if (statsState.activePosition && statsState.activePosition !== 'ALL') {
       if (statsState.activePosition === 'Receiving') {
@@ -506,50 +461,41 @@
         return false;
       }
     }
-
     // Rookie Filtering
     if (statsState.rookieOnly) {
       const targetYear = Number(state.currentNflSeason) || new Date().getFullYear();
       if (meta.rookieYear !== targetYear) return false;
     }
-
     // Search Term Filtering
     if (statsState.searchTerm) {
       const needle = statsState.searchTerm.toLowerCase();
       const haystack = `${meta.name || ''} ${meta.fullName || ''} ${meta.displayName || ''}`.toLowerCase();
       if (!haystack.includes(needle)) return false;
     }
-
     // RDP (Rookie Draft Pick) Filtering
     if (statsState.activePosition === 'RDP' && meta.pos !== 'RDP') return false;
-
     // Conditional filtering based on active sort
     const sortColumn = statsState.sort.column;
     if (sortColumn && statsState.sort.direction !== 0) {
       const statCategory = getColumnCategory(sortColumn);
-
       // Passing filter: paATT >= 36
       if (statsState.activePosition === 'QB' && statCategory === 'passing') {
         const passAttempts = toNumber(row.paATT, { allowFloat: false });
         if (passAttempts === null || passAttempts < 36) return false;
       }
-
       // Rushing filter: SNP% >= 35%
       if (statsState.activePosition === 'RB' && statCategory === 'rushing') {
         const snapPct = toNumber(row['SNP%']);
         if (snapPct === null || snapPct < 35) return false;
       }
-
       // Receiving filter: SNP% >= 35%
       if (statsState.activePosition === 'Receiving' && statCategory === 'receiving') {
         const snapPct = toNumber(row['SNP%']);
         if (snapPct === null || snapPct < 35) return false;
       }
     }
-
     return true;
   }
-
   function compareValues(a, b, column) {
     const aRaw = a.row[column];
     const bRaw = b.row[column];
@@ -583,7 +529,6 @@
     const strB = (bRaw || '').toString().toLowerCase();
     return strA.localeCompare(strB);
   }
-
   function getSortedRows(rows, column) {
     const direction = statsState.sort.direction === 2 ? -1 : 1;
     const sorted = [...rows];
@@ -594,7 +539,6 @@
     });
     return sorted;
   }
-
   function formatCellValue(column, entry) {
     const { row, meta } = entry;
     if (column === 'PLAYER') {
@@ -637,13 +581,11 @@
     if (raw === undefined || raw === null) return '';
     return raw;
   }
-
   function clearSortIndicators(headerRow) {
     headerRow.querySelectorAll('th').forEach((th) => {
       th.classList.remove('stats-sort-asc', 'stats-sort-desc');
     });
   }
-
   function applySortIndicator(target) {
     if (statsState.sort.direction === 1) {
       target.classList.add('stats-sort-asc');
@@ -651,7 +593,6 @@
       target.classList.add('stats-sort-desc');
     }
   }
-
   function renderTable() {
     const dataset = getActiveDataset();
     const baseColumnSet = getColumnSet();
@@ -683,7 +624,6 @@
       const sortedPlayers = sortCollection(playerRows);
       rows = [...sortedPlayers, ...pickRows];
     }
-
     // After sorting and filtering, re-assign ranks
     rows.forEach((entry, index) => {
       if (entry.meta.pos !== 'RDP') {
@@ -692,20 +632,16 @@
         entry.meta.currentRank = null; // Or some other placeholder for picks
       }
     });
-
     const wrapper = dom.tableWrappers.find((el) => el.dataset.tabPanel === statsState.currentTab);
     const otherWrappers = dom.tableWrappers.filter((el) => el !== wrapper);
     wrapper.classList.remove('hidden');
     otherWrappers.forEach((el) => el.classList.add('hidden'));
-
     const table = wrapper.querySelector('.stats-table');
     const thead = table.querySelector('thead');
     const tbody = table.querySelector('tbody');
-
     const dataColumnCount = Math.max(columnSet.length - 3, 0);
     const widthExpression = `calc(var(--stats-col-rk-width) + var(--stats-col-player-width) + var(--stats-col-pos-width) + ${dataColumnCount} * var(--stats-col-standard-width))`;
     table.style.setProperty('--stats-table-width', widthExpression);
-
     const existingColgroup = table.querySelector('colgroup');
     if (existingColgroup) existingColgroup.remove();
     const colgroup = document.createElement('colgroup');
@@ -733,7 +669,6 @@
     table.insertBefore(colgroup, thead);
     thead.innerHTML = '';
     tbody.innerHTML = '';
-
     const headerRow = document.createElement('tr');
     columnSet.forEach((column, index) => {
       const th = document.createElement('th');
@@ -753,7 +688,6 @@
       const activeHeader = headerRow.querySelector(`th[data-column-key="${statsState.sort.column}"]`);
       if (activeHeader) applySortIndicator(activeHeader);
     }
-
     rows.forEach((entry) => {
       const tr = document.createElement('tr');
       columnSet.forEach((column, index) => {
@@ -800,7 +734,6 @@
         } else {
           td.textContent = textValue;
         }
-
         if (column === 'AGE') {
           td.style.color = entry.meta.ageColor;
           td.classList.add('stats-age-cell');
@@ -812,19 +745,16 @@
           td.style.color = entry.meta.ppgColor;
           td.classList.add('stats-ppg-cell');
         }
-
         tr.appendChild(td);
       });
       tbody.appendChild(tr);
     });
-
     if (!rows.length) {
       dom.emptyState.classList.remove('hidden');
     } else {
       dom.emptyState.classList.add('hidden');
     }
   }
-
   function openGameLogs(entry) {
     if (typeof handlePlayerNameClick !== 'function') return;
     const { meta } = entry;
@@ -843,7 +773,6 @@
     };
     handlePlayerNameClick(player);
   }
-
   let escapeKeyBound = false;
   function performModalClose() {
     if (typeof closeModal === 'function') {
@@ -856,7 +785,6 @@
       state.isGameLogModalOpenFromComparison = false;
     }
   }
-
   function wireGameLogControls() {
     if (!gameLogDom.modal) return;
     if (!gameLogDom.modal.dataset.statsWired) {
@@ -877,7 +805,6 @@
       escapeKeyBound = true;
     }
   }
-
   function toggleTab(tabKey) {
     if (statsState.currentTab === tabKey) return;
     statsState.currentTab = tabKey;
@@ -901,7 +828,6 @@
       renderTable();
     }
   }
-
   function handleSortClick(event) {
     if (statsState.activePosition === 'RDP') return;
     const dataset = getActiveDataset();
@@ -913,7 +839,6 @@
     if (!column) return;
     const columnSet = getColumnSet();
     if (!columnSet.includes(column)) return;
-
     if (statsState.sort.column !== column) {
       statsState.sort = { column, direction: 2 }; // Start with descending
     } else {
@@ -930,14 +855,12 @@
     }
     renderTable();
   }
-
   function handleSearchInput(event) {
     const term = event.target.value || '';
     statsState.searchTerm = term.trim().toLowerCase();
     dom.searchClear.classList.toggle('visible', term.length > 0);
     renderTable();
   }
-
   function clearSearch() {
     dom.searchInput.value = '';
     statsState.searchTerm = '';
@@ -945,51 +868,40 @@
     renderTable();
     dom.searchInput.focus();
   }
-
   function handleFilterClick(event) {
     const button = event.target.closest('.stats-filter-btn[data-position]') || event.target.closest('.stats-filter-btn-secondary[data-position]');
     if (!button || button.classList.contains('stats-rookie-btn')) return;
-
     const position = button.dataset.position;
-
     // Prevent de-selecting the active filter if it's a main filter
     if (button.classList.contains('stats-filter-btn') && statsState.activePosition === position) return;
-
     if (position === 'RDP') {
       // Toggle logic for RDP
       statsState.activePosition = statsState.activePosition === 'RDP' ? 'ALL' : 'RDP';
     } else {
       statsState.activePosition = position;
     }
-
     statsState.sort = { column: null, direction: 0 }; // Reset sort when changing filter
-
     // Update main filters
     dom.filterGroup.querySelectorAll('.stats-filter-btn').forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.position === statsState.activePosition);
     });
-
     // Update secondary RDP filter
     const rdpButton = dom.secondaryFilterGroup.querySelector('[data-position="RDP"]');
     if (rdpButton) {
       rdpButton.classList.toggle('active', statsState.activePosition === 'RDP');
     }
-
     renderTable();
   }
-
   function toggleRookieFilter() {
     statsState.rookieOnly = !statsState.rookieOnly;
     dom.rookieButton.classList.toggle('active', statsState.rookieOnly);
     statsState.sort = { column: null, direction: 0 };
     renderTable();
   }
-
   function toggleInlineLoading(show) {
     if (!dom.loading) return;
     dom.loading.classList.toggle('hidden', !show);
   }
-
   async function ensureLeagueContext() {
     const username = params.get('username');
     const leagueId = params.get('leagueId');
@@ -1019,7 +931,6 @@
       console.warn('Unable to resolve league context for stats page:', error);
     }
   }
-
   async function fetchSheetCsv(sheetName) {
     const sheetId = typeof PLAYER_STATS_SHEET_ID !== 'undefined'
       ? PLAYER_STATS_SHEET_ID
@@ -1029,7 +940,6 @@
     if (!response.ok) throw new Error(`Failed to fetch ${sheetName}: ${response.status}`);
     return response.text();
   }
-
   async function loadTabData(tabKey) {
     const tab = TAB_CONFIG[tabKey];
     if (!tab) return;
@@ -1041,11 +951,9 @@
     statsState.headerLabels.set(tabKey, new Map(headerDisplay));
     statsState.availableColumns.set(tabKey, new Set(headers));
   }
-
   async function loadAllTabs() {
     await Promise.all(Object.keys(TAB_CONFIG).map(loadTabData));
   }
-
   async function initialise() {
     try {
       setLoading(true, 'Loading stats...');
@@ -1062,7 +970,6 @@
         await fetchPlayerStatsSheets();
       }
       await loadAllTabs();
-
       // Set initial active filter buttons
       dom.filterGroup.querySelectorAll('.stats-filter-btn').forEach((btn) => {
         btn.classList.toggle('active', btn.dataset.position === statsState.activePosition);
@@ -1072,7 +979,6 @@
         rdpButton.classList.toggle('active', statsState.activePosition === 'RDP');
       }
       dom.rookieButton.classList.toggle('active', statsState.rookieOnly);
-
       renderTable();
       wireGameLogControls();
     } catch (error) {
@@ -1090,7 +996,6 @@
       }
     }
   }
-
   dom.tabButtons.forEach((btn) => {
     btn.addEventListener('click', () => toggleTab(btn.dataset.tab));
   });
@@ -1103,6 +1008,5 @@
     const thead = wrapper.querySelector('thead');
     thead.addEventListener('click', handleSortClick);
   });
-
   initialise();
 })();
