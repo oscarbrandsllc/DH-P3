@@ -95,13 +95,23 @@
       <div class="stats-controls">
         <div class="stats-controls-heading stats-tab-headers">
           <h2 class="stats-tab-heading" data-tab-heading="oneQb">
-            2025 <b><span class="stats-heading-accent stats-heading-accent-1qb">1QB</span></b> Stats
+            Players Stats &amp; <span class="stats-heading-accent stats-heading-accent-1qb">1QB</span> Trade Values
           </h2>
           <h2 class="stats-tab-heading hidden" data-tab-heading="sflx">
-            2025 <b><span class="stats-heading-accent stats-heading-accent-sflx">SFLX</span></b> Stats
+            Players Stats &amp; <span class="stats-heading-accent stats-heading-accent-sflx">SFLX</span> Trade Values
           </h2>
         </div>
         <div class="stats-controls-body">
+          <div class="stats-filter-block" id="statsFilterGroup">
+            <button class="stats-filter-btn" data-position="ALL" type="button">Totals</button>
+            <button class="stats-filter-btn" data-position="QB" type="button">Passing</button>
+            <button class="stats-filter-btn" data-position="RB" type="button">Rushing</button>
+            <button class="stats-filter-btn" data-position="Receiving" type="button">Receiving</button>
+          </div>
+          <div class="stats-secondary-filter-block" id="statsSecondaryFilterGroup">
+            <button class="stats-filter-btn-secondary" data-position="RDP" type="button">RDP Values</button>
+            <button class="stats-filter-btn-secondary stats-rookie-btn" data-position="Rookies" type="button">Rookies</button>
+          </div>
           <div class="stats-search-block">
             <label class="sr-only" for="statsSearchInput">Search player</label>
             <div class="stats-search-input-wrap">
@@ -113,14 +123,6 @@
                 <i class="fa-solid fa-magnifying-glass"></i>
               </span>
             </div>
-          </div>
-          <div class="stats-filter-block" id="statsFilterGroup">
-            <button class="stats-filter-btn" data-position="QB" type="button">QB</button>
-            <button class="stats-filter-btn" data-position="RB" type="button">RB</button>
-            <button class="stats-filter-btn" data-position="WR" type="button">WR</button>
-            <button class="stats-filter-btn" data-position="TE" type="button">TE</button>
-            <button class="stats-filter-btn" data-position="RDP" type="button">RDP</button>
-            <button class="stats-filter-btn stats-rookie-btn" data-position="Rookies" type="button">Rookies</button>
           </div>
         </div>
       </div>

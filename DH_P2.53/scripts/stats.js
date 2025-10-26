@@ -22,11 +22,11 @@
   ]);
 
   const COLUMN_SETS = {
-    default: ['RK', 'PLAYER', 'POS', 'TM', 'AGE', 'GM_P', 'FPTS', 'PPG', 'VALUE', 'YDS(t)', 'YPG(t)', 'OPP', 'IMP', 'IMP/OPP'],
-    QB: ['RK', 'PLAYER', 'POS', 'TM', 'AGE', 'GM_P', 'FPTS', 'PPG', 'VALUE', 'paRTG', 'paYDS', 'paTD', 'paATT', 'CMP', 'YDS(t)', 'paYPG', 'ruYDS', 'ruTD', 'pa1D', 'IMP/G', 'pIMP', 'pIMP/A', 'CAR', 'YPC', 'TTT', 'PRS%', 'SAC', 'INT', 'FUM', 'FPOE'],
-    RB: ['RK', 'PLAYER', 'POS', 'TM', 'AGE', 'GM_P', 'FPTS', 'PPG', 'VALUE', 'SNP%', 'CAR', 'ruYDS', 'YPC', 'ruTD', 'REC', 'recYDS', 'TGT', 'YDS(t)', 'ruYPG', 'ELU', 'MTF/A', 'YCO/A', 'MTF', 'YCO', 'ru1D', 'recTD', 'rec1D', 'YAC', 'IMP/G', 'FUM', 'FPOE'],
-    WR: ['RK', 'PLAYER', 'POS', 'TM', 'AGE', 'GM_P', 'FPTS', 'PPG', 'VALUE', 'SNP%', 'TGT', 'REC', 'TS%', 'recYDS', 'recTD', 'YPRR', 'rec1D', '1DRR', 'recYPG', 'YAC', 'YPR', 'IMP/G', 'RR', 'FPOE', 'YDS(t)', 'CAR', 'ruYDS', 'ruTD', 'YPC', 'FUM'],
-    TE: ['RK', 'PLAYER', 'POS', 'TM', 'AGE', 'GM_P', 'FPTS', 'PPG', 'VALUE', 'SNP%', 'TGT', 'REC', 'TS%', 'recYDS', 'recTD', 'YPRR', 'rec1D', '1DRR', 'recYPG', 'YAC', 'YPR', 'IMP/G', 'RR', 'FPOE', 'YDS(t)', 'CAR', 'ruYDS', 'ruTD', 'YPC', 'FUM']
+    default: ['RK', 'PLAYER', 'POS', 'TM', 'AGE', 'G', 'FPTS', 'PPG', 'VALUE', 'YDS(t)', 'YPG(t)', 'OPP', 'IMP', 'IMP/OPP'],
+    QB: ['RK', 'PLAYER', 'POS', 'TM', 'AGE', 'G', 'FPTS', 'PPG', 'VALUE', 'paRTG', 'paYDS', 'paTD', 'paATT', 'CMP', 'YDS(t)', 'paYPG', 'ruYDS', 'ruTD', 'pa1D', 'IMP/G', 'pIMP', 'pIMP/A', 'CAR', 'YPC', 'TTT', 'PRS%', 'SAC', 'INT', 'FUM', 'FPOE'],
+    RB: ['RK', 'PLAYER', 'POS', 'TM', 'AGE', 'G', 'FPTS', 'PPG', 'VALUE', 'SNP%', 'CAR', 'ruYDS', 'YPC', 'ruTD', 'REC', 'recYDS', 'TGT', 'YDS(t)', 'ruYPG', 'ELU', 'MTF/A', 'YCO/A', 'MTF', 'YCO', 'ru1D', 'recTD', 'rec1D', 'YAC', 'IMP/G', 'FUM', 'FPOE'],
+    WR: ['RK', 'PLAYER', 'POS', 'TM', 'AGE', 'G', 'FPTS', 'PPG', 'VALUE', 'SNP%', 'TGT', 'REC', 'TS%', 'recYDS', 'recTD', 'YPRR', 'rec1D', '1DRR', 'recYPG', 'YAC', 'YPR', 'IMP/G', 'RR', 'FPOE', 'YDS(t)', 'CAR', 'ruYDS', 'ruTD', 'YPC', 'FUM'],
+    TE: ['RK', 'PLAYER', 'POS', 'TM', 'AGE', 'G', 'FPTS', 'PPG', 'VALUE', 'SNP%', 'TGT', 'REC', 'TS%', 'recYDS', 'recTD', 'YPRR', 'rec1D', '1DRR', 'recYPG', 'YAC', 'YPR', 'IMP/G', 'RR', 'FPOE', 'YDS(t)', 'CAR', 'ruYDS', 'ruTD', 'YPC', 'FUM']
   };
 
   const COLUMN_CATEGORY = {
@@ -43,7 +43,7 @@
     'POS': 'all',
     'TM': 'all',
     'AGE': 'all',
-    'GM_P': 'all',
+    'G': 'all',
     'SNP%': 'all',
     'TGT': 'receiving',
     'REC': 'receiving',
@@ -86,7 +86,7 @@
   };
 
   const INTEGER_COLUMNS = new Set([
-    'RK', 'GM_P', 'VALUE', 'YDS(t)', 'OPP', 'IMP', 'paYDS', 'paTD', 'paATT', 'CMP', 'pa1D', 'ruYDS', 'ruTD',
+    'RK', 'G', 'VALUE', 'YDS(t)', 'OPP', 'IMP', 'paYDS', 'paTD', 'paATT', 'CMP', 'pa1D', 'ruYDS', 'ruTD',
     'CAR', 'SAC', 'INT', 'FUM', 'REC', 'TGT', 'ru1D', 'recTD', 'rec1D', 'YAC', 'RR', 'MTF', 'YCO'
   ]);
 
@@ -160,7 +160,7 @@
 
   const statsState = {
     currentTab: 'oneQb',
-    activePosition: null,
+    activePosition: 'ALL',
     rookieOnly: false,
     searchTerm: '',
     sort: { column: null, direction: 0 },
@@ -179,6 +179,7 @@
     searchClear: document.getElementById('statsSearchClear'),
     filterGroup: document.getElementById('statsFilterGroup'),
     rookieButton: document.querySelector('.stats-rookie-btn'),
+    secondaryFilterGroup: document.getElementById('statsSecondaryFilterGroup'),
     leagueChip: document.getElementById('statsLeagueContext')
   };
 
@@ -410,7 +411,7 @@
     const team = (row.TM || '').toUpperCase() || (state.players?.[playerId]?.team || 'FA');
     const rank = toNumber(row.RK, { allowFloat: false }) ?? Infinity;
     const age = toNumber(row.AGE) ?? 0;
-    const gmPlayed = toNumber(row.GM_P, { allowFloat: false });
+    const gmPlayed = toNumber(row.G, { allowFloat: false });
     const rookieYear = toNumber(row.RY, { allowFloat: false });
     const exp = toNumber(row.EXP, { allowFloat: false });
     const tier = toNumber(row.TIER, { allowFloat: false });
@@ -478,10 +479,10 @@
   }
 
   function getColumnSet() {
-    if (!statsState.activePosition) return COLUMN_SETS.default;
+    if (!statsState.activePosition || statsState.activePosition === 'ALL') return COLUMN_SETS.default;
     if (statsState.activePosition === 'QB') return COLUMN_SETS.QB;
     if (statsState.activePosition === 'RB') return COLUMN_SETS.RB;
-    if (statsState.activePosition === 'WR') return COLUMN_SETS.WR;
+    if (statsState.activePosition === 'Receiving') return COLUMN_SETS.WR; // Use WR set for Receiving
     if (statsState.activePosition === 'TE') return COLUMN_SETS.TE;
     return COLUMN_SETS.default;
   }
@@ -496,20 +497,56 @@
 
   function passesFilters(entry) {
     const { meta, row } = entry;
-    if (statsState.activePosition && meta.pos !== statsState.activePosition) return false;
+
+    // Positional Filtering
+    if (statsState.activePosition && statsState.activePosition !== 'ALL') {
+      if (statsState.activePosition === 'Receiving') {
+        if (meta.pos !== 'WR' && meta.pos !== 'TE') return false;
+      } else if (meta.pos !== statsState.activePosition) {
+        return false;
+      }
+    }
+
+    // Rookie Filtering
     if (statsState.rookieOnly) {
       const targetYear = Number(state.currentNflSeason) || new Date().getFullYear();
       if (meta.rookieYear !== targetYear) return false;
     }
+
+    // Search Term Filtering
     if (statsState.searchTerm) {
       const needle = statsState.searchTerm.toLowerCase();
       const haystack = `${meta.name || ''} ${meta.fullName || ''} ${meta.displayName || ''}`.toLowerCase();
       if (!haystack.includes(needle)) return false;
     }
+
+    // RDP (Rookie Draft Pick) Filtering
     if (statsState.activePosition === 'RDP' && meta.pos !== 'RDP') return false;
-    if (!statsState.activePosition && meta.pos === 'RDP' && statsState.currentTab === 'sflx') {
-      // allow picks by default
+
+    // Conditional filtering based on active sort
+    const sortColumn = statsState.sort.column;
+    if (sortColumn && statsState.sort.direction !== 0) {
+      const statCategory = getColumnCategory(sortColumn);
+
+      // Passing filter: paATT >= 36
+      if (statsState.activePosition === 'QB' && statCategory === 'passing') {
+        const passAttempts = toNumber(row.paATT, { allowFloat: false });
+        if (passAttempts === null || passAttempts < 36) return false;
+      }
+
+      // Rushing filter: SNP% >= 35%
+      if (statsState.activePosition === 'RB' && statCategory === 'rushing') {
+        const snapPct = toNumber(row['SNP%']);
+        if (snapPct === null || snapPct < 35) return false;
+      }
+
+      // Receiving filter: SNP% >= 35%
+      if (statsState.activePosition === 'Receiving' && statCategory === 'receiving') {
+        const snapPct = toNumber(row['SNP%']);
+        if (snapPct === null || snapPct < 35) return false;
+      }
     }
+
     return true;
   }
 
@@ -517,7 +554,7 @@
     const aRaw = a.row[column];
     const bRaw = b.row[column];
     const numericColumns = new Set([
-      'RK', 'AGE', 'GM_P', 'FPTS', 'PPG', 'VALUE', 'YDS(t)', 'YPG(t)', 'IMP', 'IMP/OPP', 'paRTG', 'paYDS',
+      'RK', 'AGE', 'G', 'FPTS', 'PPG', 'VALUE', 'YDS(t)', 'YPG(t)', 'IMP', 'IMP/OPP', 'paRTG', 'paYDS',
       'paTD', 'paATT', 'CMP', 'paYPG', 'ruYDS', 'ruTD', 'pIMP', 'pIMP/A', 'CAR', 'YPC', 'TTT', 'PRS%',
       'SAC', 'INT', 'FUM', 'FPOE', 'SNP%', 'REC', 'TGT', 'MTF/A', 'YCO/A', 'MTF', 'YCO', 'ru1D', 'recTD',
       'rec1D', 'YAC', 'ELU', 'ruYPG', 'YPRR', '1DRR', 'recYPG', 'YPR', 'RR'
@@ -901,18 +938,34 @@
   }
 
   function handleFilterClick(event) {
-    const button = event.target.closest('.stats-filter-btn[data-position]');
-    if (!button || button === dom.rookieButton) return;
+    const button = event.target.closest('.stats-filter-btn[data-position]') || event.target.closest('.stats-filter-btn-secondary[data-position]');
+    if (!button || button.classList.contains('stats-rookie-btn')) return;
+
     const position = button.dataset.position;
-    if (statsState.activePosition === position) {
-      statsState.activePosition = null;
+
+    // Prevent de-selecting the active filter if it's a main filter
+    if (button.classList.contains('stats-filter-btn') && statsState.activePosition === position) return;
+
+    if (position === 'RDP') {
+      // Toggle logic for RDP
+      statsState.activePosition = statsState.activePosition === 'RDP' ? 'ALL' : 'RDP';
     } else {
-      statsState.activePosition = position === 'RDP' ? 'RDP' : position;
+      statsState.activePosition = position;
     }
-    statsState.sort = { column: null, direction: 0 };
+
+    statsState.sort = { column: null, direction: 0 }; // Reset sort when changing filter
+
+    // Update main filters
     dom.filterGroup.querySelectorAll('.stats-filter-btn').forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.position === statsState.activePosition);
     });
+
+    // Update secondary RDP filter
+    const rdpButton = dom.secondaryFilterGroup.querySelector('[data-position="RDP"]');
+    if (rdpButton) {
+      rdpButton.classList.toggle('active', statsState.activePosition === 'RDP');
+    }
+
     renderTable();
   }
 
@@ -1000,6 +1053,17 @@
         await fetchPlayerStatsSheets();
       }
       await loadAllTabs();
+
+      // Set initial active filter buttons
+      dom.filterGroup.querySelectorAll('.stats-filter-btn').forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.position === statsState.activePosition);
+      });
+      const rdpButton = dom.secondaryFilterGroup.querySelector('[data-position="RDP"]');
+      if (rdpButton) {
+        rdpButton.classList.toggle('active', statsState.activePosition === 'RDP');
+      }
+      dom.rookieButton.classList.toggle('active', statsState.rookieOnly);
+
       renderTable();
       wireGameLogControls();
     } catch (error) {
@@ -1024,6 +1088,7 @@
   dom.searchInput.addEventListener('input', handleSearchInput);
   dom.searchClear.addEventListener('click', clearSearch);
   dom.filterGroup.addEventListener('click', handleFilterClick);
+  dom.secondaryFilterGroup.addEventListener('click', handleFilterClick);
   dom.rookieButton.addEventListener('click', toggleRookieFilter);
   dom.tableWrappers.forEach((wrapper) => {
     const thead = wrapper.querySelector('thead');
