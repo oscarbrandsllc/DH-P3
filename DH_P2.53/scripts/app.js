@@ -1254,9 +1254,9 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             const normalizedHeaders = headers.map(normalizeHeader);
             const headerIndex = new Map();
             normalizedHeaders.forEach((header, idx) => {
-                headerIndex.set(header.toUpperCase(), idx);
+                headerIndex.set(normalizeLookupKey(header), idx);
             });
-            const normalizeKey = (key) => normalizeHeader(key).toUpperCase();
+            const normalizeKey = (key) => normalizeLookupKey(key);
             const getColumnValue = (columns, names) => {
                 const keys = Array.isArray(names) ? names : [names];
                 for (const name of keys) {
@@ -1544,6 +1544,14 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             'VS': 'opponent',
             'vsRK': 'opponent_rank'
         };
+        const PLAYER_STAT_HEADER_LOOKUP = {};
+        Object.entries(PLAYER_STAT_HEADER_MAP).forEach(([label, key]) => {
+            PLAYER_STAT_HEADER_LOOKUP[normalizeLookupKey(label)] = key;
+        });
+        const WEEKLY_META_HEADER_LOOKUP = {};
+        Object.entries(WEEKLY_META_HEADER_MAP).forEach(([label, key]) => {
+            WEEKLY_META_HEADER_LOOKUP[normalizeLookupKey(label)] = key;
+        });
         // === Label builder and no-fallback config (added) ===
         function buildStatLabels() {
             const labels = {};
@@ -1565,7 +1573,7 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             'ypr',
             'first_down_rec_rate'
         ]);
-const SEASON_META_HEADERS = {
+	const SEASON_META_HEADERS = {
             'POS': 'pos',
             'TM': 'team',
             'GM_P': 'games_played'
@@ -1575,6 +1583,14 @@ const SEASON_META_HEADERS = {
             'FPTS_PPR': 'fpts_ppr',
             'PRK_PPR': 'pos_rank_ppr'
         };
+        const SEASON_META_HEADER_LOOKUP = {};
+        Object.entries(SEASON_META_HEADERS).forEach(([label, key]) => {
+            SEASON_META_HEADER_LOOKUP[normalizeLookupKey(label)] = key;
+        });
+        const SEASON_VALUE_HEADER_LOOKUP = {};
+        Object.entries(SEASON_VALUE_HEADERS).forEach(([label, key]) => {
+            SEASON_VALUE_HEADER_LOOKUP[normalizeLookupKey(label)] = key;
+        });
         function parseSeasonStatsCsv(csvText) {
             const { headers, rows } = parseCsv(csvText);
             const normalizedHeaders = headers.map(normalizeHeader);
@@ -1585,17 +1601,18 @@ const SEASON_META_HEADERS = {
                 normalizedHeaders.forEach((header, idx) => {
                     const value = columns[idx];
                     if (!value) return;
-                    if (header === 'SLPR_ID') {
+                    const headerKey = normalizeLookupKey(header);
+                    if (headerKey === 'SLPRID') {
                         playerId = value.trim();
                         return;
                     }
-                    const statKey = PLAYER_STAT_HEADER_MAP[header];
+                    const statKey = PLAYER_STAT_HEADER_LOOKUP[headerKey];
                     if (statKey) {
                         const parsedValue = parseStatValue(header, value);
                         if (parsedValue !== null) stats[statKey] = parsedValue;
                         return;
                     }
-                    const metaKey = SEASON_META_HEADERS[header];
+                    const metaKey = SEASON_META_HEADER_LOOKUP[headerKey];
                     if (metaKey) {
                         if (metaKey === 'games_played') {
                             const num = parseFloat(value);
@@ -1606,7 +1623,7 @@ const SEASON_META_HEADERS = {
                         }
                         return;
                     }
-                    const valueKey = SEASON_VALUE_HEADERS[header];
+                    const valueKey = SEASON_VALUE_HEADER_LOOKUP[headerKey];
                     if (valueKey) {
                         const parsed = parseSeasonValue(header, value);
                         if (parsed !== null) stats[valueKey] = parsed;
@@ -1629,11 +1646,12 @@ const SEASON_META_HEADERS = {
                 normalizedHeaders.forEach((header, idx) => {
                     const value = columns[idx];
                     if (!value) return;
-                    if (header === 'SLPR_ID') {
+                    const headerKey = normalizeLookupKey(header);
+                    if (headerKey === 'SLPRID') {
                         playerId = value.trim();
                         return;
                     }
-                    const statKey = PLAYER_STAT_HEADER_MAP[header] || SEASON_VALUE_HEADERS[header];
+                    const statKey = PLAYER_STAT_HEADER_LOOKUP[headerKey] || SEASON_VALUE_HEADER_LOOKUP[headerKey];
                     if (!statKey) return;
                     const parsedRank = parseRankValue(value);
                     if (parsedRank !== null) ranks[statKey] = parsedRank;
@@ -1846,30 +1864,33 @@ const SEASON_META_HEADERS = {
                 const stats = {};
                 normalizedHeaders.forEach((header, idx) => {
                     const value = columns[idx];
-                    if (header === 'SLPR_ID') {
-                        if (value) playerId = value.trim();
+                    const headerKey = normalizeLookupKey(header);
+                    const rawValue = value ?? '';
+                    const trimmedValue = typeof rawValue === 'string' ? rawValue.trim() : String(rawValue).trim();
+                    if (headerKey === 'SLPRID') {
+                        if (trimmedValue) playerId = trimmedValue;
                         return;
                     }
                     // Allow PROJ through even if empty/whitespace so we can preserve text values
-                    if (header !== 'PROJ' && !value) return;
-                    const metaKey = WEEKLY_META_HEADER_MAP[header];
+                    if (headerKey !== 'PROJ' && trimmedValue.length === 0) return;
+                    const metaKey = WEEKLY_META_HEADER_LOOKUP[headerKey];
                     if (metaKey) {
                         if (metaKey === 'opponent_rank') {
-                            const parsed = parseFloat(value.trim());
+                            const parsed = parseFloat(trimmedValue);
                             if (!Number.isNaN(parsed)) stats[metaKey] = parsed;
                         } else {
-                            const trimmedOpponent = value.trim();
+                            const trimmedOpponent = trimmedValue;
                             if (trimmedOpponent) stats[metaKey] = trimmedOpponent;
                         }
                         return;
                     }
-                    const statKey = PLAYER_STAT_HEADER_MAP[header];
+                    const statKey = PLAYER_STAT_HEADER_LOOKUP[headerKey];
                     if (statKey) {
-                        if (header === 'PROJ') {
+                        if (headerKey === 'PROJ') {
                             // For PROJ, always store the raw value as a string, even if empty
-                            stats[statKey] = value || '';
+                            stats[statKey] = typeof rawValue === 'string' ? rawValue : String(rawValue);
                         } else {
-                            const parsedValue = parseStatValue(header, value);
+                            const parsedValue = parseStatValue(header, rawValue);
                             if (parsedValue !== null) stats[statKey] = parsedValue;
                         }
                     }
@@ -1921,7 +1942,14 @@ const SEASON_META_HEADERS = {
             return result;
         }
         function normalizeHeader(header) {
-            return header.replace(/[\u00a0\u202f]/g, ' ').trim();
+            if (typeof header !== 'string') return '';
+            return header
+                .replace(/[\u00a0\u202f]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+        function normalizeLookupKey(header) {
+            return normalizeHeader(header).replace(/[\s_]+/g, '').toUpperCase();
         }
         function parseStatValue(header, value) {
             const trimmed = value.trim();
