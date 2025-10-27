@@ -1424,6 +1424,8 @@
     const uname = params.get('username');
     if (uname) {
       input.value = uname;
+      // Prevent mobile keyboard from opening when landing with ?username
+      setTimeout(() => { try { input.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {} }, 50);
     }
   }
 
