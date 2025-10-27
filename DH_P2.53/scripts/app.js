@@ -1312,41 +1312,70 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
                 await ensureSleeperLiveStats();
                 return;
             }
+            const buildSheetUrl = (sheetName) => `https://docs.google.com/spreadsheets/d/${PLAYER_STATS_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+            const fetchSheetCsv = async (sheetName) => {
+                const response = await fetch(buildSheetUrl(sheetName));
+                if (!response.ok) {
+                    throw new Error(`Sheet "${sheetName}" responded with ${response.status}`);
+                }
+                return response.text();
+            };
             try {
-                const seasonPromise = fetch(`https://docs.google.com/spreadsheets/d/${PLAYER_STATS_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${PLAYER_STATS_SHEETS.season}`).then(res => res.text());
-                const seasonRanksPromise = fetch(`https://docs.google.com/spreadsheets/d/${PLAYER_STATS_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${PLAYER_STATS_SHEETS.seasonRanks}`).then(res => res.text());
-                // Fetch stats for completed weeks (from PLAYER_STATS_SHEETS.weeks)
-                const weeklyPromises = Object.entries(PLAYER_STATS_SHEETS.weeks).map(async ([week, sheetName]) => {
-                    const csv = await fetch(`https://docs.google.com/spreadsheets/d/${PLAYER_STATS_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${sheetName}`).then(res => res.text());
-                    return { week: Number(week), csv, hasFullStats: true };
+                const seasonPromise = fetchSheetCsv(PLAYER_STATS_SHEETS.season);
+                const seasonRanksPromise = fetchSheetCsv(PLAYER_STATS_SHEETS.seasonRanks);
+
+                const weeklyEntries = Object.entries(PLAYER_STATS_SHEETS.weeks);
+                const weeklySettled = await Promise.allSettled(
+                    weeklyEntries.map(([week, sheetName]) =>
+                        fetchSheetCsv(sheetName).then((csv) => ({ week: Number(week), csv, hasFullStats: true }))
+                    )
+                );
+
+                const weeklyResults = [];
+                const completedWeeks = [];
+                weeklySettled.forEach((result, index) => {
+                    const [weekKey] = weeklyEntries[index];
+                    const weekNumber = Number(weekKey);
+                    if (result.status === 'fulfilled' && result.value?.csv) {
+                        weeklyResults.push(result.value);
+                        completedWeeks.push(weekNumber);
+                    } else {
+                        console.warn(`Unable to load completed stats for week ${weekNumber}.`, result.reason || result.value);
+                    }
                 });
-                // Fetch projection data for remaining weeks up to MAX_DISPLAY_WEEKS
-                const completedWeeks = Object.keys(PLAYER_STATS_SHEETS.weeks).map(Number);
+
                 const maxCompletedWeek = completedWeeks.length > 0 ? Math.max(...completedWeeks) : 0;
-                const projectionPromises = [];
+                const projectionFetches = [];
                 for (let week = maxCompletedWeek + 1; week <= MAX_DISPLAY_WEEKS; week++) {
                     const sheetName = `WK${week}`;
-                    projectionPromises.push(
-                        fetch(`https://docs.google.com/spreadsheets/d/${PLAYER_STATS_SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${sheetName}`)
-                            .then(res => res.text())
-                            .then(csv => ({ week, csv, hasFullStats: false }))
-                            .catch(() => ({ week, csv: null, hasFullStats: false })) // Handle missing sheets gracefully
+                    projectionFetches.push(
+                        fetchSheetCsv(sheetName)
+                            .then((csv) => ({ week, csv, hasFullStats: false }))
+                            .catch((err) => {
+                                console.warn(`Projection stats for week ${week} unavailable.`, err);
+                                return { week, csv: null, hasFullStats: false };
+                            })
                     );
                 }
-                const [seasonCsv, seasonRanksCsv, ...allWeeklyCsvs] = await Promise.all([seasonPromise, seasonRanksPromise, ...weeklyPromises, ...projectionPromises]);
+
+                const projectionResults = projectionFetches.length ? await Promise.all(projectionFetches) : [];
+                const [seasonCsv, seasonRanksCsv] = await Promise.all([seasonPromise, seasonRanksPromise]);
+
                 state.playerSeasonStats = parseSeasonStatsCsv(seasonCsv);
                 state.playerSeasonRanks = parseSeasonRanksCsv(seasonRanksCsv);
                 state.seasonRankCache = computeSeasonRankings(state.playerSeasonStats);
+
                 const weeklyStats = {};
                 const projectionWeeks = {};
-                allWeeklyCsvs.forEach(({ week, csv, hasFullStats }) => {
+                [...weeklyResults, ...projectionResults].forEach(({ week, csv, hasFullStats }) => {
                     if (csv) {
                         weeklyStats[week] = parseWeeklyStatsCsv(csv);
                         if (!hasFullStats) {
-                            projectionWeeks[week] = true; // Mark this week as projection-only
+                            projectionWeeks[week] = true;
                         }
                     }
                 });
+
                 state.playerWeeklyStats = weeklyStats;
                 state.weeklyStats = weeklyStats;
                 state.playerProjectionWeeks = projectionWeeks;
