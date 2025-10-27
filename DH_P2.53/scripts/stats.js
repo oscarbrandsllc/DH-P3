@@ -372,7 +372,7 @@
     return pos ? `${pos}·NA` : 'NA';
   }
   function buildRow(row) {
-    const playerId = row.SLPR_ID || row['SLPR ID'] || row.SLPRID || row.slpr_id || '';
+    const playerId = row.SLPR_ID || row.slpr_id || '';
     const name = row.PLAYER || row['PLAYER NAME'] || '';
     const pos = (row.POS || '').toUpperCase();
     const team = (row.TM || '').toUpperCase() || (state.players?.[playerId]?.team || 'FA');

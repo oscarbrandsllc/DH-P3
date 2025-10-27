@@ -1278,7 +1278,7 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             };
             rows.forEach(columns => {
                 const pos = getColumnValue(columns, 'POS');
-                const sleeperId = getColumnValue(columns, ['SLPR_ID', 'SLPR ID', 'SLPRID']);
+                const sleeperId = getColumnValue(columns, 'SLPR_ID');
                 const ktcValue = toInt(getColumnValue(columns, ['VALUE', 'KTC']));
                 const adp = toFloat(getColumnValue(columns, 'ADP'));
                 const posRank = getColumnValue(columns, ['POS·RK', 'POS RK', 'POS_RK']);
@@ -1585,7 +1585,7 @@ const SEASON_META_HEADERS = {
                 normalizedHeaders.forEach((header, idx) => {
                     const value = columns[idx];
                     if (!value) return;
-                    if (header === 'SLPR_ID' || header === 'SLPR ID' || header === 'SLPRID') {
+                    if (header === 'SLPR_ID') {
                         playerId = value.trim();
                         return;
                     }
@@ -1629,7 +1629,7 @@ const SEASON_META_HEADERS = {
                 normalizedHeaders.forEach((header, idx) => {
                     const value = columns[idx];
                     if (!value) return;
-                    if (header === 'SLPR_ID' || header === 'SLPR ID' || header === 'SLPRID') {
+                    if (header === 'SLPR_ID') {
                         playerId = value.trim();
                         return;
                     }
@@ -1846,7 +1846,7 @@ const SEASON_META_HEADERS = {
                 const stats = {};
                 normalizedHeaders.forEach((header, idx) => {
                     const value = columns[idx];
-                    if (header === 'SLPR_ID' || header === 'SLPR ID' || header === 'SLPRID') {
+                    if (header === 'SLPR_ID') {
                         if (value) playerId = value.trim();
                         return;
                     }
@@ -1921,8 +1921,7 @@ const SEASON_META_HEADERS = {
             return result;
         }
         function normalizeHeader(header) {
-            if (typeof header !== 'string') return '';
-            return header.replace(/[\u00a0\u202f]/g, ' ').trim().replace(/\s+/g, ' ');
+            return header.replace(/[\u00a0\u202f]/g, ' ').trim();
         }
         function parseStatValue(header, value) {
             const trimmed = value.trim();
