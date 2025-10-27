@@ -366,13 +366,6 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             "dynasty footballers": "DFB", "la leaguaaa dynasty est2024": "LLGA",
             "la leaugaaa dynasty est2024": "LLGA"
         };
-        function normalizeSleeperIdKey(header) {
-            if (typeof header !== 'string') return '';
-            return header.replace(/[\s_]+/g, '').toUpperCase();
-        }
-        function isSleeperIdHeader(header) {
-            return normalizeSleeperIdKey(header) === 'SLPRID';
-        }
         function getCurrentNflWeekNumber() {
             if (Number.isFinite(state.currentNflWeek)) return state.currentNflWeek;
             const liveWeeks = Object.keys(state.liveWeeklyStats || {}).map(Number).filter(Number.isFinite);
@@ -1261,25 +1254,16 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             const normalizedHeaders = headers.map(normalizeHeader);
             const headerIndex = new Map();
             normalizedHeaders.forEach((header, idx) => {
-                const upper = header.toUpperCase();
-                headerIndex.set(upper, idx);
-                headerIndex.set(upper.replace(/[\s_]+/g, ''), idx);
+                headerIndex.set(header.toUpperCase(), idx);
             });
-            const normalizeKey = (key) => {
-                const primary = normalizeHeader(key).toUpperCase();
-                const compact = primary.replace(/[\s_]+/g, '');
-                return compact !== primary ? [primary, compact] : [primary];
-            };
+            const normalizeKey = (key) => normalizeHeader(key).toUpperCase();
             const getColumnValue = (columns, names) => {
                 const keys = Array.isArray(names) ? names : [names];
                 for (const name of keys) {
-                    const candidates = normalizeKey(name);
-                    for (const key of candidates) {
-                        const idx = headerIndex.get(key);
-                        if (idx !== undefined) {
-                            const value = columns[idx];
-                            if (value !== undefined) return value.trim();
-                        }
+                    const idx = headerIndex.get(normalizeKey(name));
+                    if (idx !== undefined) {
+                        const value = columns[idx];
+                        if (value !== undefined) return value.trim();
                     }
                 }
                 return '';
@@ -1601,7 +1585,7 @@ const SEASON_META_HEADERS = {
                 normalizedHeaders.forEach((header, idx) => {
                     const value = columns[idx];
                     if (!value) return;
-                    if (isSleeperIdHeader(header)) {
+                    if (header === 'SLPR_ID') {
                         playerId = value.trim();
                         return;
                     }
@@ -1645,7 +1629,7 @@ const SEASON_META_HEADERS = {
                 normalizedHeaders.forEach((header, idx) => {
                     const value = columns[idx];
                     if (!value) return;
-                    if (isSleeperIdHeader(header)) {
+                    if (header === 'SLPR_ID') {
                         playerId = value.trim();
                         return;
                     }
@@ -1862,7 +1846,7 @@ const SEASON_META_HEADERS = {
                 const stats = {};
                 normalizedHeaders.forEach((header, idx) => {
                     const value = columns[idx];
-                    if (isSleeperIdHeader(header)) {
+                    if (header === 'SLPR_ID') {
                         if (value) playerId = value.trim();
                         return;
                     }
