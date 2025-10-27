@@ -318,8 +318,19 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
         const GOOGLE_SHEET_ID = '1MDTf1IouUIrm4qabQT9E5T0FsJhQtmaX55P32XK5c_0';
         const PLAYER_STATS_SHEET_ID = '1i-cKqSfYw0iFiV9S-wBw8lwZePwXZ7kcaWMdnaMTHDs';
         const PLAYER_STATS_SHEETS = { season: 'SZN', seasonRanks: 'SZN_RKs', weeks: { 1: 'WK1', 2: 'WK2', 3: 'WK3', 4: 'WK4', 5: 'WK5', 6: 'WK6', 7: 'WK7' , 8: 'WK8' } };
-        // UPDATE THIS: Total number of weeks to display in game logs (including unplayed weeks with projections)
-        const MAX_DISPLAY_WEEKS = 13; // Currently showing weeks 1-8; increase as more week sheets are added
+        const PROJECTION_LOOKAHEAD_WEEKS = 5; // Number of future weeks (projections) to display beyond completed stats
+        const PLAYER_STATS_COMPLETED_WEEK_NUMBERS = Object.keys(PLAYER_STATS_SHEETS.weeks || {})
+            .map(week => Number(week))
+            .filter(Number.isFinite);
+        const PLAYER_STATS_LAST_COMPLETED_WEEK = PLAYER_STATS_COMPLETED_WEEK_NUMBERS.length > 0
+            ? Math.max(...PLAYER_STATS_COMPLETED_WEEK_NUMBERS)
+            : 0;
+        const MAX_NFL_WEEKS = 18;
+        // Total number of weeks to display in game logs (completed + projection weeks). Only adjust the sheet map above.
+        const MAX_DISPLAY_WEEKS = Math.min(
+            MAX_NFL_WEEKS,
+            Math.max(PLAYER_STATS_LAST_COMPLETED_WEEK, 1) + PROJECTION_LOOKAHEAD_WEEKS
+        );
         const TAG_COLORS = { QB:"var(--pos-qb)", RB:"var(--pos-rb)", WR:"var(--pos-wr)", TE:"var(--pos-te)", BN:"var(--pos-bn)", TX:"var(--pos-tx)", FLX: "var(--pos-flx)", SFLX: "var(--pos-sflx)" };
         const INJURY_DESIGNATION_COLORS = {
             'IR': '#d93d76',
