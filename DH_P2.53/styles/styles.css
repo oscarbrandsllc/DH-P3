@@ -4505,7 +4505,7 @@ padding: 0.15rem 0rem 0rem 0rem;
     background: rgb(21 22 37 / 95%);
     border: 1px solid #4423c60a;
     box-shadow: 0 2px 8px rgba(250, 250, 254, 0.92), 
-inset 0 0px 65px rgba(216, 215, 255, 0.12);
+inset 0px 0px 155px rgba(216, 215, 255, 0.1);
     z-index: 5;
 }
 
