@@ -2635,11 +2635,11 @@ const wrTeStatOrder = [
                             // Use the FPT_PPR from the weekly sheet - no fallback
                             value = (typeof stats['fpt_ppr'] === 'number') ? stats['fpt_ppr'] : null;
                         } else if (state.matchupDataLoaded && state.leagueMatchupStats[week]?.[player.id] !== undefined) {
-                            // Use league-specific matchup data
+                            // Use league-specific matchup data - no fallback
                             value = state.leagueMatchupStats[week][player.id];
                         } else {
-                            // Calculate from stats for other cases
-                            value = calculateFantasyPoints(stats, scoringSettings);
+                            // No data available
+                            value = null;
                         }
                     }
                     else if (key === 'ypc') value = (stats['rush_att'] || 0) > 0 ? ((stats['rush_yd'] || 0) / stats['rush_att']) : 0;
@@ -2956,11 +2956,11 @@ const wrTeStatOrder = [
                                 const sheetFpts = week.stats?.['fpt_ppr'];
                                 return sum + ((typeof sheetFpts === 'number') ? sheetFpts : 0);
                             } else if (state.matchupDataLoaded && state.leagueMatchupStats[weekNum]?.[playerId] !== undefined) {
-                                // Use league-specific matchup data
+                                // Use league-specific matchup data - no fallback
                                 return sum + state.leagueMatchupStats[weekNum][playerId];
                             } else {
-                                // Calculate from stats for other cases
-                                return sum + calculateFantasyPoints(week.stats, scoringSettings);
+                                // No data available
+                                return sum + 0;
                             }
                         }, 0);
                         displayValue = totalPoints.toFixed(1);
