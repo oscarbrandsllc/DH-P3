@@ -957,7 +957,7 @@ n {
         .custom-select-wrapper {
             position: relative;
             flex-grow: 1;
-            min-width: 0;
+            min-width: 100px;
             height: var(--header-control-height);
             display: flex;
             align-items: stretch;
