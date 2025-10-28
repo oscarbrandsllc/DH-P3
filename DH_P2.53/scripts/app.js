@@ -5394,10 +5394,10 @@ const wrTeStatOrder = [
                 return null;
             }
 
-            // Get calculated ranks (FPTS/PPG from Sleeper data)
+            // Get calculated ranks (FPTS/PPG position ranks from Sleeper data)
             const calculatedRanks = calculatePlayerStatsAndRanks(playerId);
             
-            // Get sheet ranks (other stats from Google Sheets)
+            // Get sheet ranks (other stats from Google Sheets SZN_RKs)
             const sheetRanks = state.playerSeasonRanks?.[playerId] || {};
 
             const labels = [];
@@ -5408,18 +5408,23 @@ const wrTeStatOrder = [
                 let rank = null;
                 
                 if (stat.source === 'calculated') {
-                    // Use calculated ranks from Sleeper data
+                    // Use calculated position ranks from Sleeper matchup data
                     if (stat.key === 'fpts') {
-                        rank = calculatedRanks.fptsPosRk;
+                        rank = calculatedRanks.posRank; // FPTS position rank
                     } else if (stat.key === 'ppg') {
-                        rank = calculatedRanks.ppgPosRk;
+                        rank = calculatedRanks.ppgPosRank; // PPG position rank
                     }
                 } else if (stat.source === 'sheet') {
-                    // Use sheet ranks from Google Sheets
+                    // Use position ranks from Google Sheets SZN_RKs
                     rank = sheetRanks[stat.key];
                 }
 
                 labels.push(stat.label);
+                
+                // Convert rank to number if it's a string
+                if (typeof rank === 'string') {
+                    rank = parseInt(rank, 10);
+                }
                 
                 if (rank && rank > 0 && rank <= config.maxRank) {
                     const radarValue = rankToRadarValue(rank, config.maxRank);
@@ -5434,6 +5439,15 @@ const wrTeStatOrder = [
             // Check if we have enough data (at least 3 valid stats)
             const validCount = radarValues.filter(v => v > 0).length;
             if (validCount < 3) {
+                console.log('Radar chart debug:', {
+                    playerId,
+                    position,
+                    calculatedRanks,
+                    sheetRanks,
+                    labels,
+                    rankValues,
+                    validCount
+                });
                 return null;
             }
 
