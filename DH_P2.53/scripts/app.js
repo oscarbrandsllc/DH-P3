@@ -1232,7 +1232,11 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             entries.forEach(entry => {
                 entry.ppg = entry.gamesPlayed > 0 ? entry.totalPts / entry.gamesPlayed : 0;
             });
-            const totalSorted = entries.slice().sort((a, b) => b.totalPts - a.totalPts);
+            
+            // Filter players with actual game data for overall rankings
+            const playersWithGames = entries.filter(e => e.gamesPlayed > 0 && e.totalPts > 0);
+            
+            const totalSorted = playersWithGames.slice().sort((a, b) => b.totalPts - a.totalPts);
             totalSorted.forEach((entry, index) => {
                 entry.overallRank = index + 1;
             });
@@ -1243,24 +1247,26 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
                 posGroups.get(posKey).push(entry);
             });
             posGroups.forEach(group => {
-                group.slice().sort((a, b) => b.totalPts - a.totalPts).forEach((entry, index) => {
+                // Filter for position ranks too
+                const playersWithGamesInPos = group.filter(e => e.gamesPlayed > 0 && e.totalPts > 0);
+                playersWithGamesInPos.slice().sort((a, b) => b.totalPts - a.totalPts).forEach((entry, index) => {
                     entry.posRank = index + 1;
                 });
-                group.slice().sort((a, b) => b.ppg - a.ppg).forEach((entry, index) => {
+                playersWithGamesInPos.slice().sort((a, b) => b.ppg - a.ppg).forEach((entry, index) => {
                     entry.ppgPosRank = index + 1;
                 });
             });
-            const ppgSorted = entries.slice().sort((a, b) => b.ppg - a.ppg);
+            const ppgSorted = playersWithGames.slice().sort((a, b) => b.ppg - a.ppg);
             ppgSorted.forEach((entry, index) => {
                 entry.ppgOverallRank = index + 1;
             });
             const cache = {};
             entries.forEach(entry => {
                 cache[entry.id] = {
-                    total_pts: entry.totalPts.toFixed(2),
+                    total_pts: entry.totalPts.toFixed(1),
                     overallRank: formatRankValue(entry.overallRank),
                     posRank: formatRankValue(entry.posRank),
-                    ppg: entry.ppg.toFixed(2),
+                    ppg: entry.ppg.toFixed(1),
                     ppgOverallRank: formatRankValue(entry.ppgOverallRank),
                     ppgPosRank: formatRankValue(entry.ppgPosRank),
                 };
@@ -2621,7 +2627,14 @@ const wrTeStatOrder = [
                     if (NO_FALLBACK_KEYS.has(key)) {
                         const raw = stats[key];
                         value = (typeof raw === 'number') ? raw : null;
-                    } else if (key === 'fpts') value = calculateFantasyPoints(stats, scoringSettings);
+                    } else if (key === 'fpts') {
+                        // Use league-specific matchup data if available
+                        if (state.matchupDataLoaded && state.leagueMatchupStats[week]?.[player.id] !== undefined) {
+                            value = state.leagueMatchupStats[week][player.id];
+                        } else {
+                            value = calculateFantasyPoints(stats, scoringSettings);
+                        }
+                    }
                     else if (key === 'ypc') value = (stats['rush_att'] || 0) > 0 ? ((stats['rush_yd'] || 0) / stats['rush_att']) : 0;
                     else if (key === 'yco_per_att') value = (stats['rush_att'] || 0) > 0 ? ((stats['rush_yac'] || 0) / stats['rush_att']) : 0;
                     else if (key === 'mtf_per_att') value = (stats['rush_att'] || 0) > 0 ? ((stats['mtf'] || 0) / stats['rush_att']) : 0;
@@ -2927,7 +2940,16 @@ const wrTeStatOrder = [
                             displayValue = Number.isInteger(raw) ? String(raw) : Number(raw).toFixed(2);
                         }
                     } else if (key === 'fpts') {
-                        const totalPoints = gameLogsWithData.reduce((sum, week) => sum + calculateFantasyPoints(week.stats, scoringSettings), 0);
+                        // Use league-specific matchup data if available
+                        const totalPoints = gameLogsWithData.reduce((sum, week) => {
+                            const weekNum = week.week;
+                            const playerId = player.id;
+                            if (state.matchupDataLoaded && state.leagueMatchupStats[weekNum]?.[playerId] !== undefined) {
+                                return sum + state.leagueMatchupStats[weekNum][playerId];
+                            } else {
+                                return sum + calculateFantasyPoints(week.stats, scoringSettings);
+                            }
+                        }, 0);
                         displayValue = totalPoints.toFixed(1);
                     } else if (key === 'ypc') {
                         const totalYards = seasonTotals && typeof seasonTotals.rush_yd === 'number' ? seasonTotals.rush_yd : (aggregatedTotals['rush_yd'] || 0);
@@ -3469,7 +3491,16 @@ const wrTeStatOrder = [
                             let cv = 0, dv = '0';
                             switch (statKey) {
                                 case 'fpts':
-                                    cv = player.gameLogs.reduce((sum, week) => sum + calculateFantasyPoints(week.stats, scoringSettings), 0);
+                                    // Use league-specific matchup data if available
+                                    cv = player.gameLogs.reduce((sum, week) => {
+                                        const weekNum = week.week;
+                                        const playerId = player.id;
+                                        if (state.matchupDataLoaded && state.leagueMatchupStats[weekNum]?.[playerId] !== undefined) {
+                                            return sum + state.leagueMatchupStats[weekNum][playerId];
+                                        } else {
+                                            return sum + calculateFantasyPoints(week.stats, scoringSettings);
+                                        }
+                                    }, 0);
                                     dv = cv.toFixed(1);
                                     break;
                                 case 'ypc': {
