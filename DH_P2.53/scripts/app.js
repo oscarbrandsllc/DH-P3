@@ -1635,7 +1635,9 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             'paYPG': 'pa_ypg',
             'ruYPG': 'ru_ypg',
             'recYPG': 'rec_ypg',
-            'PROJ': 'proj'
+            'PROJ': 'proj',
+            'FPT_PPR': 'fpt_ppr',
+            'FPTS_PPR': 'fpt_ppr'
         };
         const WEEKLY_META_HEADER_MAP = {
             'VS': 'opponent',
@@ -2628,12 +2630,15 @@ const wrTeStatOrder = [
                         const raw = stats[key];
                         value = (typeof raw === 'number') ? raw : null;
                     } else if (key === 'fpts') {
-                        // Stats page should only use sheet data, not league-specific matchup data
+                        // Stats page uses sheet FPT_PPR, rosters page uses league-specific matchup data
                         if (state.isGameLogFromStatsPage) {
-                            value = calculateFantasyPoints(stats, scoringSettings);
+                            // Use the FPT_PPR from the weekly sheet - no fallback
+                            value = (typeof stats['fpt_ppr'] === 'number') ? stats['fpt_ppr'] : null;
                         } else if (state.matchupDataLoaded && state.leagueMatchupStats[week]?.[player.id] !== undefined) {
+                            // Use league-specific matchup data
                             value = state.leagueMatchupStats[week][player.id];
                         } else {
+                            // Calculate from stats for other cases
                             value = calculateFantasyPoints(stats, scoringSettings);
                         }
                     }
@@ -2942,15 +2947,19 @@ const wrTeStatOrder = [
                             displayValue = Number.isInteger(raw) ? String(raw) : Number(raw).toFixed(2);
                         }
                     } else if (key === 'fpts') {
-                        // Stats page should only use sheet data, not league-specific matchup data
+                        // Stats page uses sheet FPT_PPR, rosters page uses league-specific matchup data
                         const totalPoints = gameLogsWithData.reduce((sum, week) => {
                             const weekNum = week.week;
                             const playerId = player.id;
                             if (state.isGameLogFromStatsPage) {
-                                return sum + calculateFantasyPoints(week.stats, scoringSettings);
+                                // Use the FPT_PPR from the weekly sheet - no fallback
+                                const sheetFpts = week.stats?.['fpt_ppr'];
+                                return sum + ((typeof sheetFpts === 'number') ? sheetFpts : 0);
                             } else if (state.matchupDataLoaded && state.leagueMatchupStats[weekNum]?.[playerId] !== undefined) {
+                                // Use league-specific matchup data
                                 return sum + state.leagueMatchupStats[weekNum][playerId];
                             } else {
+                                // Calculate from stats for other cases
                                 return sum + calculateFantasyPoints(week.stats, scoringSettings);
                             }
                         }, 0);
