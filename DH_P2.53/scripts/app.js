@@ -308,7 +308,7 @@ if (pageType === 'welcome') {
     }
 }
         // --- State ---
-let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, lastLiveStatsWeek: null, lastLiveStatsFetchTs: 0, calculatedRankCache: null, playerProjectionWeeks: {}, isStartSitMode: false, startSitSelections: [], startSitNextSide: 'left', startSitTeamName: null, leagueMatchupStats: {}, matchupDataLoaded: false, isGameLogFromStatsPage: false };
+let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, lastLiveStatsWeek: null, lastLiveStatsFetchTs: 0, calculatedRankCache: null, playerProjectionWeeks: {}, isStartSitMode: false, startSitSelections: [], startSitNextSide: 'left', startSitTeamName: null, leagueMatchupStats: {}, matchupDataLoaded: false, isGameLogFromStatsPage: false, statsPagePlayerData: null };
         const assignedLeagueColors = new Map();
         let nextColorIndex = 0;
         const assignedRyColors = new Map();
@@ -1285,15 +1285,17 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
         }
         function getStatsPagePlayerRanks(playerId) {
             // ONLY called when state.isGameLogFromStatsPage === true
-            // Uses season totals from STAT_1QB/STAT_SFLX sheets instead of calculating from weekly data
-            const seasonData = state.playerSeasonStats?.[playerId];
+            // Uses season totals from STAT_1QB/STAT_SFLX sheets passed by stats.js
+            const statsData = state.statsPagePlayerData;
+            
+            if (!statsData) return getDefaultPlayerRanks();
+            
+            const fpts = statsData.fpts || 0;
+            const ppg = statsData.ppg || 0;
+            const gamesPlayed = statsData.gamesPlayed || 0;
+            
+            // For ranks, try to get from season ranks, but it's OK if not available
             const seasonRanks = state.playerSeasonRanks?.[playerId];
-            
-            if (!seasonData) return getDefaultPlayerRanks();
-            
-            const fpts = seasonData.fpts_ppr || 0;
-            const gamesPlayed = seasonData.games_played || 0;
-            const ppg = gamesPlayed > 0 ? (fpts / gamesPlayed) : 0;
             const posRank = seasonRanks?.pos_rank_ppr || null;
             const overallRank = seasonRanks?.overall_rank_ppr || null;
             
@@ -2974,11 +2976,11 @@ const wrTeStatOrder = [
                             displayValue = Number.isInteger(raw) ? String(raw) : Number(raw).toFixed(2);
                         }
                     } else if (key === 'fpts') {
-                        // Stats page uses season total from SZN sheet, rosters page sums matchup data
+                        // Stats page uses season total from passed data, rosters page sums matchup data
                         if (state.isGameLogFromStatsPage) {
-                            // Use season total from STAT_1QB/STAT_SFLX sheet
-                            const seasonData = state.playerSeasonStats?.[player.id];
-                            const seasonFpts = seasonData?.fpts_ppr || 0;
+                            // Use season total passed from stats.js
+                            const statsData = state.statsPagePlayerData;
+                            const seasonFpts = statsData?.fpts || 0;
                             displayValue = seasonFpts.toFixed(1);
                         } else {
                             // Sum league-specific matchup data for rosters page

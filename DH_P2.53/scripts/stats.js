@@ -773,6 +773,13 @@
       state.isGameLogModalOpenFromComparison = false;
       // Set flag to tell app.js to use sheet data instead of matchup data
       state.isGameLogFromStatsPage = true;
+      
+      // Pass season stats data to app.js for game logs display
+      state.statsPagePlayerData = {
+        fpts: meta.fpts,
+        ppg: meta.ppg,
+        gamesPlayed: meta.gmPlayed
+      };
     }
     const player = {
       id: meta.playerId,
@@ -796,6 +803,7 @@
     if (typeof state === 'object') {
       state.isGameLogModalOpenFromComparison = false;
       state.isGameLogFromStatsPage = false;
+      state.statsPagePlayerData = null; // Clear the data
     }
   }
   function wireGameLogControls() {
