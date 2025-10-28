@@ -2420,23 +2420,23 @@ const wrTeStatOrder = [
                 const weekStatsEntry = gameLogsByWeek.get(week) || null;
                 const stats = weekStatsEntry?.stats || null;
                 const isProjectionWeek = state.playerProjectionWeeks?.[week] === true;
+                const sheetStatsForWeek = state.playerWeeklyStats?.[week]?.[player.id] || null;
                 const opponent = stats?.opponent || null;
                 const isByeWeek = opponent === 'BYE';
-                const snapPct = typeof stats?.snp_pct === 'number' ? stats.snp_pct : null;
-                const hasNonProjStat = stats
+                const hasSheetStats = !!sheetStatsForWeek && Object.entries(sheetStatsForWeek).some(([statKey, statVal]) => {
+                    if (!statLabels[statKey] || statKey === 'proj') return false;
+                    return typeof statVal === 'number';
+                });
+                const hasRecordedStat = stats
                     ? orderedStatKeys.some(key => {
                         if (!statLabels[key] || key === 'proj') return false;
-                        const val = stats[key];
-                        return typeof val === 'number' && val !== 0;
+                        return typeof stats[key] === 'number';
                     })
                     : false;
-                const hasParticipation = Boolean(stats) && (
-                    (typeof snapPct === 'number' && snapPct > 0) ||
-                    hasNonProjStat
-                );
                 const liveFptsValue = typeof stats?.fpts === 'number' && Number.isFinite(stats.fpts) ? stats.fpts : null;
                 const isLiveWeek = stats?.__live === true || (liveFptsValue !== null && !isProjectionWeek);
-                const isUnplayedWeek = !isLiveWeek && (isProjectionWeek || isByeWeek || !hasParticipation);
+                const suppressNonFptsForLiveOnly = isLiveWeek && !hasSheetStats;
+                const isUnplayedWeek = !isLiveWeek && (isProjectionWeek || isByeWeek || !hasRecordedStat);
                 const rowMeta = {
                     week,
                     isPlayed: !isUnplayedWeek,
@@ -2511,7 +2511,7 @@ const wrTeStatOrder = [
                         }
                         continue;
                     }
-                    if (isLiveWeek && key !== 'fpts' && key !== 'proj') {
+                    if (suppressNonFptsForLiveOnly && key !== 'fpts' && key !== 'proj') {
                         rowData[key] = createTextDescriptor('-');
                         continue;
                     }
