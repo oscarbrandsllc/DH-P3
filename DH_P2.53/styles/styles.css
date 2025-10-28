@@ -414,7 +414,6 @@
 #secondary-header-row .custom-select-wrapper {
     width: auto;
     flex: 1 1 0;
-    min-width: 100px;
 }
 .compact-switcher {
     display: flex;
