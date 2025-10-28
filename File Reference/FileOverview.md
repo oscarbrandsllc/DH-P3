@@ -1,5 +1,5 @@
 📊 Comprehensive Analysis Complete
-I've thoroughly read all 5 core files you requested:
+Core Files
 ✅ Files Read:
 1. app.js (5,136 lines) - 100% complete
 2. styles.css (7,512 lines) - 100% complete
@@ -453,3 +453,154 @@ Bottlenecks (as user noted):
 * No IndexedDB for persistent parsed data cache
 
 This comprehensive analysis provides full working knowledge of the application's architecture, data flow, rendering pipeline, and interaction patterns across all five files.
+
+
+<!-- —————————————————————————————— -->
+
+
+
+
+
+stats.css (977 lines)
+CSS Variables (lines 1-9):
+--stats-col-rk-width: 2rem;           /* Rank column */
+--stats-col-player-width: 5.6rem;     /* Player name column */
+--stats-col-pos-width: 2.75rem;       /* Position column */
+--stats-col-standard-width: clamp(3.9rem, 4.6vw, 4.9rem); /* Data columns */
+--stats-table-width: calc(...);       /* Total table width */
+--stats-row-border-color: #0f1737;
+--stats-header-border-color: rgba(128, 138, 189, 0.22);
+--stats-header-mask-height: 2.25rem;
+Layout Sections:
+1. Header (lines 10-42):
+    * .stats-header-shell: Compact padding for nav
+    * .stats-nav-hidden-inputs: Screen-reader-only inputs
+    * .stats-context-pill: League chip with gradient background
+2. Page Structure (lines 43-139):
+    * .stats-page-content: Flex column layout, gap 0.4rem
+    * .stats-page-intro: Glass panel, centered, max-width 860px
+    * .stats-page-title: Responsive font (1.28-1.48rem), uppercase, spaced
+    * .stats-league-chip: Pill-shaped badge
+3. Tabs (lines 140-220):
+    * .stats-tab-button: Pill buttons, flex-grow, uppercase
+    * Active states:
+        * 1QB: Cyan glow (rgba(0, 158, 253, ...))
+        * SFLX: Pink glow (rgba(236, 72, 153, ...))
+    * .stats-heading-accent: Gradient text clip
+4. Controls Panel (lines 221-289):
+    * .stats-controls-panel: Glass panel, max-width 820px
+    * .stats-search-block: Order 3 (moves to bottom on mobile)
+    * .stats-search-input: Dark input with purple focus ring
+    * .stats-search-clear: Hidden by default, shows on input
+5. Filter Buttons (lines 290-442):
+    * Main filters (.stats-filter-btn):
+        * Base: Gradient background, subtle shadow
+        * Active states with position-specific colors:
+            * QB: #fc497f (pink)
+            * RB: #00EBC7 (cyan)
+            * WR/Receiving: #58A7FF (blue)
+            * TE/ALL: #B469FF (purple)
+        * Triple glow effect (outer + 2 inset shadows)
+    * Secondary filters (.stats-filter-btn-secondary):
+        * Smaller, subtler styling
+        * RDP: #8983a0 (gray-purple)
+        * Rookies: #8466fb (purple)
+6. Table Region (lines 443-509):
+    * .stats-table-region: Glass panel, min-height 360px
+    * Desktop-specific (@media min-width 869px):
+        * Custom CSS variables for responsive widths
+        * Centered header + panels
+        * Fixed nav button sizes (6.5rem × 2.7rem)
+7. Loading States (lines 510-537):
+    * .stats-loading-spinner: Rotating border animation
+    * .stats-loading-text: Secondary text color
+8. Table Scroll Container (lines 538-610):
+    * .stats-table-scroll:
+        * Max-height: clamp(340px, 65vh, 640px)
+        * Custom scrollbars (thin, subtle)
+        * ::before: Dark background for sticky columns
+        * ::after: Gradient mask for header
+9. Table Styling (lines 611-843):
+    * Base table:
+        * Fixed layout, separate borders
+        * Font-size: 0.66rem
+    * Headers (thead th):
+        * Sticky top, z-index 3
+        * Cursor pointer for sorting
+    * Rows (tbody td):
+        * Alternating backgrounds (#080b1d / #0f1224)
+        * Hover: #131d3f
+    * Sticky columns:
+        * .sticky-col-1 (RK): left 0, z-index 7/8
+        * .sticky-col-2 (PLAYER): left 2rem, z-index 6/7
+        * .sticky-col-3 (POS): left 7.6rem, z-index 5/6
+        * ::before pseudo-elements provide backgrounds
+        * Box-shadows create divider lines
+10. Special Cell Styles (lines 680-843):
+    * .stats-value-chip: Inline-flex, rounded, min-width 1.5rem
+    * .stats-team-chip: 27×13px pill for team abbreviations
+    * .stats-rank-cell: Bold, spaced
+    * .stats-age-cell: Semi-bold
+    * .stats-ppg-cell, .stats-fpts-cell: Bold
+    * Header categories:
+        * All: #ADA2FF (purple)
+        * Passing: #FFB2D8 (pink)
+        * Rushing: #9cf7d4 (cyan)
+        * Receiving: #A0C2F7 (blue)
+11. Sort Indicators (lines 856-867):
+    * ::after pseudo-element with ▲/▼ symbols
+12. Responsive Design:
+    * Tablet (max-width 1024px, lines 877-903):
+        * Narrower player column (5.2rem)
+        * Wider standard columns (3.6-4.4rem)
+        * Vertical controls layout
+    * Mobile (max-width 600px, lines 905-966):
+        * Player column: 4.7rem
+        * Rank column: 1.4rem
+        * Font-size: 0.56rem
+        * iOS zoom prevention: Search input forced to 16px font-size
+        * Tabs centered, larger buttons (7rem wide)
+13. Glass Panel Override (lines 969-977):
+    * Stats-specific styling for .glass-panel
+    * Backdrop blur, brightness/saturation filters
+    * Triple border shadow effect
+
+Key Interactions & Data Flow:
+1. Page Load:
+    * stats.js checks data-page="stats"
+    * initialise() fetches league context + player data
+    * Loads both CSV tabs in parallel
+    * Enriches rows with computed stats, colors, styles
+    * Renders 1QB table (default)
+2. Tab Switch:
+    * User clicks SFLX button
+    * toggleTab('sflx') updates state
+    * Loads SFLX sheet if not cached
+    * Re-renders table with new dataset
+3. Filtering:
+    * Click "Passing" filter → shows only QB stats
+    * Changes column set to QB-specific (30 columns)
+    * Applies paATT >= 36 threshold when sorting passing stats
+    * Re-renders with filtered/sorted rows
+4. Sorting:
+    * Click column header (e.g., "PPG")
+    * Cycles: DESC (▼) → ASC (▲) → NONE
+    * Re-ranks visible rows
+    * Applies color coding to rank column
+5. Search:
+    * Type "Jefferson" → filters to matching players
+    * Clear button appears
+    * Empty state shown if no matches
+6. Player Click:
+    * Click player name → openGameLogs(entry)
+    * Calls handlePlayerNameClick() from app.js
+    * Opens game logs modal with stats history
+
+Notable Design Patterns:
+* Sticky column implementation: Uses position: sticky + ::before pseudo-elements for backgrounds
+* Color theming: Position-based color schemes (QB pink, RB cyan, WR blue, TE purple)
+* Performance: Caching datasets in Map, debounced search, lazy image loading
+* Accessibility: ARIA labels, screen-reader text, semantic HTML
+* Progressive enhancement: Works without JavaScript for basic layout
+* Responsive tables: Horizontal scroll with sticky columns, mobile-optimized column widths
+* Data normalization: Header aliases, type coercion, fallback values
