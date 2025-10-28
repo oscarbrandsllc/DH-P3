@@ -469,8 +469,8 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             } catch (e) {}
             setLoading(true, 'Loading initial data...');
             
-            // Stats page defers weekly stats loading for better performance
-            const initialDataPromises = pageType === 'stats'
+            // Stats and Rosters pages defer weekly stats loading for better performance
+            const initialDataPromises = (pageType === 'stats' || pageType === 'rosters')
                 ? [fetchSleeperPlayers(), fetchDataFromGoogleSheet()]
                 : [fetchSleeperPlayers(), fetchDataFromGoogleSheet(), fetchPlayerStatsSheets()];
             
@@ -532,6 +532,13 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
                 handleError(error, username);
             } finally {
                 setLoading(false);
+                
+                // Start loading weekly stats in background for game logs (non-blocking)
+                if (!state.statsSheetsLoaded && typeof fetchPlayerStatsSheets === 'function') {
+                    fetchPlayerStatsSheets().catch(err => {
+                        console.warn('Background load of weekly stats failed:', err);
+                    });
+                }
             }
         }
         async function handleFetchOwnership() {
