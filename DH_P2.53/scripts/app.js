@@ -424,17 +424,18 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
                             'news': newsContainer
                         };
                         
-                        // Close all panels first
+                        // Check if the clicked panel is currently visible BEFORE closing
+                        const isCurrentlyVisible = containers[targetPanel] && 
+                                                   !containers[targetPanel].classList.contains('hidden');
+                        
+                        // Close all panels
                         Object.values(containers).forEach(container => {
                             if (container) container.classList.add('hidden');
                         });
                         
-                        // Toggle the clicked panel
-                        if (containers[targetPanel]) {
-                            const isCurrentlyHidden = containers[targetPanel].classList.contains('hidden');
-                            if (isCurrentlyHidden) {
-                                containers[targetPanel].classList.remove('hidden');
-                            }
+                        // If the clicked panel was hidden, open it (toggle behavior)
+                        if (!isCurrentlyVisible && containers[targetPanel]) {
+                            containers[targetPanel].classList.remove('hidden');
                         }
                     });
                 });
