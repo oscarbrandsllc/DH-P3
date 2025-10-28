@@ -4562,13 +4562,12 @@ inset 0px 0px 155px rgba(216, 215, 255, 0.1);
 @media (max-width: 540px) {
     .stats-key-panel ul {
         grid-template-columns: 1fr;
-        gap: 0.25rem;
+        gap: 0.05rem;
         padding: 0 0.5rem;
     }
     .stats-key-panel li {
         display: flex;
-        justify-content: space-between;
-        padding: 0.2rem 0.5rem;
+        padding: 0.12rem 1rem !important;
     }
     .stats-key-panel strong {
         width: auto;
@@ -4587,10 +4586,11 @@ inset 0px 0px 155px rgba(216, 215, 255, 0.1);
     }
     .stats-key-panel strong {
         color: var(--color-text-secondary);
-        font-weight: 600;
+        font-weight: 700;
         margin-right: 0.5em;
         display: inline-block;
-        width: 70px;
+        width: 74px;
+        text-align-last: center;
     }
     /* ⬇︎ PLAYER-COMP MODAL ⬇︎ */
     #player-comparison-modal .modal-content {
