@@ -317,9 +317,9 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
         const API_BASE = 'https://api.sleeper.app/v1';
         const GOOGLE_SHEET_ID = '1MDTf1IouUIrm4qabQT9E5T0FsJhQtmaX55P32XK5c_0';
         const PLAYER_STATS_SHEET_ID = '1i-cKqSfYw0iFiV9S-wBw8lwZePwXZ7kcaWMdnaMTHDs';
-        const PLAYER_STATS_SHEETS = { season: 'SZN', seasonRanks: 'SZN_RKs', weeks: { 1: 'WK1', 2: 'WK2', 3: 'WK3', 4: 'WK4', 5: 'WK5', 6: 'WK6', 7: 'WK7' , 8: 'WK8' } };
+        const PLAYER_STATS_SHEETS = { season: 'SZN', seasonRanks: 'SZN_RKs', weeks: { 1: 'WK1', 2: 'WK2', 3: 'WK3', 4: 'WK4', 5: 'WK5', 6: 'WK6', 7: 'WK7', 8: 'WK8' } };
         // UPDATE THIS: Total number of weeks to display in game logs (including unplayed weeks with projections)
-        const MAX_DISPLAY_WEEKS = 13; // Currently showing weeks 1-8; increase as more week sheets are added
+        const MAX_DISPLAY_WEEKS = 13;
         const TAG_COLORS = { QB:"var(--pos-qb)", RB:"var(--pos-rb)", WR:"var(--pos-wr)", TE:"var(--pos-te)", BN:"var(--pos-bn)", TX:"var(--pos-tx)", FLX: "var(--pos-flx)", SFLX: "var(--pos-sflx)" };
         const INJURY_DESIGNATION_COLORS = {
             'IR': '#d93d76',
@@ -443,6 +443,21 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
                 }
                 return;
             }
+            
+            // For welcome page, just show the screen - no loading needed
+            if (pageType === 'welcome') {
+                if (welcomeScreen) welcomeScreen.classList.remove('hidden');
+                // Prevent mobile keyboard appearing when arriving via nav with ?username=
+                try {
+                    const params = new URLSearchParams(window.location.search);
+                    if (params.has('username')) {
+                        try { suppressFocusTemporary(600); } catch (e) {}
+                        setTimeout(() => { try { usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {} }, 50);
+                    }
+                } catch (e) {}
+                return;
+            }
+            
             // Prevent mobile keyboard appearing when arriving via nav with ?username=
             try {
                 const params = new URLSearchParams(window.location.search);
@@ -1059,11 +1074,23 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             closeComparisonModal();
         }
         // --- Position Filter Logic ---
+        
+        // Debounce helper for performance
+        let renderDebounceTimer = null;
+        function debouncedRenderAllTeamData(teams, delay = 0) {
+            if (renderDebounceTimer) clearTimeout(renderDebounceTimer);
+            if (delay === 0) {
+                renderAllTeamData(teams);
+            } else {
+                renderDebounceTimer = setTimeout(() => renderAllTeamData(teams), delay);
+            }
+        }
+        
         function handleClearFilters() {
             closeComparisonModal();
             state.activePositions.clear();
             updatePositionFilterButtons();
-            renderAllTeamData(state.currentTeams);
+            debouncedRenderAllTeamData(state.currentTeams);
             clearFiltersButton.classList.remove('active');
         }
         function handlePositionFilter(e) {
@@ -1098,7 +1125,7 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
                 }
             }
             updatePositionFilterButtons();
-            renderAllTeamData(state.currentTeams);
+            debouncedRenderAllTeamData(state.currentTeams);
             clearFiltersButton.classList.toggle('active', state.activePositions.size > 0);
         }
         function updatePositionFilterButtons() {
@@ -2420,23 +2447,23 @@ const wrTeStatOrder = [
                 const weekStatsEntry = gameLogsByWeek.get(week) || null;
                 const stats = weekStatsEntry?.stats || null;
                 const isProjectionWeek = state.playerProjectionWeeks?.[week] === true;
+                const sheetStatsForWeek = state.playerWeeklyStats?.[week]?.[player.id] || null;
                 const opponent = stats?.opponent || null;
                 const isByeWeek = opponent === 'BYE';
-                const snapPct = typeof stats?.snp_pct === 'number' ? stats.snp_pct : null;
-                const hasNonProjStat = stats
+                const hasSheetStats = !!sheetStatsForWeek && Object.entries(sheetStatsForWeek).some(([statKey, statVal]) => {
+                    if (!statLabels[statKey] || statKey === 'proj') return false;
+                    return typeof statVal === 'number';
+                });
+                const hasRecordedStat = stats
                     ? orderedStatKeys.some(key => {
                         if (!statLabels[key] || key === 'proj') return false;
-                        const val = stats[key];
-                        return typeof val === 'number' && val !== 0;
+                        return typeof stats[key] === 'number';
                     })
                     : false;
-                const hasParticipation = Boolean(stats) && (
-                    (typeof snapPct === 'number' && snapPct > 0) ||
-                    hasNonProjStat
-                );
                 const liveFptsValue = typeof stats?.fpts === 'number' && Number.isFinite(stats.fpts) ? stats.fpts : null;
                 const isLiveWeek = stats?.__live === true || (liveFptsValue !== null && !isProjectionWeek);
-                const isUnplayedWeek = !isLiveWeek && (isProjectionWeek || isByeWeek || !hasParticipation);
+                const suppressNonFptsForLiveOnly = isLiveWeek && !hasSheetStats;
+                const isUnplayedWeek = !isLiveWeek && (isProjectionWeek || isByeWeek || !hasRecordedStat);
                 const rowMeta = {
                     week,
                     isPlayed: !isUnplayedWeek,
@@ -2511,7 +2538,7 @@ const wrTeStatOrder = [
                         }
                         continue;
                     }
-                    if (isLiveWeek && key !== 'fpts' && key !== 'proj') {
+                    if (suppressNonFptsForLiveOnly && key !== 'fpts' && key !== 'proj') {
                         rowData[key] = createTextDescriptor('-');
                         continue;
                     }
@@ -3604,6 +3631,10 @@ const wrTeStatOrder = [
                 teamsToRender = teams.filter(team => state.teamsToCompare.has(team.teamName));
                 rosterGrid.style.justifyContent = 'center';
             }
+            
+            // Use DocumentFragment for batch DOM insertion
+            const fragment = document.createDocumentFragment();
+            
             teamsToRender.forEach(team => {
                 const columnWrapper = document.createElement('div');
                 columnWrapper.className = 'roster-column';
@@ -3635,9 +3666,13 @@ const wrTeStatOrder = [
                 const card = state.currentRosterView === 'positional' ? createPositionalTeamCard(team) : createDepthChartTeamCard(team);
                 columnWrapper.appendChild(header);
                 columnWrapper.appendChild(card);
-                rosterGrid.appendChild(columnWrapper);
+                fragment.appendChild(columnWrapper);
                 calibrateTeamCardIntrinsicSize(card);
             });
+            
+            // Single DOM insertion instead of multiple
+            rosterGrid.appendChild(fragment);
+            
             if (compareSearchInput && compareSearchInput.value) {
                 filterTeamsByQuery(compareSearchInput.value);
             }
@@ -3716,7 +3751,9 @@ const wrTeStatOrder = [
                 el.innerHTML = '';
                 el.appendChild(h3);
                 if (filteredData.length > 0) {
-                    filteredData.forEach(item => el.appendChild(creator(item, team.teamName)));
+                    const fragment = document.createDocumentFragment();
+                    filteredData.forEach(item => fragment.appendChild(creator(item, team.teamName)));
+                    el.appendChild(fragment);
                 } else {
                     el.innerHTML += `<div class="text-xs text-slate-500 p-1 italic">None</div>`;
                 }
@@ -3729,7 +3766,9 @@ const wrTeStatOrder = [
             picksEl.innerHTML = '';
             picksEl.appendChild(picksH3);
             if (team.draftPicks && team.draftPicks.length > 0) {
-                team.draftPicks.forEach(item => picksEl.appendChild(createPickRow(item, team.teamName)));
+                const picksFragment = document.createDocumentFragment();
+                team.draftPicks.forEach(item => picksFragment.appendChild(createPickRow(item, team.teamName)));
+                picksEl.appendChild(picksFragment);
             } else {
                 picksEl.innerHTML += `<div class="text-xs text-slate-500 p-1 italic">None</div>`;
             }
@@ -3776,7 +3815,9 @@ const wrTeStatOrder = [
                     el.innerHTML = '';
                     el.appendChild(h3);
                     if (filteredData && filteredData.length > 0) {
-                        filteredData.forEach(item => el.appendChild(creator(item, team.teamName)));
+                        const fragment = document.createDocumentFragment();
+                        filteredData.forEach(item => fragment.appendChild(creator(item, team.teamName)));
+                        el.appendChild(fragment);
                     } else {
                         el.innerHTML += `<div class="text-xs text-slate-500 p-1 italic">None</div>`;
                     }
@@ -3792,7 +3833,9 @@ const wrTeStatOrder = [
                 picksEl.innerHTML = '';
                 picksEl.appendChild(picksH3);
                 if (team.draftPicks && team.draftPicks.length > 0) {
-                    team.draftPicks.forEach(item => picksEl.appendChild(createPickRow(item, team.teamName)));
+                    const picksFragment = document.createDocumentFragment();
+                    team.draftPicks.forEach(item => picksFragment.appendChild(createPickRow(item, team.teamName)));
+                    picksEl.appendChild(picksFragment);
                 } else {
                     picksEl.innerHTML += `<div class="text-xs text-slate-500 p-1 italic">None</div>`;
                 }
@@ -3815,7 +3858,9 @@ const wrTeStatOrder = [
             const slotAbbr = { 'SUPER_FLEX': 'SFLX', 'FLEX': 'FLX' };
             const displaySlot = state.currentRosterView === 'depth' ? (slotAbbr[player.slot] || player.slot) : player.pos;
             const fullPlayer = state.players?.[player.id];
-            const playerRanks = calculatePlayerStatsAndRanks(player.id) || getDefaultPlayerRanks();
+            // Use pre-calculated ranks if available, otherwise calculate once
+            const playerRanks = player._cachedRanks || calculatePlayerStatsAndRanks(player.id) || getDefaultPlayerRanks();
+            if (!player._cachedRanks) player._cachedRanks = playerRanks;
             const firstName = (player.first_name || fullPlayer?.first_name || '').trim();
             const lastName = (player.last_name || fullPlayer?.last_name || '').trim();
             const nameCandidates = [
@@ -3861,7 +3906,7 @@ const wrTeStatOrder = [
             const normalizedKey = logoKeyMap[teamKey] || teamKey.toLowerCase();
             const src = `../assets/NFL-Tags_webp/${normalizedKey}.webp`;
             const teamTagHTML = (player.team && player.team !== 'FA')
-              ? `<img class="team-logo glow" src="${src}" alt="${teamKey}" width="19" height="19" loading="eager">`
+              ? `<img class="team-logo glow" src="${src}" alt="${teamKey}" width="19" height="19" loading="lazy" decoding="async">`
               : `<div class="team-tag" style="background-color: #64748b; color: white;">FA</div>`;
             const basePos = (player.pos || fullPlayer?.position || displaySlot || '').toUpperCase();
             const fptsPosRankNumber = Number.parseInt(playerRanks.posRank, 10);
@@ -5017,14 +5062,12 @@ function setLoading(isLoading, message = 'Loading...') {
     if (document.body?.dataset?.page === 'rosters') {
         adjustStickyHeaders();
     }
-    const buttons = [homeButton, rostersButton, ownershipButton, analyzerButton, researchButton].filter(Boolean);
+    // Don't disable nav buttons during loading - allow navigation at any time
     if (isLoading) {
         const msgEl = loadingIndicator.querySelector('.loading-message'); if (msgEl) { msgEl.textContent = message; } else { loadingIndicator.textContent = message; }
         loadingIndicator.classList.remove('hidden');
-        buttons.forEach(btn => { btn.disabled = true; btn.classList.add('opacity-50', 'cursor-not-allowed'); });
     } else {
         loadingIndicator.classList.add('hidden');
-        buttons.forEach(btn => { btn.disabled = false; btn.classList.remove('opacity-50', 'cursor-not-allowed'); });
     }
 }
         function handleError(error, username) {
@@ -5133,3 +5176,47 @@ document.addEventListener('DOMContentLoaded', function(){
     legend.classList.add('hidden');
   }
 });
+
+// === Loading Ring Animation (merged from loader-ring.js) ===
+(function(){
+  const RUNTIME_MS = 14000;
+  let raf = null;
+  function tick(start, ring){
+    const t = performance.now();
+    const elapsed = (t - start) % RUNTIME_MS;
+    const angle = (elapsed / RUNTIME_MS) * 360;
+    ring.style.setProperty('--angle', angle + 'deg');
+    raf = requestAnimationFrame(() => tick(start, ring));
+  }
+  function startRing(el){
+    if (!el) return;
+    if (raf) cancelAnimationFrame(raf);
+    tick(performance.now(), el);
+  }
+  function observeLoading(){
+    const loading = document.getElementById('loading');
+    if (!loading) return;
+    const ring = loading.querySelector('.loading-ring');
+    if (!ring) return;
+    const run = () => {
+      const hidden = loading.classList.contains('hidden');
+      if (hidden){
+        if (raf) { cancelAnimationFrame(raf); raf = null; }
+      } else {
+        if (!raf) startRing(ring);
+      }
+    };
+    run();
+    const obs = new MutationObserver(run);
+    obs.observe(loading, { attributes: true, attributeFilter: ['class'] });
+    window.addEventListener('visibilitychange', run);
+    window.addEventListener('pageshow', run);
+    window.addEventListener('pagehide', () => { if (raf) { cancelAnimationFrame(raf); raf = null; } });
+    window.addEventListener('resize', run);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', observeLoading);
+  } else {
+    observeLoading();
+  }
+})();
