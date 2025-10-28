@@ -1285,7 +1285,7 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
         }
         function getStatsPagePlayerRanks(playerId) {
             // ONLY called when state.isGameLogFromStatsPage === true
-            // Uses season totals from STAT_1QB/STAT_SFLX sheets passed by stats.js
+            // Uses season totals and calculated ranks from STAT_1QB/STAT_SFLX sheets passed by stats.js
             const statsData = state.statsPagePlayerData;
             
             if (!statsData) return getDefaultPlayerRanks();
@@ -1294,18 +1294,19 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             const ppg = statsData.ppg || 0;
             const gamesPlayed = statsData.gamesPlayed || 0;
             
-            // For ranks, try to get from season ranks, but it's OK if not available
-            const seasonRanks = state.playerSeasonRanks?.[playerId];
-            const posRank = seasonRanks?.pos_rank_ppr || null;
-            const overallRank = seasonRanks?.overall_rank_ppr || null;
+            // Use the calculated ranks passed from stats.js
+            const posRank = statsData.posRank || null;
+            const overallRank = statsData.overallRank || null;
+            const ppgPosRank = statsData.ppgPosRank || null;
+            const ppgOverallRank = statsData.ppgOverallRank || null;
             
             return {
                 total_pts: fpts.toFixed(1),
                 ppg: ppg.toFixed(1),
                 posRank: posRank,
                 overallRank: overallRank,
-                ppgPosRank: posRank,
-                ppgOverallRank: overallRank,
+                ppgPosRank: ppgPosRank,
+                ppgOverallRank: ppgOverallRank,
                 gamesPlayed: gamesPlayed
             };
         }

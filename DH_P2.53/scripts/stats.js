@@ -156,7 +156,8 @@
     sort: { column: null, direction: 0 },
     datasets: new Map(),
     headerLabels: new Map(),
-    availableColumns: new Map()
+    availableColumns: new Map(),
+    rankCache: null
   };
   const dom = {
     tabButtons: Array.from(document.querySelectorAll('.stats-tab-button')),
@@ -434,6 +435,57 @@
         teamStyle: row._cachedStyles.teamStyle
       }
     };
+  }
+  function buildStatsPageRankCache(dataset) {
+    // Build rank cache for FPTS and PPG rankings
+    const cache = {};
+    
+    // Filter to players with actual stats
+    const playersWithStats = dataset.filter(entry => {
+      return entry.meta.fpts !== null && entry.meta.fpts > 0 && entry.meta.pos !== 'RDP';
+    });
+    
+    if (playersWithStats.length === 0) return cache;
+    
+    // Calculate FPTS overall ranks
+    const fptsSorted = [...playersWithStats].sort((a, b) => (b.meta.fpts || 0) - (a.meta.fpts || 0));
+    fptsSorted.forEach((entry, index) => {
+      if (!cache[entry.meta.playerId]) cache[entry.meta.playerId] = {};
+      cache[entry.meta.playerId].overallRank = index + 1;
+    });
+    
+    // Calculate PPG overall ranks
+    const ppgSorted = [...playersWithStats].sort((a, b) => (b.meta.ppg || 0) - (a.meta.ppg || 0));
+    ppgSorted.forEach((entry, index) => {
+      if (!cache[entry.meta.playerId]) cache[entry.meta.playerId] = {};
+      cache[entry.meta.playerId].ppgOverallRank = index + 1;
+    });
+    
+    // Group by position for positional ranks
+    const positionGroups = new Map();
+    playersWithStats.forEach(entry => {
+      const pos = entry.meta.pos;
+      if (!pos) return;
+      if (!positionGroups.has(pos)) positionGroups.set(pos, []);
+      positionGroups.get(pos).push(entry);
+    });
+    
+    // Calculate position ranks for FPTS and PPG
+    positionGroups.forEach((players, pos) => {
+      // FPTS position ranks
+      const fptsByPos = [...players].sort((a, b) => (b.meta.fpts || 0) - (a.meta.fpts || 0));
+      fptsByPos.forEach((entry, index) => {
+        cache[entry.meta.playerId].posRank = index + 1;
+      });
+      
+      // PPG position ranks
+      const ppgByPos = [...players].sort((a, b) => (b.meta.ppg || 0) - (a.meta.ppg || 0));
+      ppgByPos.forEach((entry, index) => {
+        cache[entry.meta.playerId].ppgPosRank = index + 1;
+      });
+    });
+    
+    return cache;
   }
   function getColumnSet() {
     if (!statsState.activePosition || statsState.activePosition === 'ALL') return COLUMN_SETS.default;
@@ -769,16 +821,24 @@
     if (typeof handlePlayerNameClick !== 'function') return;
     const { meta } = entry;
     const valuations = state.isSuperflex ? state.sflxData?.[meta.playerId] : state.oneQbData?.[meta.playerId];
+    
+    // Get calculated ranks from cache
+    const ranks = statsState.rankCache?.[meta.playerId] || {};
+    
     if (typeof state === 'object') {
       state.isGameLogModalOpenFromComparison = false;
       // Set flag to tell app.js to use sheet data instead of matchup data
       state.isGameLogFromStatsPage = true;
       
-      // Pass season stats data to app.js for game logs display
+      // Pass season stats data AND calculated ranks to app.js for game logs display
       state.statsPagePlayerData = {
         fpts: meta.fpts,
         ppg: meta.ppg,
-        gamesPlayed: meta.gmPlayed
+        gamesPlayed: meta.gmPlayed,
+        posRank: ranks.posRank || null,
+        overallRank: ranks.overallRank || null,
+        ppgPosRank: ranks.ppgPosRank || null,
+        ppgOverallRank: ranks.ppgOverallRank || null
       };
     }
     const player = {
@@ -842,10 +902,20 @@
     if (!statsState.datasets.has(tabKey)) {
       toggleInlineLoading(true);
       loadTabData(tabKey).then(() => {
+        // Build rank cache after data loads
+        const dataset = statsState.datasets.get(tabKey);
+        if (dataset) {
+          statsState.rankCache = buildStatsPageRankCache(dataset);
+        }
         toggleInlineLoading(false);
         renderTable();
       }).catch(() => toggleInlineLoading(false));
     } else {
+      // Rebuild rank cache when switching to already-loaded tab
+      const dataset = statsState.datasets.get(tabKey);
+      if (dataset) {
+        statsState.rankCache = buildStatsPageRankCache(dataset);
+      }
       renderTable();
     }
   }
@@ -991,6 +1061,13 @@
         await fetchPlayerStatsSheets();
       }
       await loadAllTabs();
+      
+      // Build rank cache for the initial tab
+      const initialDataset = statsState.datasets.get(statsState.currentTab);
+      if (initialDataset) {
+        statsState.rankCache = buildStatsPageRankCache(initialDataset);
+      }
+      
       // Set initial active filter buttons
       dom.filterGroup.querySelectorAll('.stats-filter-btn').forEach((btn) => {
         btn.classList.toggle('active', btn.dataset.position === statsState.activePosition);
