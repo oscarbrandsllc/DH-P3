@@ -308,7 +308,7 @@ if (pageType === 'welcome') {
     }
 }
         // --- State ---
-let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, lastLiveStatsWeek: null, lastLiveStatsFetchTs: 0, calculatedRankCache: null, playerProjectionWeeks: {}, isStartSitMode: false, startSitSelections: [], startSitNextSide: 'left', startSitTeamName: null };
+let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, lastLiveStatsWeek: null, lastLiveStatsFetchTs: 0, calculatedRankCache: null, playerProjectionWeeks: {}, isStartSitMode: false, startSitSelections: [], startSitNextSide: 'left', startSitTeamName: null, leagueMatchupStats: {}, matchupDataLoaded: false };
         const assignedLeagueColors = new Map();
         let nextColorIndex = 0;
         const assignedRyColors = new Map();
@@ -555,6 +555,7 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             };
             state.currentLeagueId = leagueId;
             state.calculatedRankCache = null;
+            state.matchupDataLoaded = false; // Reset matchup data state
             handleClearCompare(); 
             const leagueInfo = state.leagues.find(l => l.league_id === leagueId);
             const leagueName = leagueInfo?.name || 'league';
@@ -570,6 +571,10 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
                     fetchWithCache(`${API_BASE}/league/${leagueId}/users`),
                     fetchWithCache(`${API_BASE}/league/${leagueId}/traded_picks`),
                 ]);
+                
+                // Fetch league-specific matchup data for FPTS/PPG
+                await fetchLeagueMatchupData(leagueId);
+                
                 const teams = processRosterData(rosters, users, tradedPicks, leagueInfo);
                 const userTeam = teams.find(team => team.isUserTeam);
                 if (userTeam) {
@@ -1207,7 +1212,16 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
                 for (const [pId, statLine] of Object.entries(weeklyData)) {
                     const playerEntry = playersById[pId];
                     if (!playerEntry) continue;
-                    const points = calculateFantasyPoints(statLine, scoringSettings);
+                    
+                    // Use league-specific matchup data if available
+                    let points;
+                    if (state.matchupDataLoaded && state.leagueMatchupStats[week]?.[pId] !== undefined) {
+                        points = state.leagueMatchupStats[week][pId];
+                    } else {
+                        // Fallback to calculated points if matchup data not available
+                        points = calculateFantasyPoints(statLine, scoringSettings);
+                    }
+                    
                     playerEntry.totalPts += points;
                     if (points > 0) {
                         playerEntry.gamesPlayed += 1;
@@ -1470,6 +1484,56 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             } finally {
                 state.liveStatsLoaded = true;
                 state.lastLiveStatsFetchTs = Date.now();
+            }
+        }
+        async function fetchLeagueMatchupData(leagueId, maxWeek = null) {
+            if (!leagueId) {
+                console.warn('fetchLeagueMatchupData: No league ID provided');
+                return;
+            }
+            try {
+                const currentWeek = maxWeek || state.currentNflWeek || 18;
+                const matchupStats = {};
+                
+                // Fetch matchups for each week (1 through current week)
+                const weekPromises = [];
+                for (let week = 1; week <= currentWeek; week++) {
+                    weekPromises.push(
+                        fetchWithCache(`${API_BASE}/league/${leagueId}/matchups/${week}`)
+                            .then(matchups => ({ week, matchups }))
+                            .catch(err => {
+                                console.warn(`Failed to fetch matchup data for week ${week}:`, err);
+                                return { week, matchups: null };
+                            })
+                    );
+                }
+                
+                const results = await Promise.all(weekPromises);
+                
+                // Process matchup data
+                results.forEach(({ week, matchups }) => {
+                    if (!matchups || !Array.isArray(matchups)) return;
+                    
+                    matchupStats[week] = {};
+                    
+                    // Each matchup has players_points: { playerId: fpts }
+                    matchups.forEach(matchup => {
+                        if (matchup.players_points && typeof matchup.players_points === 'object') {
+                            Object.entries(matchup.players_points).forEach(([playerId, fpts]) => {
+                                if (Number.isFinite(fpts)) {
+                                    matchupStats[week][playerId] = fpts;
+                                }
+                            });
+                        }
+                    });
+                });
+                
+                state.leagueMatchupStats = matchupStats;
+                state.matchupDataLoaded = true;
+                console.log(`✅ Loaded matchup data for ${Object.keys(matchupStats).length} weeks`);
+            } catch (error) {
+                console.error('Error fetching league matchup data:', error);
+                state.matchupDataLoaded = false;
             }
         }
         function getCombinedWeeklyStats() {
