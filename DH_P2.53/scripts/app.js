@@ -328,53 +328,53 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             QB: {
                 maxRank: 36,
                 stats: [
-                    { key: 'fpts', label: 'FPTS', source: 'calculated' },
-                    { key: 'ppg', label: 'PPG', source: 'calculated' },
-                    { key: 'pass_rtg', label: 'paRTG', source: 'sheet' },
-                    { key: 'pass_yd', label: 'paYDS', source: 'sheet' },
-                    { key: 'pass_td', label: 'paTD', source: 'sheet' },
-                    { key: 'ttt', label: 'TTT', source: 'sheet' },
-                    { key: 'rush_yd', label: 'ruYDS', source: 'sheet' },
-                    { key: 'pass_cmp', label: 'CMP', source: 'sheet' }
+                    { key: 'fpts', label: 'FPTS' },
+                    { key: 'ppg', label: 'PPG' },
+                    { key: 'pass_rtg', label: 'paRTG' },
+                    { key: 'pass_yd', label: 'paYDS' },
+                    { key: 'pass_td', label: 'paTD' },
+                    { key: 'ttt', label: 'TTT' },
+                    { key: 'rush_yd', label: 'ruYDS' },
+                    { key: 'pass_cmp', label: 'CMP' }
                 ]
             },
             RB: {
                 maxRank: 48,
                 stats: [
-                    { key: 'fpts', label: 'FPTS', source: 'calculated' },
-                    { key: 'ppg', label: 'PPG', source: 'calculated' },
-                    { key: 'yds_total', label: 'YDS(t)', source: 'sheet' },
-                    { key: 'rush_att', label: 'CAR', source: 'sheet' },
-                    { key: 'ypc', label: 'YPC', source: 'sheet' },
-                    { key: 'rec_tgt', label: 'TGT', source: 'sheet' },
-                    { key: 'mtf_per_att', label: 'MTF/A', source: 'sheet' },
-                    { key: 'yco_per_att', label: 'YCO/A', source: 'sheet' }
+                    { key: 'fpts', label: 'FPTS' },
+                    { key: 'ppg', label: 'PPG' },
+                    { key: 'yds_total', label: 'YDS(t)' },
+                    { key: 'rush_att', label: 'CAR' },
+                    { key: 'ypc', label: 'YPC' },
+                    { key: 'rec_tgt', label: 'TGT' },
+                    { key: 'mtf_per_att', label: 'MTF/A' },
+                    { key: 'yco_per_att', label: 'YCO/A' }
                 ]
             },
             WR: {
                 maxRank: 72,
                 stats: [
-                    { key: 'ppg', label: 'PPG', source: 'calculated' },
-                    { key: 'fpts', label: 'FPTS', source: 'calculated' },
-                    { key: 'rec', label: 'REC', source: 'sheet' },
-                    { key: 'rec_tgt', label: 'TGT', source: 'sheet' },
-                    { key: 'ts_per_rr', label: 'TS%', source: 'sheet' },
-                    { key: 'yprr', label: 'YPRR', source: 'sheet' },
-                    { key: 'first_down_rec_rate', label: '1DRR', source: 'sheet' },
-                    { key: 'rec_td', label: 'recTD', source: 'sheet' }
+                    { key: 'ppg', label: 'PPG' },
+                    { key: 'fpts', label: 'FPTS' },
+                    { key: 'rec', label: 'REC' },
+                    { key: 'rec_tgt', label: 'TGT' },
+                    { key: 'ts_per_rr', label: 'TS%' },
+                    { key: 'yprr', label: 'YPRR' },
+                    { key: 'first_down_rec_rate', label: '1DRR' },
+                    { key: 'rec_td', label: 'recTD' }
                 ]
             },
             TE: {
                 maxRank: 24,
                 stats: [
-                    { key: 'ppg', label: 'PPG', source: 'calculated' },
-                    { key: 'fpts', label: 'FPTS', source: 'calculated' },
-                    { key: 'rec', label: 'REC', source: 'sheet' },
-                    { key: 'rec_tgt', label: 'TGT', source: 'sheet' },
-                    { key: 'ts_per_rr', label: 'TS%', source: 'sheet' },
-                    { key: 'yprr', label: 'YPRR', source: 'sheet' },
-                    { key: 'first_down_rec_rate', label: '1DRR', source: 'sheet' },
-                    { key: 'rec_td', label: 'recTD', source: 'sheet' }
+                    { key: 'ppg', label: 'PPG' },
+                    { key: 'fpts', label: 'FPTS' },
+                    { key: 'rec', label: 'REC' },
+                    { key: 'rec_tgt', label: 'TGT' },
+                    { key: 'ts_per_rr', label: 'TS%' },
+                    { key: 'yprr', label: 'YPRR' },
+                    { key: 'first_down_rec_rate', label: '1DRR' },
+                    { key: 'rec_td', label: 'recTD' }
                 ]
             }
         };
@@ -5394,53 +5394,18 @@ const wrTeStatOrder = [
                 return null;
             }
 
-            // Get calculated ranks (FPTS/PPG position ranks from Sleeper data)
-            const calculatedRanks = calculatePlayerStatsAndRanks(playerId);
-            
-            // Get sheet ranks (other stats from Google Sheets SZN_RKs)
-            const sheetRanks = state.playerSeasonRanks?.[playerId] || {};
-
             const labels = [];
             const radarValues = [];
             const rankValues = [];
 
+            // Use the same getSeasonRankValue function that the game logs table uses
             config.stats.forEach(stat => {
-                let rank = null;
+                const rank = getSeasonRankValue(playerId, stat.key);
                 
-                if (stat.source === 'calculated') {
-                    // Use calculated position ranks from Sleeper matchup data
-                    if (stat.key === 'fpts') {
-                        rank = calculatedRanks.posRank; // FPTS position rank
-                    } else if (stat.key === 'ppg') {
-                        rank = calculatedRanks.ppgPosRank; // PPG position rank
-                    }
-                    
-                    // formatRankValue() returns 'NA' string for invalid ranks, convert to null
-                    if (rank === 'NA' || rank === 'N/A') {
-                        rank = null;
-                    }
-                } else if (stat.source === 'sheet') {
-                    // Use position ranks from Google Sheets SZN_RKs
-                    rank = sheetRanks[stat.key];
-                }
-
                 labels.push(stat.label);
                 
-                // Convert rank to number if it's a string
-                if (typeof rank === 'string') {
-                    const upper = rank.trim().toUpperCase();
-                    if (upper === 'NA' || upper === 'N/A' || upper === '') {
-                        rank = null;
-                    } else {
-                        rank = parseInt(rank, 10);
-                        if (isNaN(rank)) {
-                            rank = null;
-                        }
-                    }
-                }
-                
                 // Validate rank is a valid number within the max rank range
-                if (rank && typeof rank === 'number' && rank > 0 && rank <= config.maxRank) {
+                if (rank !== null && rank !== undefined && typeof rank === 'number' && rank > 0 && rank <= config.maxRank) {
                     const radarValue = rankToRadarValue(rank, config.maxRank);
                     radarValues.push(radarValue);
                     rankValues.push(rank);
@@ -5457,10 +5422,8 @@ const wrTeStatOrder = [
                     playerId,
                     playerName: player.first_name + ' ' + player.last_name,
                     position,
-                    calculatedRanks,
-                    sheetRanks: Object.keys(sheetRanks).length > 0 ? sheetRanks : 'EMPTY',
-                    labels,
-                    rankValues,
+                    config: config.stats.map(s => s.key),
+                    ranks: config.stats.map(s => ({ stat: s.key, rank: getSeasonRankValue(playerId, s.key) })),
                     validCount
                 });
                 return null;
