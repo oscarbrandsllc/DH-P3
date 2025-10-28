@@ -36,8 +36,10 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
         const startSitButton = document.getElementById('startSitButton');
         const gameLogsModal = document.getElementById('game-logs-modal');
         const modalCloseBtn = document.querySelector('.modal-close-btn');
-        const modalInfoBtn = document.querySelector('.modal-info-btn');
+        const modalInfoBtns = document.querySelectorAll('.modal-info-btn');
         const statsKeyContainer = document.getElementById('stats-key-container');
+        const radarChartContainer = document.getElementById('radar-chart-container');
+        const newsContainer = document.getElementById('news-container');
         const modalOverlay = document.querySelector('.modal-overlay');
         const modalPlayerName = document.getElementById('modal-player-name');
         const modalPlayerVitals = document.getElementById('modal-player-vitals');
@@ -411,9 +413,32 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             if (gameLogsModal) {
                 modalCloseBtn.addEventListener('click', () => closeModal());
                 modalOverlay.addEventListener('click', () => closeModal());
-                modalInfoBtn.addEventListener('click', () => {
-                    statsKeyContainer.classList.toggle('hidden');
+                
+                // Panel toggle buttons with mutual exclusivity
+                modalInfoBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const targetPanel = btn.getAttribute('data-panel');
+                        const containers = {
+                            'stats-key': statsKeyContainer,
+                            'radar-chart': radarChartContainer,
+                            'news': newsContainer
+                        };
+                        
+                        // Close all panels first
+                        Object.values(containers).forEach(container => {
+                            if (container) container.classList.add('hidden');
+                        });
+                        
+                        // Toggle the clicked panel
+                        if (containers[targetPanel]) {
+                            const isCurrentlyHidden = containers[targetPanel].classList.contains('hidden');
+                            if (isCurrentlyHidden) {
+                                containers[targetPanel].classList.remove('hidden');
+                            }
+                        }
+                    });
                 });
+                
                 document.addEventListener('keydown', (e) => {
                     if (e.key === 'Escape' && !gameLogsModal.classList.contains('hidden')) {
                         closeModal();
@@ -2353,6 +2378,14 @@ const SEASON_META_HEADERS = {
                     statsKeyContainer.classList.add('hidden');
                     modalBody.appendChild(statsKeyContainer);
                 }
+                if (radarChartContainer) {
+                    radarChartContainer.classList.add('hidden');
+                    modalBody.appendChild(radarChartContainer);
+                }
+                if (newsContainer) {
+                    newsContainer.classList.add('hidden');
+                    modalBody.appendChild(newsContainer);
+                }
                 return;
             }
             const statLabels = buildStatLabels();
@@ -3151,6 +3184,14 @@ const wrTeStatOrder = [
             if (statsKeyContainer) {
                 statsKeyContainer.classList.add('hidden');
                 modalBody.appendChild(statsKeyContainer);
+            }
+            if (radarChartContainer) {
+                radarChartContainer.classList.add('hidden');
+                modalBody.appendChild(radarChartContainer);
+            }
+            if (newsContainer) {
+                newsContainer.classList.add('hidden');
+                modalBody.appendChild(newsContainer);
             }
             hScroll.scrollLeft = 0;
             bodyWrapper.scrollTop = 0;
@@ -5152,10 +5193,14 @@ const wrTeStatOrder = [
         function openModal() {
             gameLogsModal.classList.remove('hidden');
             statsKeyContainer.classList.add('hidden');
+            if (radarChartContainer) radarChartContainer.classList.add('hidden');
+            if (newsContainer) newsContainer.classList.add('hidden');
         }
         function closeModal() {
             gameLogsModal.classList.add('hidden');
             statsKeyContainer.classList.add('hidden');
+            if (radarChartContainer) radarChartContainer.classList.add('hidden');
+            if (newsContainer) newsContainer.classList.add('hidden');
             if (!state.isGameLogModalOpenFromComparison) {
                 closeComparisonModal();
             } else {

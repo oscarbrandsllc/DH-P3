@@ -4437,17 +4437,12 @@ padding: 0.15rem 0rem 0rem 0rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.2em;
+    gap: 0.5rem;
     margin-top: 0.35rem;
     margin-bottom: 0.15rem;
     font-size: 0.75rem;
     line-height:0.75rem;
     color: var(--color-text-tertiary);
-    cursor: pointer;
-    transition: color 0.2s ease;
-}
-.modal-footer:hover {
-    color: var(--color-text-primary);
 }
 #player-comparison-modal .modal-footer {
     margin-top: 0.25rem;
@@ -4455,7 +4450,9 @@ padding: 0.15rem 0rem 0rem 0rem;
 }
 .modal-info-btn {
     font-size: 0.8rem;
-    line-height: 0.8rem; /* Keep icon slightly larger than text */
+    line-height: 0.8rem;
+    cursor: pointer;
+    transition: color 0.2s ease;
 }
 .modal-info-btn:hover {
     color: var(--color-text-primary);
@@ -4510,6 +4507,37 @@ padding: 0.15rem 0rem 0rem 0rem;
     box-shadow: 0 8px 32px rgba(31, 38, 105, 0.2), inset 0 6px 18px rgba(255, 255, 255, 0.04);
     z-index: 5;
 }
+
+/* Radar Chart Container - Same overlay behavior */
+#game-logs-modal #modal-body #radar-chart-container {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 1rem;
+    max-height: none;
+    overflow-y: auto;
+    border-radius: 9px;
+    background: rgba(13, 14, 27, 0.95);
+    border: 1px solid #444;
+    box-shadow: 0 8px 32px rgba(31, 38, 105, 0.2), inset 0 6px 18px rgba(255, 255, 255, 0.04);
+    z-index: 5;
+}
+
+/* News Container - Same overlay behavior */
+#game-logs-modal #modal-body #news-container {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 1rem;
+    max-height: none;
+    overflow-y: auto;
+    border-radius: 9px;
+    background: rgba(13, 14, 27, 0.95);
+    border: 1px solid #444;
+    box-shadow: 0 8px 32px rgba(31, 38, 105, 0.2), inset 0 6px 18px rgba(255, 255, 255, 0.04);
+    z-index: 5;
+}
+
 .stats-key-panel h4 {
     font-size: 0.95rem;
     font-weight: 700;
