@@ -841,6 +841,14 @@
         ppgOverallRank: ranks.ppgOverallRank || null
       };
     }
+    
+    // Ensure weekly stats are loaded before opening game logs
+    // If still loading, handlePlayerNameClick will show loading state
+    if (typeof state !== 'undefined' && !state.statsSheetsLoaded && typeof fetchPlayerStatsSheets === 'function') {
+      // Trigger load if not already started, but don't block - handlePlayerNameClick handles this
+      fetchPlayerStatsSheets().catch(err => console.warn('Failed to load weekly stats:', err));
+    }
+    
     const player = {
       id: meta.playerId,
       name: meta.name,
@@ -1057,9 +1065,7 @@
       if (typeof fetchSleeperPlayers === 'function') {
         await fetchSleeperPlayers();
       }
-      if (typeof fetchPlayerStatsSheets === 'function') {
-        await fetchPlayerStatsSheets();
-      }
+      // Don't await - weekly stats now load in background after page renders
       await loadAllTabs();
       
       // Build rank cache for the initial tab
@@ -1079,6 +1085,13 @@
       dom.rookieButton.classList.toggle('active', statsState.rookieOnly);
       renderTable();
       wireGameLogControls();
+      
+      // Start loading weekly stats in background (non-blocking)
+      if (typeof fetchPlayerStatsSheets === 'function') {
+        fetchPlayerStatsSheets().catch(err => {
+          console.warn('Background load of weekly stats failed:', err);
+        });
+      }
     } catch (error) {
       console.error('Failed to initialise stats page:', error);
       if (dom.emptyState) {

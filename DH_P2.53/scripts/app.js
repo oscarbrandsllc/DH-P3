@@ -468,7 +468,13 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
                 }
             } catch (e) {}
             setLoading(true, 'Loading initial data...');
-            await Promise.all([ fetchSleeperPlayers(), fetchDataFromGoogleSheet(), fetchPlayerStatsSheets() ]);
+            
+            // Stats page defers weekly stats loading for better performance
+            const initialDataPromises = pageType === 'stats'
+                ? [fetchSleeperPlayers(), fetchDataFromGoogleSheet()]
+                : [fetchSleeperPlayers(), fetchDataFromGoogleSheet(), fetchPlayerStatsSheets()];
+            
+            await Promise.all(initialDataPromises);
             setLoading(false);
             if (welcomeScreen) welcomeScreen.classList.remove('hidden');
             const params = new URLSearchParams(window.location.search);
