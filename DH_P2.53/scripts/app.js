@@ -5414,6 +5414,11 @@ const wrTeStatOrder = [
                     } else if (stat.key === 'ppg') {
                         rank = calculatedRanks.ppgPosRank; // PPG position rank
                     }
+                    
+                    // formatRankValue() returns 'NA' string for invalid ranks, convert to null
+                    if (rank === 'NA' || rank === 'N/A') {
+                        rank = null;
+                    }
                 } else if (stat.source === 'sheet') {
                     // Use position ranks from Google Sheets SZN_RKs
                     rank = sheetRanks[stat.key];
@@ -5423,10 +5428,19 @@ const wrTeStatOrder = [
                 
                 // Convert rank to number if it's a string
                 if (typeof rank === 'string') {
-                    rank = parseInt(rank, 10);
+                    const upper = rank.trim().toUpperCase();
+                    if (upper === 'NA' || upper === 'N/A' || upper === '') {
+                        rank = null;
+                    } else {
+                        rank = parseInt(rank, 10);
+                        if (isNaN(rank)) {
+                            rank = null;
+                        }
+                    }
                 }
                 
-                if (rank && rank > 0 && rank <= config.maxRank) {
+                // Validate rank is a valid number within the max rank range
+                if (rank && typeof rank === 'number' && rank > 0 && rank <= config.maxRank) {
                     const radarValue = rankToRadarValue(rank, config.maxRank);
                     radarValues.push(radarValue);
                     rankValues.push(rank);
@@ -5439,11 +5453,12 @@ const wrTeStatOrder = [
             // Check if we have enough data (at least 3 valid stats)
             const validCount = radarValues.filter(v => v > 0).length;
             if (validCount < 3) {
-                console.log('Radar chart debug:', {
+                console.log('Radar chart debug - insufficient data:', {
                     playerId,
+                    playerName: player.first_name + ' ' + player.last_name,
                     position,
                     calculatedRanks,
-                    sheetRanks,
+                    sheetRanks: Object.keys(sheetRanks).length > 0 ? sheetRanks : 'EMPTY',
                     labels,
                     rankValues,
                     validCount
