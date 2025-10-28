@@ -3932,15 +3932,15 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     }
     #game-logs-modal thead th.gamelog-header-rushing,
     #game-logs-modal tfoot th.gamelog-header-rushing {
-      color: #9cf7d4;
+      color: #75e0b7;
     }
     #game-logs-modal thead th.gamelog-header-receiving,
     #game-logs-modal tfoot th.gamelog-header-receiving {
-      color: #A0C2F7;
+      color: #63b0de;
     }
     #game-logs-modal thead th.gamelog-header-all,
     #game-logs-modal tfoot th.gamelog-header-all {
-      color:#ADA2FF;
+      color: #b7adfe;
     }
     #modal-body thead th {
       border-bottom: 1px solid var(--color-panel-border);
