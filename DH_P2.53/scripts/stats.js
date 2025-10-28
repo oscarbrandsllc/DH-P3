@@ -387,31 +387,20 @@
     const posRankText = derivePosRankText(row, pos);
     const fullName = getFullName(playerId, name);
     const displayName = formatDisplayName(playerId, name);
-    // Cache player stats calculation on the row object to avoid repeated calls
-    if (!row._cachedPlayerRanks && playerId) {
-      row._cachedPlayerRanks = calculatePlayerStatsAndRanks(playerId);
-    }
-    const playerRanks = row._cachedPlayerRanks || null;
-    const computedFpts = playerRanks ? toNumber(playerRanks.total_pts) : null;
-    const computedPpg = playerRanks ? toNumber(playerRanks.ppg) : null;
-    const fptsPosRank = playerRanks ? toNumber(playerRanks.posRank, { allowFloat: false }) : null;
-    const ppgPosRank = playerRanks ? toNumber(playerRanks.ppgPosRank, { allowFloat: false }) : null;
-    const fallbackFpts = toNumber(row.FPTS);
-    const fallbackPpg = toNumber(row.PPG);
-    const fpts = Number.isFinite(computedFpts) ? computedFpts : fallbackFpts;
-    const ppg = Number.isFinite(computedPpg) ? computedPpg : fallbackPpg;
+    
+    // Stats page ONLY uses Google Sheets data for FPTS/PPG - no league-specific calculations
+    const fpts = toNumber(row.FPTS);
+    const ppg = toNumber(row.PPG);
+    const fptsPosRank = null; // Not used on stats page
+    const ppgPosRank = null; // Not used on stats page
     // Cache style calculations
     if (!row._cachedStyles) {
       row._cachedStyles = {
         valueStyle: getValueStyle(value),
         rkColor: getRankColorValue(rank),
         ageColor: typeof getAgeColorForRoster === 'function' ? (getAgeColorForRoster(pos, age) || 'inherit') : 'inherit',
-        fptsColor: typeof getConditionalColorByRank === 'function' && Number.isFinite(fptsPosRank)
-          ? getConditionalColorByRank(fptsPosRank, pos)
-          : 'inherit',
-        ppgColor: typeof getConditionalColorByRank === 'function' && Number.isFinite(ppgPosRank)
-          ? getConditionalColorByRank(ppgPosRank, pos)
-          : 'inherit',
+        fptsColor: 'inherit', // Stats page doesn't use conditional rank coloring
+        ppgColor: 'inherit', // Stats page doesn't use conditional rank coloring
         teamStyle: TEAM_TAG_STYLES(team)
       };
     }
@@ -786,6 +775,8 @@
     const valuations = state.isSuperflex ? state.sflxData?.[meta.playerId] : state.oneQbData?.[meta.playerId];
     if (typeof state === 'object') {
       state.isGameLogModalOpenFromComparison = false;
+      // Set flag to tell app.js to use sheet data instead of matchup data
+      state.isGameLogFromStatsPage = true;
     }
     const player = {
       id: meta.playerId,
@@ -808,6 +799,7 @@
     }
     if (typeof state === 'object') {
       state.isGameLogModalOpenFromComparison = false;
+      state.isGameLogFromStatsPage = false;
     }
   }
   function wireGameLogControls() {

@@ -308,7 +308,7 @@ if (pageType === 'welcome') {
     }
 }
         // --- State ---
-let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, lastLiveStatsWeek: null, lastLiveStatsFetchTs: 0, calculatedRankCache: null, playerProjectionWeeks: {}, isStartSitMode: false, startSitSelections: [], startSitNextSide: 'left', startSitTeamName: null, leagueMatchupStats: {}, matchupDataLoaded: false };
+let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, lastLiveStatsWeek: null, lastLiveStatsFetchTs: 0, calculatedRankCache: null, playerProjectionWeeks: {}, isStartSitMode: false, startSitSelections: [], startSitNextSide: 'left', startSitTeamName: null, leagueMatchupStats: {}, matchupDataLoaded: false, isGameLogFromStatsPage: false };
         const assignedLeagueColors = new Map();
         let nextColorIndex = 0;
         const assignedRyColors = new Map();
@@ -2628,8 +2628,10 @@ const wrTeStatOrder = [
                         const raw = stats[key];
                         value = (typeof raw === 'number') ? raw : null;
                     } else if (key === 'fpts') {
-                        // Use league-specific matchup data if available
-                        if (state.matchupDataLoaded && state.leagueMatchupStats[week]?.[player.id] !== undefined) {
+                        // Stats page should only use sheet data, not league-specific matchup data
+                        if (state.isGameLogFromStatsPage) {
+                            value = calculateFantasyPoints(stats, scoringSettings);
+                        } else if (state.matchupDataLoaded && state.leagueMatchupStats[week]?.[player.id] !== undefined) {
                             value = state.leagueMatchupStats[week][player.id];
                         } else {
                             value = calculateFantasyPoints(stats, scoringSettings);
@@ -2940,11 +2942,13 @@ const wrTeStatOrder = [
                             displayValue = Number.isInteger(raw) ? String(raw) : Number(raw).toFixed(2);
                         }
                     } else if (key === 'fpts') {
-                        // Use league-specific matchup data if available
+                        // Stats page should only use sheet data, not league-specific matchup data
                         const totalPoints = gameLogsWithData.reduce((sum, week) => {
                             const weekNum = week.week;
                             const playerId = player.id;
-                            if (state.matchupDataLoaded && state.leagueMatchupStats[weekNum]?.[playerId] !== undefined) {
+                            if (state.isGameLogFromStatsPage) {
+                                return sum + calculateFantasyPoints(week.stats, scoringSettings);
+                            } else if (state.matchupDataLoaded && state.leagueMatchupStats[weekNum]?.[playerId] !== undefined) {
                                 return sum + state.leagueMatchupStats[weekNum][playerId];
                             } else {
                                 return sum + calculateFantasyPoints(week.stats, scoringSettings);
