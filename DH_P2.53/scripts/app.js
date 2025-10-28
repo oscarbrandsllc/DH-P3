@@ -1283,6 +1283,30 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             }
             return state.calculatedRankCache.players[playerId] || getDefaultPlayerRanks();
         }
+        function getStatsPagePlayerRanks(playerId) {
+            // ONLY called when state.isGameLogFromStatsPage === true
+            // Uses season totals from STAT_1QB/STAT_SFLX sheets instead of calculating from weekly data
+            const seasonData = state.playerSeasonStats?.[playerId];
+            const seasonRanks = state.playerSeasonRanks?.[playerId];
+            
+            if (!seasonData) return getDefaultPlayerRanks();
+            
+            const fpts = seasonData.fpts_ppr || 0;
+            const gamesPlayed = seasonData.games_played || 0;
+            const ppg = gamesPlayed > 0 ? (fpts / gamesPlayed) : 0;
+            const posRank = seasonRanks?.pos_rank_ppr || null;
+            const overallRank = seasonRanks?.overall_rank_ppr || null;
+            
+            return {
+                total_pts: fpts.toFixed(1),
+                ppg: ppg.toFixed(1),
+                posRank: posRank,
+                overallRank: overallRank,
+                ppgPosRank: posRank,
+                ppgOverallRank: overallRank,
+                gamesPlayed: gamesPlayed
+            };
+        }
         async function fetchDataFromGoogleSheet() {
             const sheetNames = { oneQb: 'KTC_1QB', sflx: 'KTC_SFLX' };
             try {
@@ -2170,7 +2194,10 @@ const SEASON_META_HEADERS = {
             }
             openModal();
             const gameLogs = await fetchGameLogs(player.id);
-            const playerRanks = calculatePlayerStatsAndRanks(player.id);
+            // Stats page uses sheet data, other pages calculate from weekly data
+            const playerRanks = state.isGameLogFromStatsPage 
+                ? getStatsPagePlayerRanks(player.id)
+                : calculatePlayerStatsAndRanks(player.id);
             await renderGameLogs(gameLogs, player, playerRanks);
         }
         function getOpponentRankColor(rank) {
@@ -2947,23 +2974,24 @@ const wrTeStatOrder = [
                             displayValue = Number.isInteger(raw) ? String(raw) : Number(raw).toFixed(2);
                         }
                     } else if (key === 'fpts') {
-                        // Stats page uses sheet FPT_PPR, rosters page uses league-specific matchup data
-                        const totalPoints = gameLogsWithData.reduce((sum, week) => {
-                            const weekNum = week.week;
-                            const playerId = player.id;
-                            if (state.isGameLogFromStatsPage) {
-                                // Use the FPT_PPR from the weekly sheet - no fallback
-                                const sheetFpts = week.stats?.['fpt_ppr'];
-                                return sum + ((typeof sheetFpts === 'number') ? sheetFpts : 0);
-                            } else if (state.matchupDataLoaded && state.leagueMatchupStats[weekNum]?.[playerId] !== undefined) {
-                                // Use league-specific matchup data - no fallback
-                                return sum + state.leagueMatchupStats[weekNum][playerId];
-                            } else {
-                                // No data available
+                        // Stats page uses season total from SZN sheet, rosters page sums matchup data
+                        if (state.isGameLogFromStatsPage) {
+                            // Use season total from STAT_1QB/STAT_SFLX sheet
+                            const seasonData = state.playerSeasonStats?.[player.id];
+                            const seasonFpts = seasonData?.fpts_ppr || 0;
+                            displayValue = seasonFpts.toFixed(1);
+                        } else {
+                            // Sum league-specific matchup data for rosters page
+                            const totalPoints = gameLogsWithData.reduce((sum, week) => {
+                                const weekNum = week.week;
+                                const playerId = player.id;
+                                if (state.matchupDataLoaded && state.leagueMatchupStats[weekNum]?.[playerId] !== undefined) {
+                                    return sum + state.leagueMatchupStats[weekNum][playerId];
+                                }
                                 return sum + 0;
-                            }
-                        }, 0);
-                        displayValue = totalPoints.toFixed(1);
+                            }, 0);
+                            displayValue = totalPoints.toFixed(1);
+                        }
                     } else if (key === 'ypc') {
                         const totalYards = seasonTotals && typeof seasonTotals.rush_yd === 'number' ? seasonTotals.rush_yd : (aggregatedTotals['rush_yd'] || 0);
                         const totalCarries = seasonTotals && typeof seasonTotals.rush_att === 'number' ? seasonTotals.rush_att : (aggregatedTotals['rush_att'] || 0);
