@@ -1245,28 +1245,40 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
                     ppgPosRank: null,
                 };
             }
-            const combinedWeeklyStats = getCombinedWeeklyStats();
-            for (const week of Object.keys(combinedWeeklyStats)) {
-                const weeklyData = combinedWeeklyStats[week];
-                for (const [pId, statLine] of Object.entries(weeklyData)) {
-                    const playerEntry = playersById[pId];
-                    if (!playerEntry) continue;
-                    
-                    // Use league-specific matchup data if available
-                    let points;
-                    if (state.matchupDataLoaded && state.leagueMatchupStats[week]?.[pId] !== undefined) {
-                        points = state.leagueMatchupStats[week][pId];
-                    } else {
-                        // Fallback to calculated points if matchup data not available
-                        points = calculateFantasyPoints(statLine, scoringSettings);
+            
+            // If matchup data is loaded, use it directly for FPTS/PPG calculation
+            if (state.matchupDataLoaded && state.leagueMatchupStats) {
+                for (const week of Object.keys(state.leagueMatchupStats)) {
+                    const weekData = state.leagueMatchupStats[week];
+                    for (const [pId, points] of Object.entries(weekData)) {
+                        const playerEntry = playersById[pId];
+                        if (!playerEntry) continue;
+                        
+                        playerEntry.totalPts += points;
+                        if (points > 0) {
+                            playerEntry.gamesPlayed += 1;
+                        }
                     }
-                    
-                    playerEntry.totalPts += points;
-                    if (points > 0) {
-                        playerEntry.gamesPlayed += 1;
+                }
+            } else {
+                // Fallback: use combined weekly stats from Google Sheets
+                const combinedWeeklyStats = getCombinedWeeklyStats();
+                for (const week of Object.keys(combinedWeeklyStats)) {
+                    const weeklyData = combinedWeeklyStats[week];
+                    for (const [pId, statLine] of Object.entries(weeklyData)) {
+                        const playerEntry = playersById[pId];
+                        if (!playerEntry) continue;
+                        
+                        const points = calculateFantasyPoints(statLine, scoringSettings);
+                        
+                        playerEntry.totalPts += points;
+                        if (points > 0) {
+                            playerEntry.gamesPlayed += 1;
+                        }
                     }
                 }
             }
+            
             const entries = Object.values(playersById);
             entries.forEach(entry => {
                 entry.ppg = entry.gamesPlayed > 0 ? entry.totalPts / entry.gamesPlayed : 0;
