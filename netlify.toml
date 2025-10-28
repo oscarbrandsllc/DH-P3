@@ -26,6 +26,11 @@
   to = "/research/research.html"
   status = 200
 
+[[redirects]]
+  from = "/stats"
+  to = "/stats/stats.html"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]
