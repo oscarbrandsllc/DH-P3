@@ -980,11 +980,7 @@
     await Promise.all(Object.keys(TAB_CONFIG).map(loadTabData));
   }
   async function initialise() {
-    try {
-      setLoading(true, 'Loading stats...');
-    } catch (e) {
-      // silent – setLoading may not be available yet
-    }
+    // Stats page uses its own inline loading indicator, not the main overlay
     toggleInlineLoading(true);
     try {
       await ensureLeagueContext();
@@ -1014,11 +1010,6 @@
       }
     } finally {
       toggleInlineLoading(false);
-      try {
-        setLoading(false);
-      } catch (e) {
-        // ignore
-      }
     }
   }
   dom.tabButtons.forEach((btn) => {
