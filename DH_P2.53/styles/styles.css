@@ -866,6 +866,7 @@ n {
         .analyzer-button-slot,
         .research-button-slot {
             margin-block: 0.075rem;
+            min-width: 200px;
         }
         #contextual-controls {
             display: flex;
