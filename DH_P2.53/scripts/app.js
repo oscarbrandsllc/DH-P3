@@ -5062,6 +5062,12 @@ function setLoading(isLoading, message = 'Loading...') {
     if (document.body?.dataset?.page === 'rosters') {
         adjustStickyHeaders();
     }
+    
+    // Skip loading panel on stats page (uses inline table spinner instead)
+    if (document.body?.dataset?.page === 'stats') {
+        return;
+    }
+    
     // Don't disable nav buttons during loading - allow navigation at any time
     if (isLoading) {
         const msgEl = loadingIndicator.querySelector('.loading-message'); if (msgEl) { msgEl.textContent = message; } else { loadingIndicator.textContent = message; }
