@@ -443,6 +443,21 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
                 }
                 return;
             }
+            
+            // For welcome page, just show the screen - no loading needed
+            if (pageType === 'welcome') {
+                if (welcomeScreen) welcomeScreen.classList.remove('hidden');
+                // Prevent mobile keyboard appearing when arriving via nav with ?username=
+                try {
+                    const params = new URLSearchParams(window.location.search);
+                    if (params.has('username')) {
+                        try { suppressFocusTemporary(600); } catch (e) {}
+                        setTimeout(() => { try { usernameInput?.blur(); if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); } catch (e) {} }, 50);
+                    }
+                } catch (e) {}
+                return;
+            }
+            
             // Prevent mobile keyboard appearing when arriving via nav with ?username=
             try {
                 const params = new URLSearchParams(window.location.search);
@@ -5017,14 +5032,12 @@ function setLoading(isLoading, message = 'Loading...') {
     if (document.body?.dataset?.page === 'rosters') {
         adjustStickyHeaders();
     }
-    const buttons = [homeButton, rostersButton, ownershipButton, analyzerButton, researchButton].filter(Boolean);
+    // Don't disable nav buttons during loading - allow navigation at any time
     if (isLoading) {
         const msgEl = loadingIndicator.querySelector('.loading-message'); if (msgEl) { msgEl.textContent = message; } else { loadingIndicator.textContent = message; }
         loadingIndicator.classList.remove('hidden');
-        buttons.forEach(btn => { btn.disabled = true; btn.classList.add('opacity-50', 'cursor-not-allowed'); });
     } else {
         loadingIndicator.classList.add('hidden');
-        buttons.forEach(btn => { btn.disabled = false; btn.classList.remove('opacity-50', 'cursor-not-allowed'); });
     }
 }
         function handleError(error, username) {
@@ -5133,3 +5146,47 @@ document.addEventListener('DOMContentLoaded', function(){
     legend.classList.add('hidden');
   }
 });
+
+// === Loading Ring Animation (merged from loader-ring.js) ===
+(function(){
+  const RUNTIME_MS = 14000;
+  let raf = null;
+  function tick(start, ring){
+    const t = performance.now();
+    const elapsed = (t - start) % RUNTIME_MS;
+    const angle = (elapsed / RUNTIME_MS) * 360;
+    ring.style.setProperty('--angle', angle + 'deg');
+    raf = requestAnimationFrame(() => tick(start, ring));
+  }
+  function startRing(el){
+    if (!el) return;
+    if (raf) cancelAnimationFrame(raf);
+    tick(performance.now(), el);
+  }
+  function observeLoading(){
+    const loading = document.getElementById('loading');
+    if (!loading) return;
+    const ring = loading.querySelector('.loading-ring');
+    if (!ring) return;
+    const run = () => {
+      const hidden = loading.classList.contains('hidden');
+      if (hidden){
+        if (raf) { cancelAnimationFrame(raf); raf = null; }
+      } else {
+        if (!raf) startRing(ring);
+      }
+    };
+    run();
+    const obs = new MutationObserver(run);
+    obs.observe(loading, { attributes: true, attributeFilter: ['class'] });
+    window.addEventListener('visibilitychange', run);
+    window.addEventListener('pageshow', run);
+    window.addEventListener('pagehide', () => { if (raf) { cancelAnimationFrame(raf); raf = null; } });
+    window.addEventListener('resize', run);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', observeLoading);
+  } else {
+    observeLoading();
+  }
+})();
