@@ -1074,11 +1074,23 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             closeComparisonModal();
         }
         // --- Position Filter Logic ---
+        
+        // Debounce helper for performance
+        let renderDebounceTimer = null;
+        function debouncedRenderAllTeamData(teams, delay = 0) {
+            if (renderDebounceTimer) clearTimeout(renderDebounceTimer);
+            if (delay === 0) {
+                renderAllTeamData(teams);
+            } else {
+                renderDebounceTimer = setTimeout(() => renderAllTeamData(teams), delay);
+            }
+        }
+        
         function handleClearFilters() {
             closeComparisonModal();
             state.activePositions.clear();
             updatePositionFilterButtons();
-            renderAllTeamData(state.currentTeams);
+            debouncedRenderAllTeamData(state.currentTeams);
             clearFiltersButton.classList.remove('active');
         }
         function handlePositionFilter(e) {
@@ -1113,7 +1125,7 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
                 }
             }
             updatePositionFilterButtons();
-            renderAllTeamData(state.currentTeams);
+            debouncedRenderAllTeamData(state.currentTeams);
             clearFiltersButton.classList.toggle('active', state.activePositions.size > 0);
         }
         function updatePositionFilterButtons() {
@@ -3619,6 +3631,10 @@ const wrTeStatOrder = [
                 teamsToRender = teams.filter(team => state.teamsToCompare.has(team.teamName));
                 rosterGrid.style.justifyContent = 'center';
             }
+            
+            // Use DocumentFragment for batch DOM insertion
+            const fragment = document.createDocumentFragment();
+            
             teamsToRender.forEach(team => {
                 const columnWrapper = document.createElement('div');
                 columnWrapper.className = 'roster-column';
@@ -3650,9 +3666,13 @@ const wrTeStatOrder = [
                 const card = state.currentRosterView === 'positional' ? createPositionalTeamCard(team) : createDepthChartTeamCard(team);
                 columnWrapper.appendChild(header);
                 columnWrapper.appendChild(card);
-                rosterGrid.appendChild(columnWrapper);
+                fragment.appendChild(columnWrapper);
                 calibrateTeamCardIntrinsicSize(card);
             });
+            
+            // Single DOM insertion instead of multiple
+            rosterGrid.appendChild(fragment);
+            
             if (compareSearchInput && compareSearchInput.value) {
                 filterTeamsByQuery(compareSearchInput.value);
             }
@@ -3731,7 +3751,9 @@ const wrTeStatOrder = [
                 el.innerHTML = '';
                 el.appendChild(h3);
                 if (filteredData.length > 0) {
-                    filteredData.forEach(item => el.appendChild(creator(item, team.teamName)));
+                    const fragment = document.createDocumentFragment();
+                    filteredData.forEach(item => fragment.appendChild(creator(item, team.teamName)));
+                    el.appendChild(fragment);
                 } else {
                     el.innerHTML += `<div class="text-xs text-slate-500 p-1 italic">None</div>`;
                 }
@@ -3744,7 +3766,9 @@ const wrTeStatOrder = [
             picksEl.innerHTML = '';
             picksEl.appendChild(picksH3);
             if (team.draftPicks && team.draftPicks.length > 0) {
-                team.draftPicks.forEach(item => picksEl.appendChild(createPickRow(item, team.teamName)));
+                const picksFragment = document.createDocumentFragment();
+                team.draftPicks.forEach(item => picksFragment.appendChild(createPickRow(item, team.teamName)));
+                picksEl.appendChild(picksFragment);
             } else {
                 picksEl.innerHTML += `<div class="text-xs text-slate-500 p-1 italic">None</div>`;
             }
@@ -3791,7 +3815,9 @@ const wrTeStatOrder = [
                     el.innerHTML = '';
                     el.appendChild(h3);
                     if (filteredData && filteredData.length > 0) {
-                        filteredData.forEach(item => el.appendChild(creator(item, team.teamName)));
+                        const fragment = document.createDocumentFragment();
+                        filteredData.forEach(item => fragment.appendChild(creator(item, team.teamName)));
+                        el.appendChild(fragment);
                     } else {
                         el.innerHTML += `<div class="text-xs text-slate-500 p-1 italic">None</div>`;
                     }
@@ -3807,7 +3833,9 @@ const wrTeStatOrder = [
                 picksEl.innerHTML = '';
                 picksEl.appendChild(picksH3);
                 if (team.draftPicks && team.draftPicks.length > 0) {
-                    team.draftPicks.forEach(item => picksEl.appendChild(createPickRow(item, team.teamName)));
+                    const picksFragment = document.createDocumentFragment();
+                    team.draftPicks.forEach(item => picksFragment.appendChild(createPickRow(item, team.teamName)));
+                    picksEl.appendChild(picksFragment);
                 } else {
                     picksEl.innerHTML += `<div class="text-xs text-slate-500 p-1 italic">None</div>`;
                 }
@@ -3830,7 +3858,9 @@ const wrTeStatOrder = [
             const slotAbbr = { 'SUPER_FLEX': 'SFLX', 'FLEX': 'FLX' };
             const displaySlot = state.currentRosterView === 'depth' ? (slotAbbr[player.slot] || player.slot) : player.pos;
             const fullPlayer = state.players?.[player.id];
-            const playerRanks = calculatePlayerStatsAndRanks(player.id) || getDefaultPlayerRanks();
+            // Use pre-calculated ranks if available, otherwise calculate once
+            const playerRanks = player._cachedRanks || calculatePlayerStatsAndRanks(player.id) || getDefaultPlayerRanks();
+            if (!player._cachedRanks) player._cachedRanks = playerRanks;
             const firstName = (player.first_name || fullPlayer?.first_name || '').trim();
             const lastName = (player.last_name || fullPlayer?.last_name || '').trim();
             const nameCandidates = [
@@ -3876,7 +3906,7 @@ const wrTeStatOrder = [
             const normalizedKey = logoKeyMap[teamKey] || teamKey.toLowerCase();
             const src = `../assets/NFL-Tags_webp/${normalizedKey}.webp`;
             const teamTagHTML = (player.team && player.team !== 'FA')
-              ? `<img class="team-logo glow" src="${src}" alt="${teamKey}" width="19" height="19" loading="eager">`
+              ? `<img class="team-logo glow" src="${src}" alt="${teamKey}" width="19" height="19" loading="lazy" decoding="async">`
               : `<div class="team-tag" style="background-color: #64748b; color: white;">FA</div>`;
             const basePos = (player.pos || fullPlayer?.position || displaySlot || '').toUpperCase();
             const fptsPosRankNumber = Number.parseInt(playerRanks.posRank, 10);
