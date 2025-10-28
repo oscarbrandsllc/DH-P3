@@ -4437,17 +4437,12 @@ padding: 0.15rem 0rem 0rem 0rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.2em;
+    gap: 0.5rem;
     margin-top: 0.35rem;
     margin-bottom: 0.15rem;
     font-size: 0.75rem;
     line-height:0.75rem;
     color: var(--color-text-tertiary);
-    cursor: pointer;
-    transition: color 0.2s ease;
-}
-.modal-footer:hover {
-    color: var(--color-text-primary);
 }
 #player-comparison-modal .modal-footer {
     margin-top: 0.25rem;
@@ -4455,7 +4450,9 @@ padding: 0.15rem 0rem 0rem 0rem;
 }
 .modal-info-btn {
     font-size: 0.8rem;
-    line-height: 0.8rem; /* Keep icon slightly larger than text */
+    line-height: 0.8rem;
+    cursor: pointer;
+    transition: color 0.2s ease;
 }
 .modal-info-btn:hover {
     color: var(--color-text-primary);
@@ -4505,11 +4502,42 @@ padding: 0.15rem 0rem 0rem 0rem;
     max-height: none;
     overflow-y: auto;
     border-radius: 9px;
+    background: rgb(21 22 37 / 95%);
+    border: 1px solid #4423c60a;
+    box-shadow: 0 2px 8px rgba(250, 250, 254, 0.92), 
+inset 0px 0px 155px rgba(216, 215, 255, 0.1);
+    z-index: 5;
+}
+
+/* Radar Chart Container - Same overlay behavior */
+#game-logs-modal #modal-body #radar-chart-container {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 1rem;
+    max-height: none;
+    overflow-y: auto;
+    border-radius: 9px;
+    background: rgba(13, 14, 27, 0.95);
+    box-shadow: 0 8px 32px rgba(31, 38, 105, 0.2), inset 0 6px 18px rgba(255, 255, 255, 0.04);
+    z-index: 5;
+}
+
+/* News Container - Same overlay behavior */
+#game-logs-modal #modal-body #news-container {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 1rem;
+    max-height: none;
+    overflow-y: auto;
+    border-radius: 9px;
     background: rgba(13, 14, 27, 0.95);
     border: 1px solid #444;
     box-shadow: 0 8px 32px rgba(31, 38, 105, 0.2), inset 0 6px 18px rgba(255, 255, 255, 0.04);
     z-index: 5;
 }
+
 .stats-key-panel h4 {
     font-size: 0.95rem;
     font-weight: 700;
@@ -4518,9 +4546,9 @@ padding: 0.15rem 0rem 0rem 0rem;
     margin-top: 0rem;
     text-align: center;
     border: 1px solid var(--color-panel-border);
-    backdrop-filter: blur(3px) saturate(170%);
     border: 0.0625rem solid rgba(250, 250, 250, 0.06);
     border-radius: 5px;
+    background: #4f40701f;
 }
 .stats-key-panel ul {
     list-style: none;
@@ -4534,13 +4562,12 @@ padding: 0.15rem 0rem 0rem 0rem;
 @media (max-width: 540px) {
     .stats-key-panel ul {
         grid-template-columns: 1fr;
-        gap: 0.25rem;
+        gap: 0.05rem;
         padding: 0 0.5rem;
     }
     .stats-key-panel li {
         display: flex;
-        justify-content: space-between;
-        padding: 0.2rem 0.5rem;
+        padding: 0.12rem 1rem !important;
     }
     .stats-key-panel strong {
         width: auto;
@@ -4548,7 +4575,7 @@ padding: 0.15rem 0rem 0rem 0rem;
     }
 }
     .stats-key-panel li {
-        font-size: 0.8rem;
+        font-size: 0.7rem;
         color: var(--color-text-teriary);
         padding: 0 0.25rem;
         border-radius: 4px;
@@ -4559,10 +4586,11 @@ padding: 0.15rem 0rem 0rem 0rem;
     }
     .stats-key-panel strong {
         color: var(--color-text-secondary);
-        font-weight: 600;
+        font-weight: 700;
         margin-right: 0.5em;
         display: inline-block;
-        width: 70px;
+        width: 74px;
+        text-align-last: center;
     }
     /* ⬇︎ PLAYER-COMP MODAL ⬇︎ */
     #player-comparison-modal .modal-content {

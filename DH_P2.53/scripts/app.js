@@ -36,8 +36,10 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
         const startSitButton = document.getElementById('startSitButton');
         const gameLogsModal = document.getElementById('game-logs-modal');
         const modalCloseBtn = document.querySelector('.modal-close-btn');
-        const modalInfoBtn = document.querySelector('.modal-info-btn');
+        const modalInfoBtns = document.querySelectorAll('.modal-info-btn');
         const statsKeyContainer = document.getElementById('stats-key-container');
+        const radarChartContainer = document.getElementById('radar-chart-container');
+        const newsContainer = document.getElementById('news-container');
         const modalOverlay = document.querySelector('.modal-overlay');
         const modalPlayerName = document.getElementById('modal-player-name');
         const modalPlayerVitals = document.getElementById('modal-player-vitals');
@@ -411,9 +413,33 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             if (gameLogsModal) {
                 modalCloseBtn.addEventListener('click', () => closeModal());
                 modalOverlay.addEventListener('click', () => closeModal());
-                modalInfoBtn.addEventListener('click', () => {
-                    statsKeyContainer.classList.toggle('hidden');
+                
+                // Panel toggle buttons with mutual exclusivity
+                modalInfoBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const targetPanel = btn.getAttribute('data-panel');
+                        const containers = {
+                            'stats-key': statsKeyContainer,
+                            'radar-chart': radarChartContainer,
+                            'news': newsContainer
+                        };
+                        
+                        // Check if the clicked panel is currently visible BEFORE closing
+                        const isCurrentlyVisible = containers[targetPanel] && 
+                                                   !containers[targetPanel].classList.contains('hidden');
+                        
+                        // Close all panels
+                        Object.values(containers).forEach(container => {
+                            if (container) container.classList.add('hidden');
+                        });
+                        
+                        // If the clicked panel was hidden, open it (toggle behavior)
+                        if (!isCurrentlyVisible && containers[targetPanel]) {
+                            containers[targetPanel].classList.remove('hidden');
+                        }
+                    });
                 });
+                
                 document.addEventListener('keydown', (e) => {
                     if (e.key === 'Escape' && !gameLogsModal.classList.contains('hidden')) {
                         closeModal();
@@ -1219,28 +1245,40 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
                     ppgPosRank: null,
                 };
             }
-            const combinedWeeklyStats = getCombinedWeeklyStats();
-            for (const week of Object.keys(combinedWeeklyStats)) {
-                const weeklyData = combinedWeeklyStats[week];
-                for (const [pId, statLine] of Object.entries(weeklyData)) {
-                    const playerEntry = playersById[pId];
-                    if (!playerEntry) continue;
-                    
-                    // Use league-specific matchup data if available
-                    let points;
-                    if (state.matchupDataLoaded && state.leagueMatchupStats[week]?.[pId] !== undefined) {
-                        points = state.leagueMatchupStats[week][pId];
-                    } else {
-                        // Fallback to calculated points if matchup data not available
-                        points = calculateFantasyPoints(statLine, scoringSettings);
+            
+            // If matchup data is loaded, use it directly for FPTS/PPG calculation
+            if (state.matchupDataLoaded && state.leagueMatchupStats) {
+                for (const week of Object.keys(state.leagueMatchupStats)) {
+                    const weekData = state.leagueMatchupStats[week];
+                    for (const [pId, points] of Object.entries(weekData)) {
+                        const playerEntry = playersById[pId];
+                        if (!playerEntry) continue;
+                        
+                        playerEntry.totalPts += points;
+                        if (points > 0) {
+                            playerEntry.gamesPlayed += 1;
+                        }
                     }
-                    
-                    playerEntry.totalPts += points;
-                    if (points > 0) {
-                        playerEntry.gamesPlayed += 1;
+                }
+            } else {
+                // Fallback: use combined weekly stats from Google Sheets
+                const combinedWeeklyStats = getCombinedWeeklyStats();
+                for (const week of Object.keys(combinedWeeklyStats)) {
+                    const weeklyData = combinedWeeklyStats[week];
+                    for (const [pId, statLine] of Object.entries(weeklyData)) {
+                        const playerEntry = playersById[pId];
+                        if (!playerEntry) continue;
+                        
+                        const points = calculateFantasyPoints(statLine, scoringSettings);
+                        
+                        playerEntry.totalPts += points;
+                        if (points > 0) {
+                            playerEntry.gamesPlayed += 1;
+                        }
                     }
                 }
             }
+            
             const entries = Object.values(playersById);
             entries.forEach(entry => {
                 entry.ppg = entry.gamesPlayed > 0 ? entry.totalPts / entry.gamesPlayed : 0;
@@ -2353,6 +2391,14 @@ const SEASON_META_HEADERS = {
                     statsKeyContainer.classList.add('hidden');
                     modalBody.appendChild(statsKeyContainer);
                 }
+                if (radarChartContainer) {
+                    radarChartContainer.classList.add('hidden');
+                    modalBody.appendChild(radarChartContainer);
+                }
+                if (newsContainer) {
+                    newsContainer.classList.add('hidden');
+                    modalBody.appendChild(newsContainer);
+                }
                 return;
             }
             const statLabels = buildStatLabels();
@@ -3151,6 +3197,14 @@ const wrTeStatOrder = [
             if (statsKeyContainer) {
                 statsKeyContainer.classList.add('hidden');
                 modalBody.appendChild(statsKeyContainer);
+            }
+            if (radarChartContainer) {
+                radarChartContainer.classList.add('hidden');
+                modalBody.appendChild(radarChartContainer);
+            }
+            if (newsContainer) {
+                newsContainer.classList.add('hidden');
+                modalBody.appendChild(newsContainer);
             }
             hScroll.scrollLeft = 0;
             bodyWrapper.scrollTop = 0;
@@ -5152,10 +5206,14 @@ const wrTeStatOrder = [
         function openModal() {
             gameLogsModal.classList.remove('hidden');
             statsKeyContainer.classList.add('hidden');
+            if (radarChartContainer) radarChartContainer.classList.add('hidden');
+            if (newsContainer) newsContainer.classList.add('hidden');
         }
         function closeModal() {
             gameLogsModal.classList.add('hidden');
             statsKeyContainer.classList.add('hidden');
+            if (radarChartContainer) radarChartContainer.classList.add('hidden');
+            if (newsContainer) newsContainer.classList.add('hidden');
             if (!state.isGameLogModalOpenFromComparison) {
                 closeComparisonModal();
             } else {

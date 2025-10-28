@@ -902,6 +902,151 @@ Data Flow Summary (End-to-End)
 
 ⸻
 
+League Analyzer Page — analyzer.html & analyzer.js (Comprehensive Analysis)
+
+Purpose
+	•	Multi-league roster value comparison dashboard with visual analytics
+	•	Completely standalone implementation (no app.js dependencies)
+	•	Provides league-wide roster value rankings, positional strength analysis, and matchup-based radar charts
+
+Architecture
+	•	Self-contained in analyzer.js (~1921 lines)
+	•	Independent data fetching: Sleeper API + KTC values from Google Sheets
+	•	Chart.js v3+ for all visualizations
+	•	Custom Chart.js plugins for enhanced radar chart rendering
+
+Key Components
+
+1. Radar Chart (Lines 1630-1746 in analyzer.js)
+	•	Visual representation of user team's positional strength vs league average
+	•	Data structure: PPG (Points Per Game) for each roster slot (QB, RB1, RB2, WR1, WR2, WR3, TE, FLEX, SUPER_FLEX)
+	•	Two datasets:
+		- League Average (background, translucent blue)
+		- User Team (foreground, bright blue with gradient fill)
+
+2. Custom Chart.js Plugins
+
+radarBackgroundPlugin (Lines 81-125)
+	•	Draws concentric polygons before Chart.js renders data
+	•	5 levels at 95%, 75%, 55%, 35%, 18% of max radius
+	•	Color progression: #2c334f62 (outer) → #31385565 (inner)
+	•	Creates visual depth and reference grid without Chart.js native gridlines
+
+radarPointLabelsPlugin (Lines 127-165)
+	•	Draws PPG value labels next to each data point
+	•	Offset: 14-18px based on mobile/desktop
+	•	Conditional coloring:
+		- User team PPG > League average: position-specific color (QB/RB/WR/TE)
+		- User team PPG ≤ League average: muted gray (#adadad)
+	•	Font: 11px Product Sans, bold
+
+3. Data Flow & Slot Assignment
+
+buildRadarSlots() (Lines 933-954)
+	•	Parses league roster settings into ordered slot sequence
+	•	Example output: ['QB', 'RB', 'RB', 'WR', 'WR', 'WR', 'TE', 'FLEX', 'SUPER_FLEX']
+	•	Handles FLEX/SUPER_FLEX positions dynamically based on league config
+
+assignRadarSlots() (Lines 974-1068)
+	•	Greedy algorithm assigns best available players by PPG to each slot
+	•	Process:
+		1. Filter eligible players for slot (QB for QB, RB/WR/TE for FLEX, etc.)
+		2. Sort by PPG descending
+		3. Assign top player, mark as used
+		4. Move to next slot
+	•	FLEX logic: Accepts RB, WR, TE (best available regardless of position)
+	•	SUPER_FLEX logic: Accepts QB, RB, WR, TE (fallback if no QB available)
+	•	Returns array of PPG values aligned to slot sequence
+
+buildRadarLabel() (Lines 955-973)
+	•	Creates human-readable labels for each slot
+	•	Numbering system: QB, RB1, RB2, WR1, WR2, WR3, TE, FLX, SFLX
+	•	Handles duplicate positions with incremental counters
+
+4. Chart Configuration (renderRadarChart function)
+
+Scale Settings
+	•	Dynamic max: Math.max(...allDataValues) + 2 (provides headroom)
+	•	No grid lines: grid: { display: false }
+	•	No tick labels: ticks: { display: false }
+	•	Point labels: Custom styling via plugin (not Chart.js native)
+
+Dataset Configuration
+	•	League Average:
+		- backgroundColor: rgba(77, 166, 255, 0.15)
+		- borderColor: rgba(77, 166, 255, 0.6)
+		- borderWidth: 2
+		- order: 2 (renders first, behind user team)
+	•	User Team:
+		- backgroundColor: rgba(88, 167, 255, 0.35)
+		- borderColor: rgb(88, 167, 255)
+		- borderWidth: 3
+		- pointBackgroundColor: #58A7FF
+		- pointRadius: 5
+		- order: 1 (renders on top)
+
+Responsive Design
+	•	Mobile (<768px): Reduced padding, smaller offsets for labels
+	•	Desktop (≥768px): Increased padding, larger label offsets
+	•	Plugin adjustments: offsetPx varies by screen size (14px mobile, 18px desktop)
+
+5. CSS Styling (styles.css lines 6960-7060)
+
+.analyzer-chart--radar
+	•	min-height: 380px
+	•	flex: 1 1 auto (responsive growth)
+	•	Desktop layout (≥1280px): Side-by-side with standings table in .analyzer-charts-wrapper
+
+.analyzer-charts-wrapper
+	•	display: flex
+	•	flex-direction: column (mobile)
+	•	flex-direction: row (desktop ≥1280px)
+	•	gap: 1rem
+
+6. Other Visualizations
+
+Starters Value Chart (Bar Chart)
+	•	Horizontal bar chart comparing starter total value across teams
+	•	Color-coded by assigned league colors
+
+Overall Value Chart (Bar Chart)
+	•	Horizontal bar chart comparing full roster value across teams
+	•	Includes bench players and taxi squad
+
+League Standings Table
+	•	Sortable table with team name, starters value, overall value, and rank
+	•	Click column headers to sort
+
+7. Standalone Recreation Guide
+
+To recreate radar chart without shared styles:
+	1. Include Chart.js v3+ from CDN
+	2. Copy radarBackgroundPlugin and radarPointLabelsPlugin (lines 81-165)
+	3. Copy assignRadarSlots, buildRadarSlots, buildRadarLabel functions
+	4. Copy renderRadarChart configuration (lines 1630-1746)
+	5. Minimal CSS:
+		- Container: min-height: 380px, position: relative
+		- Canvas: width: 100%, height: 100%
+	6. Data requirements:
+		- Player objects with { pos, stats: { pts_ppr } } (or equivalent PPG source)
+		- League roster settings with slot configuration
+	7. No app.js dependencies required
+
+Key Differences from App.js Implementation
+	•	Analyzer uses PPG from Sleeper API stats, not Google Sheets
+	•	Independent KTC value fetching (duplicate logic, not shared)
+	•	No shared state management (local state only)
+	•	Custom color assignment system (not using app.js league colors)
+	•	Completely separate modal system for team details
+
+Performance Characteristics
+	•	Chart.js rendering: ~50-100ms for radar with 9 data points
+	•	Plugin execution: Minimal overhead (~5-10ms combined)
+	•	Data processing (assignRadarSlots): O(n log n) for player sorting, O(slots × players) worst case
+	•	Responsive to window resize via Chart.js built-in resize observer
+
+⸻
+
 Notes on Deduplication
 	•	Overlapping bullets from V1/V2 are merged; wording is unified while preserving all distinct details.
 	•	Where counts/lines differed between V1 and V2, both reported values are retained (without adjudicating the difference).
