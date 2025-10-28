@@ -387,7 +387,11 @@
     const posRankText = derivePosRankText(row, pos);
     const fullName = getFullName(playerId, name);
     const displayName = formatDisplayName(playerId, name);
-    const playerRanks = playerId ? calculatePlayerStatsAndRanks(playerId) : null;
+    // Cache player stats calculation on the row object to avoid repeated calls
+    if (!row._cachedPlayerRanks && playerId) {
+      row._cachedPlayerRanks = calculatePlayerStatsAndRanks(playerId);
+    }
+    const playerRanks = row._cachedPlayerRanks || null;
     const computedFpts = playerRanks ? toNumber(playerRanks.total_pts) : null;
     const computedPpg = playerRanks ? toNumber(playerRanks.ppg) : null;
     const fptsPosRank = playerRanks ? toNumber(playerRanks.posRank, { allowFloat: false }) : null;
@@ -396,16 +400,21 @@
     const fallbackPpg = toNumber(row.PPG);
     const fpts = Number.isFinite(computedFpts) ? computedFpts : fallbackFpts;
     const ppg = Number.isFinite(computedPpg) ? computedPpg : fallbackPpg;
-    const valueStyle = getValueStyle(value);
-    const rkColor = getRankColorValue(rank);
-    const ageColor = typeof getAgeColorForRoster === 'function' ? (getAgeColorForRoster(pos, age) || 'inherit') : 'inherit';
-    const fptsColor = typeof getConditionalColorByRank === 'function' && Number.isFinite(fptsPosRank)
-      ? getConditionalColorByRank(fptsPosRank, pos)
-      : 'inherit';
-    const ppgColor = typeof getConditionalColorByRank === 'function' && Number.isFinite(ppgPosRank)
-      ? getConditionalColorByRank(ppgPosRank, pos)
-      : 'inherit';
-    const teamStyle = TEAM_TAG_STYLES(team);
+    // Cache style calculations
+    if (!row._cachedStyles) {
+      row._cachedStyles = {
+        valueStyle: getValueStyle(value),
+        rkColor: getRankColorValue(rank),
+        ageColor: typeof getAgeColorForRoster === 'function' ? (getAgeColorForRoster(pos, age) || 'inherit') : 'inherit',
+        fptsColor: typeof getConditionalColorByRank === 'function' && Number.isFinite(fptsPosRank)
+          ? getConditionalColorByRank(fptsPosRank, pos)
+          : 'inherit',
+        ppgColor: typeof getConditionalColorByRank === 'function' && Number.isFinite(ppgPosRank)
+          ? getConditionalColorByRank(ppgPosRank, pos)
+          : 'inherit',
+        teamStyle: TEAM_TAG_STYLES(team)
+      };
+    }
     return {
       row,
       meta: {
@@ -428,12 +437,12 @@
         fptsPosRank,
         ppgPosRank,
         posRankText,
-        valueStyle,
-        rkColor,
-        ageColor,
-        fptsColor,
-        ppgColor,
-        teamStyle
+        valueStyle: row._cachedStyles.valueStyle,
+        rkColor: row._cachedStyles.rkColor,
+        ageColor: row._cachedStyles.ageColor,
+        fptsColor: row._cachedStyles.fptsColor,
+        ppgColor: row._cachedStyles.ppgColor,
+        teamStyle: row._cachedStyles.teamStyle
       }
     };
   }
@@ -619,8 +628,16 @@
     if (statsState.activePosition === 'RDP' || hasOnlyPicks) {
       rows = [...filtered];
     } else {
-      const playerRows = filtered.filter((entry) => entry.meta.pos !== 'RDP');
-      const pickRows = filtered.filter((entry) => entry.meta.pos === 'RDP');
+      // Optimize: single pass to separate players and picks
+      const playerRows = [];
+      const pickRows = [];
+      filtered.forEach((entry) => {
+        if (entry.meta.pos === 'RDP') {
+          pickRows.push(entry);
+        } else {
+          playerRows.push(entry);
+        }
+      });
       const sortedPlayers = sortCollection(playerRows);
       rows = [...sortedPlayers, ...pickRows];
     }
@@ -688,6 +705,8 @@
       const activeHeader = headerRow.querySelector(`th[data-column-key="${statsState.sort.column}"]`);
       if (activeHeader) applySortIndicator(activeHeader);
     }
+    // Use DocumentFragment for batch DOM insertion (massive performance boost)
+    const fragment = document.createDocumentFragment();
     rows.forEach((entry) => {
       const tr = document.createElement('tr');
       columnSet.forEach((column, index) => {
@@ -707,7 +726,9 @@
           btn.className = 'stats-player-btn';
           btn.textContent = textValue;
           btn.title = entry.meta.fullName || entry.meta.name || textValue;
-          btn.addEventListener('click', () => openGameLogs(entry));
+          // Use event delegation instead of individual listeners
+          btn.dataset.playerId = entry.meta.playerId;
+          btn.dataset.entryIndex = rows.indexOf(entry);
           td.appendChild(btn);
         } else if (index === 2) {
           td.classList.add('sticky-col-3');
@@ -747,8 +768,12 @@
         }
         tr.appendChild(td);
       });
-      tbody.appendChild(tr);
+      fragment.appendChild(tr);
     });
+    // Single DOM insertion instead of hundreds
+    tbody.appendChild(fragment);
+    // Store rows reference for event delegation
+    tbody._statsRows = rows;
     if (!rows.length) {
       dom.emptyState.classList.remove('hidden');
     } else {
@@ -1007,6 +1032,17 @@
   dom.tableWrappers.forEach((wrapper) => {
     const thead = wrapper.querySelector('thead');
     thead.addEventListener('click', handleSortClick);
+    // Event delegation for player buttons (much more efficient)
+    const tbody = wrapper.querySelector('tbody');
+    tbody.addEventListener('click', (event) => {
+      const btn = event.target.closest('.stats-player-btn');
+      if (!btn) return;
+      const entryIndex = parseInt(btn.dataset.entryIndex, 10);
+      const rows = tbody._statsRows;
+      if (rows && rows[entryIndex]) {
+        openGameLogs(rows[entryIndex]);
+      }
+    });
   });
   initialise();
 })();
