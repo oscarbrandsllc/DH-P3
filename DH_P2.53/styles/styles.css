@@ -719,7 +719,7 @@ n {
   #secondary-header-row .secondary-switcher {
     min-width: 115px;
     margin-block: 0.075rem;
-    margin-left: 20px;
+    margin-left: 13px;
   }
 }
         .app-header {
@@ -866,7 +866,7 @@ n {
         .analyzer-button-slot,
         .research-button-slot {
             margin-block: 0.075rem;
-            min-width: 100px;
+            min-width: 200px;
         }
         #contextual-controls {
             display: flex;
@@ -958,7 +958,7 @@ n {
         .custom-select-wrapper {
             position: relative;
             flex-grow: 1;
-            min-width: 0;
+            min-width: 100px;
             height: var(--header-control-height);
             display: flex;
             align-items: stretch;
@@ -978,7 +978,7 @@ n {
             font-weight: 300;
             width: 100%;
             height: 100%;
-            min-width: 0;
+            min-width: 100px;
             cursor: pointer;
             white-space: nowrap;
             overflow: hidden;
