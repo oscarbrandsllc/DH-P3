@@ -1917,15 +1917,19 @@ const SEASON_META_HEADERS = {
                 const rankValue = getSeasonRankValue(playerId, statKey);
                 radarData.rawRanks.push(rankValue);
 
-                // Invert rank: rank 1 = maxRank, rank maxRank = 1, rank > maxRank = 0
+                // Invert rank and scale to 0-100 range
+                // rank 1 -> 100, rank 5 -> 96, rank maxRank -> 0
+                // This keeps rank 1 from extending past the outer ring
                 if (rankValue === null || rankValue === undefined || Number.isNaN(rankValue)) {
                     radarData.ranks.push(0);
                 } else if (rankValue <= 1) {
-                    radarData.ranks.push(config.maxRank);
+                    radarData.ranks.push(100);
                 } else if (rankValue >= config.maxRank) {
-                    radarData.ranks.push(1);
+                    radarData.ranks.push(0);
                 } else {
-                    radarData.ranks.push(config.maxRank - rankValue + 1);
+                    // Linear scale from rank to 0-100
+                    const normalizedRank = ((config.maxRank - rankValue) / (config.maxRank - 1)) * 100;
+                    radarData.ranks.push(normalizedRank);
                 }
             });
 
@@ -2163,8 +2167,8 @@ const SEASON_META_HEADERS = {
             const radarPointLabelPadding = isMobileRadar ? 4 : 6;
             const radarLabelOffset = isMobileRadar ? 14 : 18;
 
-            // Calculate scale max based on max rank for position
-            const scaleMax = radarData.maxRank;
+            // Fixed scale max at 100 for all positions
+            const scaleMax = 100;
 
             new Chart(ctx, {
                 type: 'radar',
