@@ -2534,26 +2534,26 @@ const SEASON_META_HEADERS = {
         }
 
         // Configuration for radar chart stats per position
-        // Stats use exact column names from STAT_1QB/STAT_SFLX sheets (see stats.js COLUMN_SETS)
-        // Labels match the table headers exactly
+        // Stats use internal stat keys (values from PLAYER_STAT_HEADER_MAP)
+        // Labels use exact spreadsheet column headers (keys from PLAYER_STAT_HEADER_MAP)
         const RADAR_STATS_CONFIG = {
             QB: {
-                stats: ['fpts', 'ppg', 'paYDS', 'paTD', 'paRTG', 'YDS(t)', 'pIMP', 'ruYDS'],
+                stats: ['fpts', 'ppg', 'pass_yd', 'pass_td', 'pass_rtg', 'yds_total', 'pass_imp', 'rush_yd'],
                 labels: ['FPTS', 'PPG', 'paYDS', 'paTD', 'paRTG', 'YDS(t)', 'pIMP', 'ruYDS'],
                 maxRank: 36
             },
             RB: {
-                stats: ['fpts', 'ppg', 'ruYDS', 'ruTD', 'REC', 'recYDS', 'YDS(t)', 'ELU'],
+                stats: ['fpts', 'ppg', 'rush_yd', 'rush_td', 'rec', 'rec_yd', 'yds_total', 'elu'],
                 labels: ['FPTS', 'PPG', 'ruYDS', 'ruTD', 'REC', 'recYDS', 'YDS(t)', 'ELU'],
                 maxRank: 48
             },
             WR: {
-                stats: ['fpts', 'ppg', 'REC', 'recYDS', 'recTD', 'TGT', 'YPRR', 'rec1D'],
+                stats: ['fpts', 'ppg', 'rec', 'rec_yd', 'rec_td', 'rec_tgt', 'yprr', 'rec_fd'],
                 labels: ['FPTS', 'PPG', 'REC', 'recYDS', 'recTD', 'TGT', 'YPRR', 'rec1D'],
                 maxRank: 72
             },
             TE: {
-                stats: ['fpts', 'ppg', 'REC', 'recYDS', 'recTD', 'TGT', 'YPRR', 'rec1D'],
+                stats: ['fpts', 'ppg', 'rec', 'rec_yd', 'rec_td', 'rec_tgt', 'yprr', 'rec_fd'],
                 labels: ['FPTS', 'PPG', 'REC', 'recYDS', 'recTD', 'TGT', 'YPRR', 'rec1D'],
                 maxRank: 24
             }
