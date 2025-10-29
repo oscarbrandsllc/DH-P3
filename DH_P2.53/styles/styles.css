@@ -4521,22 +4521,6 @@ inset 0px 0px 155px rgba(216, 215, 255, 0.1);
     background: rgba(13, 14, 27, 0.95);
     box-shadow: 0 8px 32px rgba(31, 38, 105, 0.2), inset 0 6px 18px rgba(255, 255, 255, 0.04);
     z-index: 5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-#radar-chart-canvas {
-    max-width: 350px;
-    max-height: 350px;
-    margin: 0 auto;
-}
-
-@media (min-width: 768px) {
-    #radar-chart-canvas {
-        max-width: 450px;
-        max-height: 450px;
-    }
 }
 
 /* News Container - Same overlay behavior */
