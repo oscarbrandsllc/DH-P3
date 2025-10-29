@@ -2528,6 +2528,31 @@ const SEASON_META_HEADERS = {
             });
             return tableCoreLoaderPromise;
         }
+
+        // Configuration for radar chart stats per position
+        const RADAR_STATS_CONFIG = {
+            QB: {
+                stats: ['fpts', 'pass_yd', 'pass_td', 'pass_rtg', 'yds_total', 'pass_imp', 'rush_yd', 'fpoe'],
+                labels: ['FPTS', 'paYD', 'paTD', 'paRTG', 'totYD', 'paIMP', 'ruYD', 'FPOE'],
+                maxRank: 36
+            },
+            RB: {
+                stats: ['fpts', 'rush_yd', 'rush_td', 'rec', 'rec_yd', 'yds_total', 'elu', 'fpoe'],
+                labels: ['FPTS', 'ruYD', 'ruTD', 'REC', 'reYD', 'totYD', 'ELU', 'FPOE'],
+                maxRank: 48
+            },
+            WR: {
+                stats: ['fpts', 'rec', 'rec_yd', 'rec_td', 'rec_tgt', 'yprr', 'ts_per_rr', 'fpoe'],
+                labels: ['FPTS', 'REC', 'reYD', 'reTD', 'TGT', 'YPRR', 'TS/RR', 'FPOE'],
+                maxRank: 72
+            },
+            TE: {
+                stats: ['fpts', 'rec', 'rec_yd', 'rec_td', 'rec_tgt', 'yprr', 'ts_per_rr', 'fpoe'],
+                labels: ['FPTS', 'REC', 'reYD', 'reTD', 'TGT', 'YPRR', 'TS/RR', 'FPOE'],
+                maxRank: 24
+            }
+        };
+
         async function renderGameLogs(gameLogs, player, playerRanks) {
             // Store current player for modal panel interactions (e.g., radar chart)
             state.currentGameLogsPlayer = player;
@@ -2701,30 +2726,6 @@ const wrTeStatOrder = [
   'ypc',
   'fum'
 ];
-
-            // Configuration for radar chart stats per position
-            const RADAR_STATS_CONFIG = {
-                QB: {
-                    stats: ['fpts', 'pass_yd', 'pass_td', 'pass_rtg', 'yds_total', 'pass_imp', 'rush_yd', 'fpoe'],
-                    labels: ['FPTS', 'paYD', 'paTD', 'paRTG', 'totYD', 'paIMP', 'ruYD', 'FPOE'],
-                    maxRank: 36
-                },
-                RB: {
-                    stats: ['fpts', 'rush_yd', 'rush_td', 'rec', 'rec_yd', 'yds_total', 'elu', 'fpoe'],
-                    labels: ['FPTS', 'ruYD', 'ruTD', 'REC', 'reYD', 'totYD', 'ELU', 'FPOE'],
-                    maxRank: 48
-                },
-                WR: {
-                    stats: ['fpts', 'rec', 'rec_yd', 'rec_td', 'rec_tgt', 'yprr', 'ts_per_rr', 'fpoe'],
-                    labels: ['FPTS', 'REC', 'reYD', 'reTD', 'TGT', 'YPRR', 'TS/RR', 'FPOE'],
-                    maxRank: 72
-                },
-                TE: {
-                    stats: ['fpts', 'rec', 'rec_yd', 'rec_td', 'rec_tgt', 'yprr', 'ts_per_rr', 'fpoe'],
-                    labels: ['FPTS', 'REC', 'reYD', 'reTD', 'TGT', 'YPRR', 'TS/RR', 'FPOE'],
-                    maxRank: 24
-                }
-            };
 
             const statGroupByKey = new Map();
             const assignStatGroup = (group, keys) => {
