@@ -2532,23 +2532,23 @@ const SEASON_META_HEADERS = {
         // Configuration for radar chart stats per position
         const RADAR_STATS_CONFIG = {
             QB: {
-                stats: ['fpts', 'pass_yd', 'pass_td', 'pass_rtg', 'yds_total', 'pass_imp', 'rush_yd', 'fpoe'],
-                labels: ['FPTS', 'paYD', 'paTD', 'paRTG', 'totYD', 'paIMP', 'ruYD', 'FPOE'],
+                stats: ['ppg', 'pass_yd', 'pass_td', 'pass_rtg', 'yds_total', 'pass_imp', 'rush_yd', 'pass_att'],
+                labels: ['PPG', 'paYD', 'paTD', 'paRTG', 'totYD', 'paIMP', 'ruYD', 'paATT'],
                 maxRank: 36
             },
             RB: {
-                stats: ['fpts', 'rush_yd', 'rush_td', 'rec', 'rec_yd', 'yds_total', 'elu', 'fpoe'],
-                labels: ['FPTS', 'ruYD', 'ruTD', 'REC', 'reYD', 'totYD', 'ELU', 'FPOE'],
+                stats: ['ppg', 'rush_yd', 'rush_td', 'rec', 'rec_yd', 'yds_total', 'elu', 'rush_att'],
+                labels: ['PPG', 'ruYD', 'ruTD', 'REC', 'reYD', 'totYD', 'ELU', 'CAR'],
                 maxRank: 48
             },
             WR: {
-                stats: ['fpts', 'rec', 'rec_yd', 'rec_td', 'rec_tgt', 'yprr', 'ts_per_rr', 'fpoe'],
-                labels: ['FPTS', 'REC', 'reYD', 'reTD', 'TGT', 'YPRR', 'TS/RR', 'FPOE'],
+                stats: ['ppg', 'rec', 'rec_yd', 'rec_td', 'rec_tgt', 'yprr', 'ts_per_rr', 'rec_fd'],
+                labels: ['PPG', 'REC', 'reYD', 'reTD', 'TGT', 'YPRR', 'TS/RR', 're1D'],
                 maxRank: 72
             },
             TE: {
-                stats: ['fpts', 'rec', 'rec_yd', 'rec_td', 'rec_tgt', 'yprr', 'ts_per_rr', 'fpoe'],
-                labels: ['FPTS', 'REC', 'reYD', 'reTD', 'TGT', 'YPRR', 'TS/RR', 'FPOE'],
+                stats: ['ppg', 'rec', 'rec_yd', 'rec_td', 'rec_tgt', 'yprr', 'ts_per_rr', 'rec_fd'],
+                labels: ['PPG', 'REC', 'reYD', 'reTD', 'TGT', 'YPRR', 'TS/RR', 're1D'],
                 maxRank: 24
             }
         };
@@ -2563,6 +2563,11 @@ const SEASON_META_HEADERS = {
             const fullPlayer = state.players[player.id];
             const playerName = fullPlayer ? `${fullPlayer.first_name} ${fullPlayer.last_name}` : player.name;
             const modalHeader = document.getElementById('modal-header');
+            
+            // Clean up any existing header containers
+            const existingContainer = modalHeader.querySelector('.modal-header-left-container');
+            if (existingContainer) existingContainer.remove();
+            
             const modalHeaderLeftContainer = document.createElement('div');
             modalHeaderLeftContainer.className = 'modal-header-left-container';
             const posTag = document.createElement('div');
