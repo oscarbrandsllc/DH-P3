@@ -438,20 +438,10 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
                             containers[targetPanel].classList.remove('hidden');
                             
                             // If opening radar chart panel, render chart
-                            if (targetPanel === 'radar-chart') {
-                                console.log('Radar chart panel opened');
-                                console.log('state.currentGameLogsPlayer:', state.currentGameLogsPlayer);
-                                if (state.currentGameLogsPlayer) {
-                                    const player = state.currentGameLogsPlayer;
-                                    console.log('Player found:', player);
-                                    if (player && player.pos) {
-                                        console.log('Calling renderPlayerRadarChart...');
-                                        renderPlayerRadarChart(player.id, player.pos);
-                                    } else {
-                                        console.log('Player missing pos:', player);
-                                    }
-                                } else {
-                                    console.log('No currentGameLogsPlayer in state');
+                            if (targetPanel === 'radar-chart' && state.currentGameLogsPlayer) {
+                                const player = state.currentGameLogsPlayer;
+                                if (player && player.pos) {
+                                    renderPlayerRadarChart(player.id, player.pos);
                                 }
                             }
                         }
@@ -1913,13 +1903,8 @@ const SEASON_META_HEADERS = {
         }
 
         function getPlayerRadarData(playerId, position) {
-            console.log('getPlayerRadarData called:', { playerId, position });
             const config = RADAR_STATS_CONFIG[position];
-            if (!config) {
-                console.log('No config found for position:', position);
-                return null;
-            }
-            console.log('Radar config:', config);
+            if (!config) return null;
 
             const radarData = {
                 labels: config.labels,
@@ -1930,8 +1915,7 @@ const SEASON_META_HEADERS = {
 
             config.stats.forEach(statKey => {
                 const rankValue = getSeasonRankValue(playerId, statKey);
-                console.log(`Stat ${statKey}: rank =`, rankValue);
-                radarData.rawRanks.push(rankValue); // Store original rank
+                radarData.rawRanks.push(rankValue);
 
                 // Invert rank: rank 1 = maxRank, rank maxRank = 1, rank > maxRank = 0
                 if (rankValue === null || rankValue === undefined || Number.isNaN(rankValue)) {
@@ -1945,7 +1929,6 @@ const SEASON_META_HEADERS = {
                 }
             });
 
-            console.log('Final radar data:', radarData);
             return radarData;
         }
 
@@ -2150,25 +2133,18 @@ const SEASON_META_HEADERS = {
         }
 
         function renderPlayerRadarChart(playerId, position) {
-            console.log('renderPlayerRadarChart called:', { playerId, position });
             const container = document.querySelector('#radar-chart-container .radar-chart-content');
-            if (!container) {
-                console.error('Radar chart container not found!');
-                return;
-            }
-            console.log('Container found:', container);
+            if (!container) return;
 
             // Clear existing chart
             container.innerHTML = '';
 
             const radarData = getPlayerRadarData(playerId, position);
             if (!radarData) {
-                console.log('No radar data returned');
                 container.innerHTML = '<p class="no-data-message">No radar data available for this position.</p>';
                 return;
             }
 
-            console.log('Creating canvas...');
             // Create canvas
             const canvas = document.createElement('canvas');
             canvas.id = 'player-radar-canvas';
@@ -2177,7 +2153,6 @@ const SEASON_META_HEADERS = {
             const ctx = canvas.getContext('2d');
             const isMobile = window.innerWidth < 640;
 
-            console.log('Creating Chart.js instance...');
             new Chart(ctx, {
                 type: 'radar',
                 data: {
