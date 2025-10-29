@@ -2151,7 +2151,20 @@ const SEASON_META_HEADERS = {
             container.appendChild(canvas);
 
             const ctx = canvas.getContext('2d');
-            const isMobile = window.innerWidth < 640;
+            
+            // Match analyzer mobile detection
+            const isMobileRadar = window.matchMedia('(max-width: 640px)').matches;
+            const radarLayoutPadding = {
+                top: isMobileRadar ? 2 : 4,
+                bottom: isMobileRadar ? 4 : 4,
+                left: isMobileRadar ? 0 : 4,
+                right: isMobileRadar ? 0 : 4,
+            };
+            const radarPointLabelPadding = isMobileRadar ? 4 : 6;
+            const radarLabelOffset = isMobileRadar ? 14 : 18;
+
+            // Calculate scale max based on max rank for position
+            const scaleMax = radarData.maxRank;
 
             new Chart(ctx, {
                 type: 'radar',
@@ -2160,73 +2173,64 @@ const SEASON_META_HEADERS = {
                     datasets: [{
                         label: 'Player Rank',
                         data: radarData.ranks,
-                        rawRanks: radarData.rawRanks, // Pass for label plugin
-                        position: position, // Pass for color conditional
-                        borderColor: '#60a5fa',
-                        backgroundColor: 'rgba(96, 165, 250, 0.2)',
+                        rawRanks: radarData.rawRanks,
+                        position: position,
+                        fill: true,
+                        backgroundColor: 'rgba(83, 0, 255, 0.33)',
+                        borderColor: '#6700ff',
                         borderWidth: 2,
-                        pointBackgroundColor: '#60a5fa',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 6
+                        pointBackgroundColor: '#6300ff',
+                        pointBorderColor: '#0D0E1B',
+                        pointRadius: 4.5,
+                        analyzerLabels: true,
+                        order: 2
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: true,
-                    aspectRatio: isMobile ? 1 : 1.2,
+                    maintainAspectRatio: false,
+                    events: [],
+                    layout: {
+                        padding: radarLayoutPadding
+                    },
+                    elements: {
+                        line: { tension: 0.32 }
+                    },
                     scales: {
                         r: {
-                            min: 0,
-                            max: radarData.maxRank,
-                            ticks: {
-                                display: false, // Hide numeric ticks
-                                stepSize: radarData.maxRank / 5
-                            },
-                            grid: {
-                                color: 'rgba(151, 166, 210, 0.1)'
-                            },
-                            angleLines: {
-                                color: 'rgba(151, 166, 210, 0.15)'
-                            },
+                            beginAtZero: true,
+                            suggestedMin: 0,
+                            suggestedMax: scaleMax,
+                            max: scaleMax,
+                            grid: { display: false },
+                            angleLines: { display: false },
+                            ticks: { display: false },
                             pointLabels: {
-                                color: '#97a6d2',
-                                font: {
-                                    size: isMobile ? 10 : 12,
-                                    family: 'Product Sans',
-                                    weight: '500'
-                                }
+                                color: '#EAEBF0',
+                                font: { 
+                                    size: 13, 
+                                    weight: '600', 
+                                    family: "'Product Sans', 'Google Sans', sans-serif" 
+                                },
+                                padding: radarPointLabelPadding
                             }
                         }
                     },
                     plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            enabled: true,
-                            callbacks: {
-                                label: (context) => {
-                                    const rawRank = radarData.rawRanks[context.dataIndex];
-                                    return rawRank !== null && !Number.isNaN(rawRank)
-                                        ? `Rank: ${Math.round(rawRank)}`
-                                        : 'Rank: NA';
-                                }
-                            }
-                        },
+                        legend: { display: false },
+                        tooltip: { enabled: false },
                         playerRadarBackground: {
                             levels: [
-                                { ratio: 0.95, fill: '#2c334f62', stroke: 'rgba(151, 166, 210, 0.15)' },
-                                { ratio: 0.75, fill: '#2e355162', stroke: 'rgba(151, 166, 210, 0.15)' },
-                                { ratio: 0.55, fill: '#2f365362', stroke: 'rgba(151, 166, 210, 0.15)' },
-                                { ratio: 0.35, fill: '#30385462', stroke: 'rgba(151, 166, 210, 0.15)' },
-                                { ratio: 0.18, fill: '#313b5562', stroke: 'rgba(151, 166, 210, 0.15)' }
+                                { ratio: 0.95, fill: '#2c334f62', stroke: '#525a7739', lineWidth: 1 },
+                                { ratio: 0.75, fill: '#2D345153', stroke: '#525a7729', lineWidth: 1 },
+                                { ratio: 0.55, fill: '#2F365250', stroke: '#525a7729', lineWidth: 1 },
+                                { ratio: 0.35, fill: '#30375455', stroke: '#525a7729', lineWidth: 1 },
+                                { ratio: 0.18, fill: '#31385565', stroke: '#525a7735', lineWidth: 1 }
                             ]
                         },
                         playerRadarLabels: {
-                            font: isMobile ? '10px "Product Sans"' : '11px "Product Sans"',
-                            offset: isMobile ? 14 : 18
+                            font: '10px "Product Sans", "Google Sans", sans-serif',
+                            offset: radarLabelOffset
                         }
                     }
                 },

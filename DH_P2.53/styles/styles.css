@@ -7550,18 +7550,19 @@ body[data-page="research"] #secondary-header-row {
 
 /* === Radar Chart Styles === */
 .radar-chart-content {
-    padding: 20px;
+    padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 400px;
+    position: relative;
 }
 
 #player-radar-canvas {
-    max-width: 600px;
-    max-height: 600px;
+    max-width: 100%;
+    max-height: 500px;
     width: 100% !important;
-    height: auto !important;
+    height: 400px !important;
 }
 
 .no-data-message {
@@ -7573,12 +7574,13 @@ body[data-page="research"] #secondary-header-row {
 
 @media (max-width: 640px) {
     .radar-chart-content {
-        padding: 15px;
+        padding: 0;
         min-height: 350px;
     }
     
     #player-radar-canvas {
         max-width: 100%;
-        max-height: 500px;
+        max-height: 400px;
+        height: 350px !important;
     }
 }
