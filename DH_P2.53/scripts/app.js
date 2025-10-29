@@ -2534,25 +2534,27 @@ const SEASON_META_HEADERS = {
         }
 
         // Configuration for radar chart stats per position
+        // Stats use exact column names from STAT_1QB/STAT_SFLX sheets (see stats.js COLUMN_SETS)
+        // Labels match the table headers exactly
         const RADAR_STATS_CONFIG = {
             QB: {
-                stats: ['ppg', 'pass_yd', 'pass_td', 'pass_rtg', 'yds_total', 'pass_imp', 'rush_yd', 'pass_att'],
-                labels: ['PPG', 'paYD', 'paTD', 'paRTG', 'totYD', 'paIMP', 'ruYD', 'paATT'],
+                stats: ['fpts', 'ppg', 'paYDS', 'paTD', 'paRTG', 'YDS(t)', 'pIMP', 'ruYDS'],
+                labels: ['FPTS', 'PPG', 'paYDS', 'paTD', 'paRTG', 'YDS(t)', 'pIMP', 'ruYDS'],
                 maxRank: 36
             },
             RB: {
-                stats: ['ppg', 'rush_yd', 'rush_td', 'rec', 'rec_yd', 'yds_total', 'elu', 'rush_att'],
-                labels: ['PPG', 'ruYD', 'ruTD', 'REC', 'reYD', 'totYD', 'ELU', 'CAR'],
+                stats: ['fpts', 'ppg', 'ruYDS', 'ruTD', 'REC', 'recYDS', 'YDS(t)', 'ELU'],
+                labels: ['FPTS', 'PPG', 'ruYDS', 'ruTD', 'REC', 'recYDS', 'YDS(t)', 'ELU'],
                 maxRank: 48
             },
             WR: {
-                stats: ['ppg', 'rec', 'rec_yd', 'rec_td', 'rec_tgt', 'yprr', 'ts_per_rr', 'rec_fd'],
-                labels: ['PPG', 'REC', 'reYD', 'reTD', 'TGT', 'YPRR', 'TS/RR', 're1D'],
+                stats: ['fpts', 'ppg', 'REC', 'recYDS', 'recTD', 'TGT', 'YPRR', 'rec1D'],
+                labels: ['FPTS', 'PPG', 'REC', 'recYDS', 'recTD', 'TGT', 'YPRR', 'rec1D'],
                 maxRank: 72
             },
             TE: {
-                stats: ['ppg', 'rec', 'rec_yd', 'rec_td', 'rec_tgt', 'yprr', 'ts_per_rr', 'rec_fd'],
-                labels: ['PPG', 'REC', 'reYD', 'reTD', 'TGT', 'YPRR', 'TS/RR', 're1D'],
+                stats: ['fpts', 'ppg', 'REC', 'recYDS', 'recTD', 'TGT', 'YPRR', 'rec1D'],
+                labels: ['FPTS', 'PPG', 'REC', 'recYDS', 'recTD', 'TGT', 'YPRR', 'rec1D'],
                 maxRank: 24
             }
         };
