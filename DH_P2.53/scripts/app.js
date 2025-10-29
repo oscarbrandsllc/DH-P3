@@ -1680,6 +1680,7 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
         const PLAYER_STAT_HEADER_MAP = {
             'paATT': 'pass_att',
             'CMP': 'pass_cmp',
+            'CMP%': 'cmp_pct',
             'paYDS': 'pass_yd',
             'paTD': 'pass_td',
             'pa1D': 'pass_fd',
@@ -2547,8 +2548,8 @@ const SEASON_META_HEADERS = {
         // Labels use exact spreadsheet column headers (keys from PLAYER_STAT_HEADER_MAP)
         const RADAR_STATS_CONFIG = {
             QB: {
-                stats: ['fpts', 'ppg', 'pass_yd', 'pass_td', 'pass_rtg', 'yds_total', 'pass_imp', 'rush_yd'],
-                labels: ['FPTS', 'PPG', 'paYDS', 'paTD', 'paRTG', 'YDS(t)', 'pIMP', 'ruYDS'],
+                stats: ['fpts', 'ppg', 'pass_yd', 'pass_td', 'pass_rtg', 'cmp_pct', 'pass_imp', 'rush_yd'],
+                labels: ['FPTS', 'PPG', 'paYDS', 'paTD', 'paRTG', 'CMP%', 'pIMP', 'ruYDS'],
                 maxRank: 36
             },
             RB: {
@@ -2679,11 +2680,12 @@ const qbStatOrder = [
   'pass_rtg',
   'pass_yd',
   'pass_td',
-  'pass_att',
-  'pass_cmp',
+  'cmp_pct',
   'yds_total',
   'rush_yd',
   'rush_td',
+  'pass_att',
+  'pass_cmp',
   'pass_fd',
   'imp_per_g',
   'pass_imp',
@@ -3749,17 +3751,18 @@ const wrTeStatOrder = [
             const otherPlayer = players[1];
             const getStatOrderForPosition = (pos) => {
 const qbStatOrder = [
-  'fpts',
+   'fpts',
   'proj',
   'pass_rtg',
   'pass_yd',
   'pass_td',
-  'pass_att',
-  'pass_cmp',
-  'yds_total',
+  'cmp_pct',
   'pa_ypg',
+  'yds_total',
   'rush_yd',
   'rush_td',
+  'pass_att',
+  'pass_cmp',
   'pass_fd',
   'imp_per_g',
   'pass_imp',
