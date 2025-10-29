@@ -2548,23 +2548,23 @@ const SEASON_META_HEADERS = {
         // Labels use exact spreadsheet column headers (keys from PLAYER_STAT_HEADER_MAP)
         const RADAR_STATS_CONFIG = {
             QB: {
-                stats: ['fpts', 'ppg', 'pass_yd', 'pass_td', 'pass_rtg', 'cmp_pct', 'pass_imp', 'rush_yd'],
-                labels: ['FPTS', 'PPG', 'paYDS', 'paTD', 'paRTG', 'CMP%', 'pIMP', 'ruYDS'],
+                stats: ['fpts', 'ppg', 'pass_rtg', 'cmp_pct', 'pa_ypg', 'ttt', 'yds_total', 'imp_per_g'],
+                labels: ['FPTS', 'PPG', 'paRTG', 'CMP%', 'paYPG', 'TTT', 'YDS(t)', 'IMP/G'],
                 maxRank: 36
             },
             RB: {
-                stats: ['fpts', 'ppg', 'rush_yd', 'rush_td', 'rec', 'rec_yd', 'yds_total', 'elu'],
-                labels: ['FPTS', 'PPG', 'ruYDS', 'ruTD', 'REC', 'recYDS', 'YDS(t)', 'ELU'],
+                stats: ['fpts', 'ppg', 'yds_total', 'snp_pct', 'ypc', 'rec_tgt', 'mtf_per_att', 'yco_per_att'],
+                labels: ['FPTS', 'PPG', 'YDS(t)', 'SNP%', 'YPC', 'TGT', 'MTF/A', 'YCO/A'],
                 maxRank: 48
             },
             WR: {
-                stats: ['fpts', 'ppg', 'rec', 'rec_yd', 'rec_td', 'rec_tgt', 'yprr', 'rec_fd'],
-                labels: ['FPTS', 'PPG', 'REC', 'recYDS', 'recTD', 'TGT', 'YPRR', 'rec1D'],
+                stats: ['ppg', 'fpts', 'rec', 'rec_ypg', 'ts_per_rr', 'yprr', 'first_down_rec_rate', 'imp_per_g'],
+                labels: ['PPG', 'FPTS', 'REC', 'recYPG', 'TS%', 'YPRR', '1DRR', 'IMP/G'],
                 maxRank: 72
             },
             TE: {
-                stats: ['fpts', 'ppg', 'rec', 'rec_yd', 'rec_td', 'rec_tgt', 'yprr', 'rec_fd'],
-                labels: ['FPTS', 'PPG', 'REC', 'recYDS', 'recTD', 'TGT', 'YPRR', 'rec1D'],
+                stats: ['ppg', 'fpts', 'rec', 'rec_ypg', 'ts_per_rr', 'yprr', 'first_down_rec_rate', 'imp_per_g'],
+                labels: ['PPG', 'FPTS', 'REC', 'recYPG', 'TS%', 'YPRR', '1DRR', 'IMP/G'],
                 maxRank: 24
             }
         };
