@@ -436,6 +436,14 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
                         // If the clicked panel was hidden, open it (toggle behavior)
                         if (!isCurrentlyVisible && containers[targetPanel]) {
                             containers[targetPanel].classList.remove('hidden');
+                            
+                            // If opening radar chart panel, render chart
+                            if (targetPanel === 'radar-chart' && state.currentGameLogsPlayer) {
+                                const player = state.currentGameLogsPlayer;
+                                if (player && player.pos) {
+                                    renderPlayerRadarChart(player.id, player.pos);
+                                }
+                            }
                         }
                     });
                 });
@@ -1893,6 +1901,115 @@ const SEASON_META_HEADERS = {
             if (upper === 'NA' || upper === 'N/A') return 'NA';
             return rankStr;
         }
+
+        function getPlayerRadarData(playerId, position) {
+            const config = RADAR_STATS_CONFIG[position];
+            if (!config) return null;
+
+            const radarData = {
+                labels: config.labels,
+                ranks: [],
+                rawRanks: [],
+                maxRank: config.maxRank
+            };
+
+            config.stats.forEach(statKey => {
+                const rankValue = getSeasonRankValue(playerId, statKey);
+                radarData.rawRanks.push(rankValue); // Store original rank
+
+                // Invert rank: rank 1 = maxRank, rank maxRank = 1, rank > maxRank = 0
+                if (rankValue === null || rankValue === undefined || Number.isNaN(rankValue)) {
+                    radarData.ranks.push(0);
+                } else if (rankValue <= 1) {
+                    radarData.ranks.push(config.maxRank);
+                } else if (rankValue >= config.maxRank) {
+                    radarData.ranks.push(1);
+                } else {
+                    radarData.ranks.push(config.maxRank - rankValue + 1);
+                }
+            });
+
+            return radarData;
+        }
+
+        // Chart.js plugins for player radar chart
+        const playerRadarBackgroundPlugin = {
+            id: 'playerRadarBackground',
+            beforeDraw(chart, args, options) {
+                const scale = chart.scales?.r;
+                if (!scale) return;
+                const { ctx } = chart;
+                const centerX = scale.xCenter;
+                const centerY = scale.yCenter;
+                const angleStep = (Math.PI * 2) / chart.data.labels.length;
+                const startAngle = -Math.PI / 2; // Start at top
+                const maxRadius = scale.drawingArea;
+
+                const levels = options.levels || [];
+
+                levels.forEach((level) => {
+                    const radius = maxRadius * (level.ratio ?? 1);
+                    ctx.beginPath();
+                    ctx.strokeStyle = level.stroke || 'rgba(151, 166, 210, 0.15)';
+                    ctx.fillStyle = level.fill || 'transparent';
+                    ctx.lineWidth = 1;
+
+                    chart.data.labels.forEach((label, index) => {
+                        const angle = startAngle + angleStep * index;
+                        const x = centerX + Math.cos(angle) * radius;
+                        const y = centerY + Math.sin(angle) * radius;
+
+                        if (index === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    });
+
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                });
+            }
+        };
+
+        const playerRadarLabelPlugin = {
+            id: 'playerRadarLabels',
+            afterDatasetsDraw(chart, args, options) {
+                const dataset = chart.data.datasets[0];
+                if (!dataset || !dataset.data) return;
+
+                const { ctx } = chart;
+                const scale = chart.scales?.r;
+                if (!scale) return;
+
+                const centerX = scale.xCenter;
+                const centerY = scale.yCenter;
+                const angleStep = (Math.PI * 2) / chart.data.labels.length;
+                const startAngle = -Math.PI / 2;
+
+                ctx.font = options.font || '11px "Product Sans"';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                dataset.data.forEach((value, index) => {
+                    const angle = startAngle + angleStep * index;
+                    const dataPoint = scale.getPointPositionForValue(index, value);
+                    const offsetDistance = options.offset || 18;
+                    const offsetX = Math.cos(angle) * offsetDistance;
+                    const offsetY = Math.sin(angle) * offsetDistance;
+
+                    const rawRank = dataset.rawRanks?.[index];
+                    const label = rawRank !== null && rawRank !== undefined && !Number.isNaN(rawRank)
+                        ? Math.round(rawRank).toString()
+                        : 'NA';
+
+                    // Color based on rank value
+                    const rankColor = getConditionalColorByRank(rawRank, dataset.position);
+                    ctx.fillStyle = rankColor;
+
+                    ctx.fillText(label, dataPoint.x + offsetX, dataPoint.y + offsetY);
+                });
+            }
+        };
+
     function createRankAnnotation(rank, { wrapInParens = true, ordinal = false, variant = 'default' } = {}) {
                     const span = document.createElement('span');
                     // base class plus variant-specific class so CSS can target per-context
@@ -2014,6 +2131,112 @@ const SEASON_META_HEADERS = {
                 positional: positionalRankings
             };
         }
+
+        function renderPlayerRadarChart(playerId, position) {
+            const container = document.querySelector('#radar-chart-container .radar-chart-content');
+            if (!container) return;
+
+            // Clear existing chart
+            container.innerHTML = '';
+
+            const radarData = getPlayerRadarData(playerId, position);
+            if (!radarData) {
+                container.innerHTML = '<p class="no-data-message">No radar data available for this position.</p>';
+                return;
+            }
+
+            // Create canvas
+            const canvas = document.createElement('canvas');
+            canvas.id = 'player-radar-canvas';
+            container.appendChild(canvas);
+
+            const ctx = canvas.getContext('2d');
+            const isMobile = window.innerWidth < 640;
+
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: radarData.labels,
+                    datasets: [{
+                        label: 'Player Rank',
+                        data: radarData.ranks,
+                        rawRanks: radarData.rawRanks, // Pass for label plugin
+                        position: position, // Pass for color conditional
+                        borderColor: '#60a5fa',
+                        backgroundColor: 'rgba(96, 165, 250, 0.2)',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#60a5fa',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    aspectRatio: isMobile ? 1 : 1.2,
+                    scales: {
+                        r: {
+                            min: 0,
+                            max: radarData.maxRank,
+                            ticks: {
+                                display: false, // Hide numeric ticks
+                                stepSize: radarData.maxRank / 5
+                            },
+                            grid: {
+                                color: 'rgba(151, 166, 210, 0.1)'
+                            },
+                            angleLines: {
+                                color: 'rgba(151, 166, 210, 0.15)'
+                            },
+                            pointLabels: {
+                                color: '#97a6d2',
+                                font: {
+                                    size: isMobile ? 10 : 12,
+                                    family: 'Product Sans',
+                                    weight: '500'
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: true,
+                            callbacks: {
+                                label: (context) => {
+                                    const rawRank = radarData.rawRanks[context.dataIndex];
+                                    return rawRank !== null && !Number.isNaN(rawRank)
+                                        ? `Rank: ${Math.round(rawRank)}`
+                                        : 'Rank: NA';
+                                }
+                            }
+                        },
+                        playerRadarBackground: {
+                            levels: [
+                                { ratio: 0.95, fill: '#2c334f62', stroke: 'rgba(151, 166, 210, 0.15)' },
+                                { ratio: 0.75, fill: '#2e355162', stroke: 'rgba(151, 166, 210, 0.15)' },
+                                { ratio: 0.55, fill: '#2f365362', stroke: 'rgba(151, 166, 210, 0.15)' },
+                                { ratio: 0.35, fill: '#30385462', stroke: 'rgba(151, 166, 210, 0.15)' },
+                                { ratio: 0.18, fill: '#313b5562', stroke: 'rgba(151, 166, 210, 0.15)' }
+                            ]
+                        },
+                        playerRadarLabels: {
+                            font: isMobile ? '10px "Product Sans"' : '11px "Product Sans"',
+                            offset: isMobile ? 14 : 18
+                        }
+                    }
+                },
+                plugins: [playerRadarBackgroundPlugin, playerRadarLabelPlugin]
+            });
+
+            // Store chart instance for cleanup
+            container._chartInstance = Chart.getChart('player-radar-canvas');
+        }
+
         function parseWeeklyStatsCsv(csvText) {
             const { headers, rows } = parseCsv(csvText);
             const normalizedHeaders = headers.map(normalizeHeader);
@@ -2306,6 +2529,9 @@ const SEASON_META_HEADERS = {
             return tableCoreLoaderPromise;
         }
         async function renderGameLogs(gameLogs, player, playerRanks) {
+            // Store current player for modal panel interactions (e.g., radar chart)
+            state.currentGameLogsPlayer = player;
+            
             const league = state.leagues.find(l => l.league_id === state.currentLeagueId);
             if (!league) return;
             const scoringSettings = league.scoring_settings;
@@ -2475,6 +2701,31 @@ const wrTeStatOrder = [
   'ypc',
   'fum'
 ];
+
+            // Configuration for radar chart stats per position
+            const RADAR_STATS_CONFIG = {
+                QB: {
+                    stats: ['fpts', 'pass_yd', 'pass_td', 'pass_rtg', 'yds_total', 'pass_imp', 'rush_yd', 'fpoe'],
+                    labels: ['FPTS', 'paYD', 'paTD', 'paRTG', 'totYD', 'paIMP', 'ruYD', 'FPOE'],
+                    maxRank: 36
+                },
+                RB: {
+                    stats: ['fpts', 'rush_yd', 'rush_td', 'rec', 'rec_yd', 'yds_total', 'elu', 'fpoe'],
+                    labels: ['FPTS', 'ruYD', 'ruTD', 'REC', 'reYD', 'totYD', 'ELU', 'FPOE'],
+                    maxRank: 48
+                },
+                WR: {
+                    stats: ['fpts', 'rec', 'rec_yd', 'rec_td', 'rec_tgt', 'yprr', 'ts_per_rr', 'fpoe'],
+                    labels: ['FPTS', 'REC', 'reYD', 'reTD', 'TGT', 'YPRR', 'TS/RR', 'FPOE'],
+                    maxRank: 72
+                },
+                TE: {
+                    stats: ['fpts', 'rec', 'rec_yd', 'rec_td', 'rec_tgt', 'yprr', 'ts_per_rr', 'fpoe'],
+                    labels: ['FPTS', 'REC', 'reYD', 'reTD', 'TGT', 'YPRR', 'TS/RR', 'FPOE'],
+                    maxRank: 24
+                }
+            };
+
             const statGroupByKey = new Map();
             const assignStatGroup = (group, keys) => {
                 for (const key of keys) statGroupByKey.set(key, group);
@@ -5214,6 +5465,18 @@ const wrTeStatOrder = [
             statsKeyContainer.classList.add('hidden');
             if (radarChartContainer) radarChartContainer.classList.add('hidden');
             if (newsContainer) newsContainer.classList.add('hidden');
+            
+            // Destroy radar chart if exists to prevent memory leaks
+            const radarContainer = document.querySelector('#radar-chart-container .radar-chart-content');
+            if (radarContainer && radarContainer._chartInstance) {
+                radarContainer._chartInstance.destroy();
+                radarContainer.innerHTML = '';
+                radarContainer._chartInstance = null;
+            }
+            
+            // Clear current player reference
+            state.currentGameLogsPlayer = null;
+            
             if (!state.isGameLogModalOpenFromComparison) {
                 closeComparisonModal();
             } else {

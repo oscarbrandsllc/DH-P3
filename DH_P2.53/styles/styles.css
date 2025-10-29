@@ -7547,3 +7547,38 @@ body[data-page="research"] #secondary-header-row {
             margin-top: 0.25rem;
         }
     }
+
+/* === Radar Chart Styles === */
+.radar-chart-content {
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+}
+
+#player-radar-canvas {
+    max-width: 600px;
+    max-height: 600px;
+    width: 100% !important;
+    height: auto !important;
+}
+
+.no-data-message {
+    color: #97a6d2;
+    font-size: 14px;
+    text-align: center;
+    font-family: 'Product Sans', sans-serif;
+}
+
+@media (max-width: 640px) {
+    .radar-chart-content {
+        padding: 15px;
+        min-height: 350px;
+    }
+    
+    #player-radar-canvas {
+        max-width: 100%;
+        max-height: 500px;
+    }
+}
