@@ -2302,8 +2302,8 @@ const SEASON_META_HEADERS = {
             // Match analyzer mobile detection
             const isMobileRadar = window.matchMedia('(max-width: 640px)').matches;
             const radarLayoutPadding = {
-                top: isMobileRadar ? 2 : 2,
-                bottom: isMobileRadar ? 2 : 2,
+                top: isMobileRadar ? 39 : 33,
+                bottom: isMobileRadar ? 42 : 32,
                 left: isMobileRadar ? 0 : 4,
                 right: isMobileRadar ? 0 : 4,
             };
