@@ -1904,10 +1904,7 @@ const SEASON_META_HEADERS = {
         }
 
         function getPlayerRadarData(playerId, position) {
-            console.log('getPlayerRadarData called with:', { playerId, position });
-            console.log('RADAR_STATS_CONFIG:', RADAR_STATS_CONFIG);
             const config = RADAR_STATS_CONFIG[position];
-            console.log('Selected config for position', position, ':', config);
             if (!config) return null;
 
             const radarData = {
@@ -1921,7 +1918,6 @@ const SEASON_META_HEADERS = {
 
             // Use footer stats that were already calculated
             const footerStats = state.currentGameLogsFooterStats || {};
-            console.log('Footer stats available:', footerStats);
 
             config.stats.forEach(statKey => {
                 const rankValue = getSeasonRankValue(playerId, statKey);
@@ -2034,7 +2030,7 @@ const SEASON_META_HEADERS = {
 
         const playerRadarStatValuePlugin = {
             id: 'playerRadarStatValues',
-            afterDatasetsDraw(chart, args, options) {
+            afterDraw(chart, args, options) {
                 const dataset = chart.data.datasets[0];
                 if (!dataset || !dataset.statValues || !dataset.statKeys) return;
 
@@ -2051,22 +2047,39 @@ const SEASON_META_HEADERS = {
                 const isMobile = window.innerWidth <= 768;
                 ctx.font = options.valueFont || (isMobile ? '8px "Product Sans"' : '9px "Product Sans"');
                 ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
 
                 dataset.statValues.forEach((value, index) => {
                     const angle = startAngle + angleStep * index;
                     const statKey = dataset.statKeys[index];
                     const formattedValue = formatRadarStatValue(statKey, value);
                     
-                    // Position stat values OUTSIDE the axis labels
-                    // Chart.js pointLabels are at: scale.drawingArea + padding
-                    // We need to go further out
-                    const pointLabelDistance = scale.drawingArea + (scale.options.pointLabels.padding || 0);
-                    const valueOffset = options.valueOffset || 16; // Increase default offset
-                    const valueRadius = pointLabelDistance + valueOffset;
+                    // Get where Chart.js positioned the axis label
+                    const labelPosition = scale.getPointPositionForValue(index, scale.max);
                     
-                    const x = centerX + Math.cos(angle) * valueRadius;
-                    const y = centerY + Math.sin(angle) * valueRadius;
+                    // Calculate direction from center to this point
+                    const dx = labelPosition.x - centerX;
+                    const dy = labelPosition.y - centerY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    // Normalize direction and extend further out
+                    const valueOffset = options.valueOffset || 24;
+                    const newDistance = distance + valueOffset;
+                    
+                    const x = centerX + (dx / distance) * newDistance;
+                    const y = centerY + (dy / distance) * newDistance;
+
+                    // Adjust textBaseline based on vertical position to avoid label overlap
+                    // Top labels: render below (top baseline)
+                    // Bottom labels: render above (bottom baseline)
+                    // Side labels: centered
+                    const normalizedY = (y - centerY) / distance;
+                    if (normalizedY < -0.5) {
+                        ctx.textBaseline = 'top'; // Label at top, value below it
+                    } else if (normalizedY > 0.5) {
+                        ctx.textBaseline = 'bottom'; // Label at bottom, value above it
+                    } else {
+                        ctx.textBaseline = 'middle'; // Side labels
+                    }
 
                     // Color based on rank value (same as rank labels)
                     const rawRank = dataset.rawRanks?.[index];
@@ -2208,9 +2221,7 @@ const SEASON_META_HEADERS = {
             // Clear existing chart
             container.innerHTML = '';
 
-            console.log('renderPlayerRadarChart called with:', { playerId, position });
             const radarData = getPlayerRadarData(playerId, position);
-            console.log('radarData returned:', radarData);
             if (!radarData) {
                 container.innerHTML = '<p class="no-data-message">No radar data available for this position.</p>';
                 return;
@@ -2307,7 +2318,7 @@ const SEASON_META_HEADERS = {
                         },
                         playerRadarStatValues: {
                             valueFont: isMobileRadar ? '8px "Product Sans"' : '9px "Product Sans"',
-                            valueOffset: isMobileRadar ? 14 : 18
+                            valueOffset: isMobileRadar ? 22 : 28
                         }
                     }
                 },
