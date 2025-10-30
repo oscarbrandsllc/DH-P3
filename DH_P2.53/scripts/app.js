@@ -2230,18 +2230,10 @@ const SEASON_META_HEADERS = {
             // Fixed scale max at 100 for all positions
             const scaleMax = 100;
 
-            // Create multi-line labels with stat values
-            const labelsWithValues = radarData.labels.map((label, index) => {
-                const statKey = radarData.statKeys[index];
-                const statValue = radarData.statValues[index];
-                const formattedValue = formatRadarStatValue(statKey, statValue);
-                return [label, '( ' + formattedValue + ' )'];
-            });
-
             new Chart(ctx, {
                 type: 'radar',
                 data: {
-                    labels: labelsWithValues,
+                    labels: radarData.labels,
                     datasets: [{
                         label: 'Player Rank',
                         data: radarData.ranks,
@@ -2308,7 +2300,7 @@ const SEASON_META_HEADERS = {
                         }
                     }
                 },
-                plugins: [playerRadarBackgroundPlugin, playerRadarLabelPlugin, playerRadarStatValuePlugin]
+                plugins: [playerRadarBackgroundPlugin, playerRadarLabelPlugin]
             });
 
             // Store chart instance for cleanup
