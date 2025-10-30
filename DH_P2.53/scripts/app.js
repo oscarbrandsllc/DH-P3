@@ -1904,19 +1904,32 @@ const SEASON_META_HEADERS = {
         }
 
         function getPlayerRadarData(playerId, position) {
+            console.log('getPlayerRadarData called with:', { playerId, position });
+            console.log('RADAR_STATS_CONFIG:', RADAR_STATS_CONFIG);
             const config = RADAR_STATS_CONFIG[position];
+            console.log('Selected config for position', position, ':', config);
             if (!config) return null;
 
             const radarData = {
                 labels: config.labels,
                 ranks: [],
                 rawRanks: [],
+                statValues: [],
+                statKeys: config.stats, // Include stat keys for formatting
                 maxRank: config.maxRank
             };
+
+            // Use footer stats that were already calculated
+            const footerStats = state.currentGameLogsFooterStats || {};
+            console.log('Footer stats available:', footerStats);
 
             config.stats.forEach(statKey => {
                 const rankValue = getSeasonRankValue(playerId, statKey);
                 radarData.rawRanks.push(rankValue);
+
+                // Get stat value from the footer stats that were already calculated
+                const statValue = footerStats[statKey] !== undefined ? footerStats[statKey] : null;
+                radarData.statValues.push(statValue);
 
                 // Scale ranks from 10% to 85% of radar
                 // rank 1 -> 85, rank 7 -> ~73, rank maxRank -> 10
@@ -2015,6 +2028,53 @@ const SEASON_META_HEADERS = {
                     ctx.fillStyle = rankColor;
 
                     ctx.fillText(label, dataPoint.x + offsetX, dataPoint.y + offsetY);
+                });
+            }
+        };
+
+        const playerRadarStatValuePlugin = {
+            id: 'playerRadarStatValues',
+            afterDatasetsDraw(chart, args, options) {
+                const dataset = chart.data.datasets[0];
+                if (!dataset || !dataset.statValues || !dataset.statKeys) return;
+
+                const { ctx } = chart;
+                const scale = chart.scales?.r;
+                if (!scale) return;
+
+                const centerX = scale.xCenter;
+                const centerY = scale.yCenter;
+                const angleStep = (Math.PI * 2) / chart.data.labels.length;
+                const startAngle = -Math.PI / 2;
+
+                // Smaller font for stat values
+                const isMobile = window.innerWidth <= 768;
+                ctx.font = options.valueFont || (isMobile ? '8px "Product Sans"' : '9px "Product Sans"');
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                dataset.statValues.forEach((value, index) => {
+                    const angle = startAngle + angleStep * index;
+                    const statKey = dataset.statKeys[index];
+                    const formattedValue = formatRadarStatValue(statKey, value);
+                    
+                    // Position stat values OUTSIDE the axis labels
+                    // Chart.js pointLabels are at: scale.drawingArea + padding
+                    // We need to go further out
+                    const pointLabelDistance = scale.drawingArea + (scale.options.pointLabels.padding || 0);
+                    const valueOffset = options.valueOffset || 16; // Increase default offset
+                    const valueRadius = pointLabelDistance + valueOffset;
+                    
+                    const x = centerX + Math.cos(angle) * valueRadius;
+                    const y = centerY + Math.sin(angle) * valueRadius;
+
+                    // Color based on rank value (same as rank labels)
+                    const rawRank = dataset.rawRanks?.[index];
+                    const rankColor = getConditionalColorByRank(rawRank, dataset.position);
+                    ctx.fillStyle = rankColor;
+
+                    // Render with spaces to prevent Unicode conversion
+                    ctx.fillText('( ' + formattedValue + ' )', x, y);
                 });
             }
         };
@@ -2148,7 +2208,9 @@ const SEASON_META_HEADERS = {
             // Clear existing chart
             container.innerHTML = '';
 
+            console.log('renderPlayerRadarChart called with:', { playerId, position });
             const radarData = getPlayerRadarData(playerId, position);
+            console.log('radarData returned:', radarData);
             if (!radarData) {
                 container.innerHTML = '<p class="no-data-message">No radar data available for this position.</p>';
                 return;
@@ -2183,6 +2245,8 @@ const SEASON_META_HEADERS = {
                         label: 'Player Rank',
                         data: radarData.ranks,
                         rawRanks: radarData.rawRanks,
+                        statValues: radarData.statValues,
+                        statKeys: radarData.statKeys,
                         position: position,
                         fill: true,
                         backgroundColor: 'rgba(83, 0, 255, 0.33)',
@@ -2240,10 +2304,14 @@ const SEASON_META_HEADERS = {
                         playerRadarLabels: {
                             font: '12px "Product Sans", "Google Sans", sans-serif',
                             offset: radarLabelOffset
+                        },
+                        playerRadarStatValues: {
+                            valueFont: isMobileRadar ? '8px "Product Sans"' : '9px "Product Sans"',
+                            valueOffset: isMobileRadar ? 14 : 18
                         }
                     }
                 },
-                plugins: [playerRadarBackgroundPlugin, playerRadarLabelPlugin]
+                plugins: [playerRadarBackgroundPlugin, playerRadarLabelPlugin, playerRadarStatValuePlugin]
             });
 
             // Store chart instance for cleanup
@@ -3267,6 +3335,10 @@ const wrTeStatOrder = [
                 const aggregatedTotals = {};
                 const snapPctValues = [];
                 const statValueCounts = {};
+                
+                // Store calculated footer stats for radar chart
+                const footerStatsForRadar = {};
+                
                 gameLogsWithData.forEach(weekStats => {
                     for (const key in weekStats.stats) {
                         const statValue = parseFloat(weekStats.stats[key]);
@@ -3456,8 +3528,20 @@ const wrTeStatOrder = [
                     td.appendChild(rankAnnotation);
                     td.classList.add('has-rank-annotation');
                     rankAnnotation.style.color = getConditionalColorByRank(rankValue, player.pos);
+                    
+                    // Store the calculated numeric value for radar chart
+                    // Remove formatting to get raw number
+                    const numericValue = parseFloat(displayValue.replace(/[,%]/g, ''));
+                    if (!Number.isNaN(numericValue)) {
+                        footerStatsForRadar[key] = numericValue;
+                    }
+                    
                     footerRow.appendChild(td);
                 }
+                
+                // Store calculated footer stats in state for radar chart
+                state.currentGameLogsFooterStats = footerStatsForRadar;
+                
                 tableFooterTfoot.appendChild(footerRow);
                 footerWrapper.classList.remove('hidden');
             } else {
@@ -4970,6 +5054,33 @@ const wrTeStatOrder = [
             const numericValue = Number(value);
             if (Number.isNaN(numericValue)) return fallback;
             return numericValue.toFixed(decimals) + '%';
+        }
+        function formatRadarStatValue(statKey, value) {
+            // Format stat values for radar chart display
+            if (value === null || value === undefined || Number.isNaN(value)) return 'N/A';
+            
+            const numericValue = Number(value);
+            if (Number.isNaN(numericValue)) return 'N/A';
+
+            // Percentage stats
+            if (statKey === 'cmp_pct' || statKey === 'snp_pct' || statKey === 'ts_per_rr' || 
+                statKey === 'first_down_rec_rate' || statKey === 'prs_pct') {
+                return numericValue.toFixed(1) + '%';
+            }
+            
+            // Whole number stats
+            if (statKey === 'rec' || statKey === 'rec_tgt' || statKey === 'ttt' || 
+                statKey === 'yds_total' || statKey === 'fpts') {
+                return Math.round(numericValue).toString();
+            }
+            
+            // Rating stats (1 decimal)
+            if (statKey === 'pass_rtg' || statKey === 'imp_per_g') {
+                return numericValue.toFixed(1);
+            }
+            
+            // All other stats (2 decimals)
+            return numericValue.toFixed(2);
         }
         function getPlayerVitals(playerId) {
             const fallback = { age: '—', height: '—', weight: '—' };
