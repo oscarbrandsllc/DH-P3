@@ -2038,56 +2038,34 @@ const SEASON_META_HEADERS = {
                 const scale = chart.scales?.r;
                 if (!scale) return;
 
-                const centerX = scale.xCenter;
-                const centerY = scale.yCenter;
+                // Smaller font for stat values
+                const isMobile = window.innerWidth <= 768;
+                const fontSize = isMobile ? 8 : 9;
+                ctx.font = `${fontSize}px "Product Sans", "Google Sans", sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+
                 const angleStep = (Math.PI * 2) / chart.data.labels.length;
                 const startAngle = -Math.PI / 2;
 
-                // Smaller font for stat values
-                const isMobile = window.innerWidth <= 768;
-                ctx.font = options.valueFont || (isMobile ? '8px "Product Sans"' : '9px "Product Sans"');
-                ctx.textAlign = 'center';
-
                 dataset.statValues.forEach((value, index) => {
-                    const angle = startAngle + angleStep * index;
                     const statKey = dataset.statKeys[index];
                     const formattedValue = formatRadarStatValue(statKey, value);
                     
-                    // Get where Chart.js positioned the axis label
-                    const labelPosition = scale.getPointPositionForValue(index, scale.max);
+                    // Get the label position at max value
+                    const labelPos = scale.getPointPositionForValue(index, scale.max);
                     
-                    // Calculate direction from center to this point
-                    const dx = labelPosition.x - centerX;
-                    const dy = labelPosition.y - centerY;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    // Stat value goes below the label (using textBaseline: 'top')
+                    // Add small vertical offset
+                    const yOffset = isMobile ? 14 : 16;
                     
-                    // Normalize direction and extend further out
-                    const valueOffset = options.valueOffset || 24;
-                    const newDistance = distance + valueOffset;
-                    
-                    const x = centerX + (dx / distance) * newDistance;
-                    const y = centerY + (dy / distance) * newDistance;
-
-                    // Adjust textBaseline based on vertical position to avoid label overlap
-                    // Top labels: render below (top baseline)
-                    // Bottom labels: render above (bottom baseline)
-                    // Side labels: centered
-                    const normalizedY = (y - centerY) / distance;
-                    if (normalizedY < -0.5) {
-                        ctx.textBaseline = 'top'; // Label at top, value below it
-                    } else if (normalizedY > 0.5) {
-                        ctx.textBaseline = 'bottom'; // Label at bottom, value above it
-                    } else {
-                        ctx.textBaseline = 'middle'; // Side labels
-                    }
-
                     // Color based on rank value (same as rank labels)
                     const rawRank = dataset.rawRanks?.[index];
                     const rankColor = getConditionalColorByRank(rawRank, dataset.position);
                     ctx.fillStyle = rankColor;
 
                     // Render with spaces to prevent Unicode conversion
-                    ctx.fillText('( ' + formattedValue + ' )', x, y);
+                    ctx.fillText('( ' + formattedValue + ' )', labelPos.x, labelPos.y + yOffset);
                 });
             }
         };
@@ -2315,10 +2293,6 @@ const SEASON_META_HEADERS = {
                         playerRadarLabels: {
                             font: '12px "Product Sans", "Google Sans", sans-serif',
                             offset: radarLabelOffset
-                        },
-                        playerRadarStatValues: {
-                            valueFont: isMobileRadar ? '8px "Product Sans"' : '9px "Product Sans"',
-                            valueOffset: isMobileRadar ? 22 : 28
                         }
                     }
                 },
@@ -3552,6 +3526,11 @@ const wrTeStatOrder = [
                 
                 // Store calculated footer stats in state for radar chart
                 state.currentGameLogsFooterStats = footerStatsForRadar;
+                
+                // Calculate and store PPG (not in footer but needed for radar)
+                if (footerStatsForRadar.fpts && gameLogsWithData.length > 0) {
+                    state.currentGameLogsFooterStats.ppg = footerStatsForRadar.fpts / gameLogsWithData.length;
+                }
                 
                 tableFooterTfoot.appendChild(footerRow);
                 footerWrapper.classList.remove('hidden');
