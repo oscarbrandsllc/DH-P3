@@ -3654,7 +3654,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
       padding: 0.65rem 1.1rem 0.25rem 1.1rem;
       border-radius: var(--panel-border-radius);
       max-width: 90%;
-      width: 600px;
+      width: 686px;
       max-height: 90vh;
       transform: scale(0.95);
       opacity: 0;
@@ -3663,6 +3663,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     #game-logs-modal:not(.hidden) .modal-content, #player-comparison-modal:not(.hidden) .modal-content {
         transform: scale(1);
         opacity: 1;
+        height: 618px;
     }
     .modal-close-btn {
       position: absolute;
@@ -3842,6 +3843,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
         border: 1px solid rgba(250, 250, 250, 0.1);
         border-radius: 9px;
         box-shadow: 0 8px 32px rgba(31, 38, 105, 0.15), inset 0 6px 20px rgba(255, 255, 255, 0.013);
+        height: 416px;
     }
     .modal-body::after {
         content: '';
@@ -3885,7 +3887,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
       padding: 0;
     }
     #game-logs-modal .game-logs-table-body {
-      max-height: 200px;
+      max-height: 316px;
       overflow-y: auto;
       overflow-x: hidden; /* horizontal handled by parent hscroll */
       /* Narrow, subtle scrollbars (match stats page) */
@@ -4514,11 +4516,11 @@ inset 0px 0px 155px rgba(216, 215, 255, 0.1);
     position: absolute;
     inset: 0;
     margin: 0;
-    padding: 1rem;
+    padding: 0.41rem;
     max-height: none;
     overflow-y: auto;
     border-radius: 9px;
-    background: rgba(13, 14, 27, 0.95);
+    background: radial-gradient(circle at center, #151723 15%, #262940 100%);
     box-shadow: 0 8px 32px rgba(31, 38, 105, 0.2), inset 0 6px 18px rgba(255, 255, 255, 0.04);
     z-index: 5;
 }
@@ -7554,7 +7556,7 @@ body[data-page="research"] #secondary-header-row {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 400px;
+    min-height: 350px;
     position: relative;
 }
 
@@ -7562,7 +7564,7 @@ body[data-page="research"] #secondary-header-row {
     max-width: 100%;
     max-height: 500px;
     width: 100% !important;
-    height: 450px !important;
+    height: 360px !important;
 }
 
 .no-data-message {
@@ -7585,7 +7587,7 @@ body[data-page="research"] #secondary-header-row {
     }
     
     #game-logs-modal #modal-body #radar-chart-container {
-        padding: 0rem 0.1rem;
+        padding: 0.41rem;
     }
     
     #modal-body {
