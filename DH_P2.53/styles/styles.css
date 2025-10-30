@@ -3844,6 +3844,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
         border-radius: 9px;
         box-shadow: 0 8px 32px rgba(31, 38, 105, 0.15), inset 0 6px 20px rgba(255, 255, 255, 0.013);
         height: 416px;
+        min-height: 416px;
     }
     .modal-body::after {
         content: '';
@@ -3904,7 +3905,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     }
     /* Reduce any gap above the horizontal scrollbar and ensure footer isn't clipped */
     #game-logs-modal .game-logs-hscroll { padding-bottom: 0; }
-    #game-logs-modal .game-logs-table-footer {padding-bottom: 2px;}
+    #game-logs-modal .game-logs-table-footer { padding-bottom: 0; margin-bottom: 0; }
     #game-logs-modal .game-logs-table thead,
     #game-logs-modal .game-logs-table tfoot {
       display: table;
@@ -3970,10 +3971,11 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     #modal-body tfoot th {
         color: var(--color-accent-primary);
         white-space:nowrap;
-        padding: 0.25rem 0rem 0.15rem 0.02rem;    }
+        padding: 0.25rem 0rem 0rem 0.02rem;
+    }
     #game-logs-modal .game-logs-table-footer tfoot tr:first-child th {
         padding-top: 0.35rem;
-        padding-bottom: 0.3rem;
+        padding-bottom: 0;
     }
     #modal-body .no-logs {
         text-align: center;
@@ -7582,6 +7584,7 @@ body[data-page="research"] #secondary-header-row {
     
     .modal-body {
         height: 352px;
+        min-height: 352px;
         max-height: 65vh;
     }
     
