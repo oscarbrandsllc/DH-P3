@@ -310,7 +310,7 @@ if (pageType === 'welcome') {
     }
 }
         // --- State ---
-let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, lastLiveStatsWeek: null, lastLiveStatsFetchTs: 0, calculatedRankCache: null, playerProjectionWeeks: {}, isStartSitMode: false, startSitSelections: [], startSitNextSide: 'left', startSitTeamName: null, leagueMatchupStats: {}, matchupDataLoaded: false, isGameLogFromStatsPage: false, statsPagePlayerData: null };
+let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, lastLiveStatsWeek: null, lastLiveStatsFetchTs: 0, calculatedRankCache: null, playerProjectionWeeks: {}, isStartSitMode: false, startSitSelections: [], startSitNextSide: 'left', startSitTeamName: null, leagueMatchupStats: {}, matchupDataLoaded: false, isGameLogFromStatsPage: false, statsPagePlayerData: null, currentGameLogsPlayerRanks: null };
         const assignedLeagueColors = new Map();
         let nextColorIndex = 0;
         const assignedRyColors = new Map();
@@ -1919,6 +1919,7 @@ const SEASON_META_HEADERS = {
             // Use footer stats that were already calculated
             const footerStats = state.currentGameLogsFooterStats || {};
             const seasonTotals = state.playerSeasonStats?.[playerId] || null;
+            const playerRanks = state.currentGameLogsPlayerRanks || null;
 
             config.stats.forEach(statKey => {
                 const rankValue = getSeasonRankValue(playerId, statKey);
@@ -1935,6 +1936,9 @@ const SEASON_META_HEADERS = {
                     } else if (statKey === 'ppg') {
                         if (state.isGameLogFromStatsPage && state.statsPagePlayerData) {
                             statValue = state.statsPagePlayerData.ppg || null;
+                        } else if (playerRanks && playerRanks.ppg !== undefined) {
+                            const parsed = parseFloat(playerRanks.ppg);
+                            statValue = Number.isFinite(parsed) ? parsed : null;
                         } else if (footerStats.fpts !== undefined) {
                             const gamesPlayed = footerStats.__gamesPlayed;
                             statValue = Number.isFinite(gamesPlayed) && gamesPlayed > 0
@@ -2304,8 +2308,8 @@ const SEASON_META_HEADERS = {
             const radarLayoutPadding = {
                 top: isMobileRadar ? 28 : 33,
                 bottom: isMobileRadar ? 36 : 32,
-                left: isMobileRadar ? 12 : 14,
-                right: isMobileRadar ? 12 : 14,
+                left: isMobileRadar ? 14 : 14,
+                right: isMobileRadar ? 14 : 14,
             };
             const radarLabelOffset = isMobileRadar ? 14 : 18;
 
@@ -2699,13 +2703,13 @@ const SEASON_META_HEADERS = {
                 maxRank: 48
             },
             WR: {
-                stats: ['ppg', 'fpts', 'rec', 'rec_ypg', 'ts_per_rr', 'yprr', 'first_down_rec_rate', 'imp_per_g'],
-                labels: ['PPG', 'FPTS', 'REC', 'recYPG', 'TS%', 'YPRR', '1DRR', 'IMP/G'],
+                stats: ['fpts', 'ppg', 'rec', 'rec_ypg', 'ts_per_rr', 'yprr', 'first_down_rec_rate', 'imp_per_g'],
+                labels: ['FPTS', 'PPG', 'REC', 'recYPG', 'TS%', 'YPRR', '1DRR', 'IMP/G'],
                 maxRank: 72
             },
             TE: {
-                stats: ['ppg', 'fpts', 'rec', 'rec_ypg', 'ts_per_rr', 'yprr', 'first_down_rec_rate', 'imp_per_g'],
-                labels: ['PPG', 'FPTS', 'REC', 'recYPG', 'TS%', 'YPRR', '1DRR', 'IMP/G'],
+                stats: ['fpts', 'ppg', 'rec', 'rec_ypg', 'ts_per_rr', 'yprr', 'first_down_rec_rate', 'imp_per_g'],
+                labels: ['FPTS', 'PPG', 'REC', 'recYPG', 'TS%', 'YPRR', '1DRR', 'IMP/G'],
                 maxRank: 24
             }
         };
@@ -2713,6 +2717,7 @@ const SEASON_META_HEADERS = {
         async function renderGameLogs(gameLogs, player, playerRanks) {
             // Store current player for modal panel interactions (e.g., radar chart)
             state.currentGameLogsPlayer = player;
+            state.currentGameLogsPlayerRanks = playerRanks;
             
             const league = state.leagues.find(l => l.league_id === state.currentLeagueId);
             if (!league) return;
@@ -5739,6 +5744,7 @@ const wrTeStatOrder = [
             
             // Clear current player reference
             state.currentGameLogsPlayer = null;
+            state.currentGameLogsPlayerRanks = null;
             
             if (!state.isGameLogModalOpenFromComparison) {
                 closeComparisonModal();

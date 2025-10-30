@@ -3651,7 +3651,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     .modal-content {
       position: relative;
       z-index: 101;
-      padding: 0.65rem 1.1rem 0.25rem 1.1rem;
+      padding: 0.65rem 0.85rem 0.25rem 0.85rem;
       border-radius: var(--panel-border-radius);
       max-width: 90%;
       width: 686px;
