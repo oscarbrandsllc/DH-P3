@@ -2040,7 +2040,7 @@ const SEASON_META_HEADERS = {
 
                 const isMobile = window.innerWidth <= 768;
                 const valueFontSize = isMobile ? 8 : 9;
-                const labelFontSize = scale.options.pointLabels.font?.size || 12;
+                const spacing = isMobile ? 16 : 18;
                 
                 ctx.font = `${valueFontSize}px "Product Sans", "Google Sans", sans-serif`;
                 ctx.textAlign = 'center';
@@ -2057,9 +2057,10 @@ const SEASON_META_HEADERS = {
                     const formattedValue = formatRadarStatValue(statKey, value);
                     const angle = startAngle + angleStep * index;
                     
-                    // Position at same X as label, but Y offset below it
-                    const x = centerX + Math.cos(angle) * labelDistance;
-                    const y = centerY + Math.sin(angle) * labelDistance + labelFontSize + 4;
+                    // Position stat value at same radial angle but further from center
+                    const valueDistance = labelDistance + spacing;
+                    const x = centerX + Math.cos(angle) * valueDistance;
+                    const y = centerY + Math.sin(angle) * valueDistance;
 
                     // Color based on rank
                     const rawRank = dataset.rawRanks?.[index];
