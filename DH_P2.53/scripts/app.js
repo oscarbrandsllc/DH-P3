@@ -4400,7 +4400,7 @@ const wrTeStatOrder = [
             const normalizedKey = logoKeyMap[teamKey] || teamKey.toLowerCase();
             const src = `../assets/NFL-Tags_webp/${normalizedKey}.webp`;
             const teamTagHTML = (player.team && player.team !== 'FA')
-              ? `<img class="team-logo glow" src="${src}" alt="${teamKey}" width="19" height="19" loading="lazy" decoding="async">`
+              ? `<img class="team-logo glow" src="${src}" alt="${teamKey}" width="19" height="19" loading="eager" decoding="async">`
               : `<div class="team-tag" style="background-color: #64748b; color: white;">FA</div>`;
             const basePos = (player.pos || fullPlayer?.position || displaySlot || '').toUpperCase();
             const fptsPosRankNumber = Number.parseInt(playerRanks.posRank, 10);
