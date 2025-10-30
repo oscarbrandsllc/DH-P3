@@ -2038,34 +2038,41 @@ const SEASON_META_HEADERS = {
                 const scale = chart.scales?.r;
                 if (!scale) return;
 
-                // Smaller font for stat values
+                // Chart.js already drew the multi-line labels
+                // We just need to overdraw the second line with correct styling
+                
                 const isMobile = window.innerWidth <= 768;
-                const fontSize = isMobile ? 8 : 9;
-                ctx.font = `${fontSize}px "Product Sans", "Google Sans", sans-serif`;
+                const valueFontSize = isMobile ? 8 : 9;
+                const labelFontSize = scale.options.pointLabels.font?.size || 12;
+                const lineHeight = scale.options.pointLabels.font?.lineHeight || 1.2;
+                
+                ctx.font = `${valueFontSize}px "Product Sans", "Google Sans", sans-serif`;
                 ctx.textAlign = 'center';
-                ctx.textBaseline = 'top';
+                ctx.textBaseline = 'middle';
 
                 const angleStep = (Math.PI * 2) / chart.data.labels.length;
                 const startAngle = -Math.PI / 2;
+                const centerX = scale.xCenter;
+                const centerY = scale.yCenter;
+                const labelDistance = scale.drawingArea + (scale.options.pointLabels.padding || 0);
 
                 dataset.statValues.forEach((value, index) => {
                     const statKey = dataset.statKeys[index];
                     const formattedValue = formatRadarStatValue(statKey, value);
+                    const angle = startAngle + angleStep * index;
                     
-                    // Get the label position at max value
-                    const labelPos = scale.getPointPositionForValue(index, scale.max);
-                    
-                    // Stat value goes below the label (using textBaseline: 'top')
-                    // Add small vertical offset
-                    const yOffset = isMobile ? 14 : 16;
-                    
-                    // Color based on rank value (same as rank labels)
+                    // Calculate where Chart.js drew the label
+                    const x = centerX + Math.cos(angle) * labelDistance;
+                    // The second line is offset by label font size + line spacing
+                    const y = centerY + Math.sin(angle) * labelDistance + (labelFontSize * lineHeight);
+
+                    // Color based on rank
                     const rawRank = dataset.rawRanks?.[index];
                     const rankColor = getConditionalColorByRank(rawRank, dataset.position);
                     ctx.fillStyle = rankColor;
 
-                    // Render with spaces to prevent Unicode conversion
-                    ctx.fillText('( ' + formattedValue + ' )', labelPos.x, labelPos.y + yOffset);
+                    // Overdraw the stat value with correct styling
+                    ctx.fillText('( ' + formattedValue + ' )', x, y);
                 });
             }
         };
@@ -2226,10 +2233,18 @@ const SEASON_META_HEADERS = {
             // Fixed scale max at 100 for all positions
             const scaleMax = 100;
 
+            // Create multi-line labels with stat values
+            const labelsWithValues = radarData.labels.map((label, index) => {
+                const statKey = radarData.statKeys[index];
+                const statValue = radarData.statValues[index];
+                const formattedValue = formatRadarStatValue(statKey, statValue);
+                return [label, '( ' + formattedValue + ' )'];
+            });
+
             new Chart(ctx, {
                 type: 'radar',
                 data: {
-                    labels: radarData.labels,
+                    labels: labelsWithValues,
                     datasets: [{
                         label: 'Player Rank',
                         data: radarData.ranks,
