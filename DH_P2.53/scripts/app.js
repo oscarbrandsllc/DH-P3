@@ -2218,7 +2218,7 @@ const SEASON_META_HEADERS = {
                             pointLabels: {
                                 color: '#EAEBF0',
                                 font: { 
-                                    size: 13, 
+                                    size: 12, 
                                     weight: '600', 
                                     family: "'Product Sans', 'Google Sans', sans-serif" 
                                 },
