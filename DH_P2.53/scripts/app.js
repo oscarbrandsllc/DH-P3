@@ -1911,12 +1911,29 @@ const SEASON_META_HEADERS = {
                 labels: config.labels,
                 ranks: [],
                 rawRanks: [],
+                statValues: [],
                 maxRank: config.maxRank
             };
+
+            // Get season stats for the player
+            const seasonStats = state.playerSeasonStats?.[playerId] || {};
 
             config.stats.forEach(statKey => {
                 const rankValue = getSeasonRankValue(playerId, statKey);
                 radarData.rawRanks.push(rankValue);
+
+                // Get actual stat value from season stats
+                let statValue = null;
+                if (statKey === 'fpts' || statKey === 'fpts_ppr') {
+                    statValue = seasonStats.fpts_ppr || seasonStats.fpt_ppr || null;
+                } else if (statKey === 'ppg') {
+                    const fpts = seasonStats.fpts_ppr || seasonStats.fpt_ppr || 0;
+                    const gamesPlayed = seasonStats.games_played || seasonStats.gm_p || 0;
+                    statValue = gamesPlayed > 0 ? fpts / gamesPlayed : null;
+                } else {
+                    statValue = seasonStats[statKey];
+                }
+                radarData.statValues.push(statValue);
 
                 // Scale ranks from 10% to 85% of radar
                 // rank 1 -> 85, rank 7 -> ~73, rank maxRank -> 10
@@ -1994,7 +2011,46 @@ const SEASON_META_HEADERS = {
                 const angleStep = (Math.PI * 2) / chart.data.labels.length;
                 const startAngle = -Math.PI / 2;
 
-                ctx.font = options.font || '11px "Product Sans"';
+                const isMobile = window.matchMedia('(max-width: 640px)').matches;
+                const rankFontSize = isMobile ? 11 : 12;
+                const statFontSize = isMobile ? 9 : 10;
+
+                // Helper for ordinal suffix
+                const getOrdinalSuffix = (num) => {
+                    const absNum = Math.abs(Number(num));
+                    if (!Number.isFinite(absNum) || Math.floor(absNum) !== absNum) return '';
+                    const tens = absNum % 100;
+                    if (tens >= 11 && tens <= 13) return 'th';
+                    const ones = absNum % 10;
+                    if (ones === 1) return 'st';
+                    if (ones === 2) return 'nd';
+                    if (ones === 3) return 'rd';
+                    return 'th';
+                };
+
+                // Helper to format stat value
+                const formatStatValue = (value, statKey, label) => {
+                    if (value === null || value === undefined || Number.isNaN(value)) return 'NA';
+                    
+                    const numValue = Number(value);
+                    if (!Number.isFinite(numValue)) return 'NA';
+
+                    // Percentage stats
+                    if (statKey === 'cmp_pct' || statKey === 'snp_pct' || statKey === 'prs_pct' || 
+                        statKey === 'ts_per_rr' || label === 'CMP%' || label === 'SNP%' || 
+                        label === 'TS%' || label === '1DRR') {
+                        return numValue.toFixed(1) + '%';
+                    }
+                    
+                    // Whole number stats (targets, receptions, etc.)
+                    if (statKey === 'rec' || statKey === 'rec_tgt' || label === 'REC' || label === 'TGT') {
+                        return Math.round(numValue).toString();
+                    }
+                    
+                    // One decimal for most other stats
+                    return numValue.toFixed(1);
+                };
+
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
 
@@ -2006,15 +2062,30 @@ const SEASON_META_HEADERS = {
                     const offsetY = Math.sin(angle) * offsetDistance;
 
                     const rawRank = dataset.rawRanks?.[index];
-                    const label = rawRank !== null && rawRank !== undefined && !Number.isNaN(rawRank)
-                        ? Math.round(rawRank).toString()
+                    const statValue = dataset.statValues?.[index];
+                    const statKey = dataset.statKeys?.[index];
+                    const label = chart.data.labels[index];
+                    
+                    // Format rank with ordinal suffix
+                    const rankText = rawRank !== null && rawRank !== undefined && !Number.isNaN(rawRank)
+                        ? Math.round(rawRank) + getOrdinalSuffix(rawRank)
                         : 'NA';
+                    
+                    // Format stat value
+                    const statText = formatStatValue(statValue, statKey, label);
 
                     // Color based on rank value
                     const rankColor = getConditionalColorByRank(rawRank, dataset.position);
-                    ctx.fillStyle = rankColor;
 
-                    ctx.fillText(label, dataPoint.x + offsetX, dataPoint.y + offsetY);
+                    // Draw rank with ordinal suffix
+                    ctx.font = `${rankFontSize}px "Product Sans", "Google Sans", sans-serif`;
+                    ctx.fillStyle = rankColor;
+                    ctx.fillText(rankText, dataPoint.x + offsetX, dataPoint.y + offsetY - 6);
+
+                    // Draw stat value below in slightly smaller font
+                    ctx.font = `${statFontSize}px "Product Sans", "Google Sans", sans-serif`;
+                    ctx.fillStyle = 'rgba(234, 235, 240, 0.7)'; // Slightly dimmed
+                    ctx.fillText(`(${statText})`, dataPoint.x + offsetX, dataPoint.y + offsetY + 6);
                 });
             }
         };
@@ -2183,6 +2254,8 @@ const SEASON_META_HEADERS = {
                         label: 'Player Rank',
                         data: radarData.ranks,
                         rawRanks: radarData.rawRanks,
+                        statValues: radarData.statValues,
+                        statKeys: config.stats,
                         position: position,
                         fill: true,
                         backgroundColor: 'rgba(83, 0, 255, 0.33)',
