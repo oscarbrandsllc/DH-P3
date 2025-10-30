@@ -2030,47 +2030,46 @@ const SEASON_META_HEADERS = {
 
         const playerRadarStatValuePlugin = {
             id: 'playerRadarStatValues',
-            afterDraw(chart, args, options) {
-                // Chart.js already drew the multi-line labels with correct positioning
-                // Now we overdraw ONLY the second line with custom color and size
+            afterDatasetsDraw(chart, args, options) {
                 const dataset = chart.data.datasets[0];
-                if (!dataset) return;
+                if (!dataset || !dataset.statValues || !dataset.statKeys) return;
 
                 const { ctx } = chart;
                 const scale = chart.scales?.r;
                 if (!scale) return;
 
+                const centerX = scale.xCenter;
+                const centerY = scale.yCenter;
+                const angleStep = (Math.PI * 2) / chart.data.labels.length;
+                const startAngle = -Math.PI / 2;
+
+                // Smaller font for stat values
                 const isMobile = window.innerWidth <= 768;
-                const valueFontSize = isMobile ? 8 : 9;
-                const labelFontSize = scale.options.pointLabels.font?.size || 12;
-                
+                ctx.font = options.valueFont || (isMobile ? '8px "Product Sans"' : '9px "Product Sans"');
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
 
-                for (let i = 0; i < scale._pointLabels.length; i++) {
-                    const label = scale._pointLabels[i];
+                dataset.statValues.forEach((value, index) => {
+                    const angle = startAngle + angleStep * index;
+                    const statKey = dataset.statKeys[index];
+                    const formattedValue = formatRadarStatValue(statKey, value);
                     
-                    // Only process if it's a multi-line label (array)
-                    if (!Array.isArray(label) || label.length < 2) continue;
+                    // Position below the axis label
+                    const labelRadius = scale.drawingArea + scale.options.ticks.backdropPadding;
+                    const valueOffset = options.valueOffset || 12;
+                    const valueRadius = labelRadius + valueOffset;
                     
-                    const position = scale.getPointLabelPosition(i);
-                    
-                    // Get the second line text (stat value)
-                    const statValueText = label[1];
-                    
-                    // Calculate Y position for second line (same as Chart.js does)
-                    const lineSpacing = labelFontSize * 0.2;
-                    const secondLineY = position.y + labelFontSize / 2 + lineSpacing + valueFontSize / 2;
-                    
-                    // Set custom styling for stat value
-                    const rawRank = dataset.rawRanks?.[i];
+                    const x = centerX + Math.cos(angle) * valueRadius;
+                    const y = centerY + Math.sin(angle) * valueRadius;
+
+                    // Color based on rank value (same as rank labels)
+                    const rawRank = dataset.rawRanks?.[index];
                     const rankColor = getConditionalColorByRank(rawRank, dataset.position);
-                    ctx.font = `400 ${valueFontSize}px "Product Sans", "Google Sans", sans-serif`;
                     ctx.fillStyle = rankColor;
-                    
-                    // Draw the stat value at the exact position Chart.js placed it
-                    ctx.fillText(statValueText, position.x, secondLineY);
-                }
+
+                    // Render with spaces to prevent Unicode conversion
+                    ctx.fillText('( ' + formattedValue + ' )', x, y);
+                });
             }
         };
 
@@ -2297,10 +2296,14 @@ const SEASON_META_HEADERS = {
                         playerRadarLabels: {
                             font: '12px "Product Sans", "Google Sans", sans-serif',
                             offset: radarLabelOffset
+                        },
+                        playerRadarStatValues: {
+                            valueFont: isMobileRadar ? '8px "Product Sans"' : '9px "Product Sans"',
+                            valueOffset: 12
                         }
                     }
                 },
-                plugins: [playerRadarBackgroundPlugin, playerRadarLabelPlugin]
+                plugins: [playerRadarBackgroundPlugin, playerRadarLabelPlugin, playerRadarStatValuePlugin]
             });
 
             // Store chart instance for cleanup
@@ -3530,11 +3533,6 @@ const wrTeStatOrder = [
                 
                 // Store calculated footer stats in state for radar chart
                 state.currentGameLogsFooterStats = footerStatsForRadar;
-                
-                // Calculate and store PPG (not in footer but needed for radar)
-                if (footerStatsForRadar.fpts && gameLogsWithData.length > 0) {
-                    state.currentGameLogsFooterStats.ppg = footerStatsForRadar.fpts / gameLogsWithData.length;
-                }
                 
                 tableFooterTfoot.appendChild(footerRow);
                 footerWrapper.classList.remove('hidden');
