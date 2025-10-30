@@ -2165,12 +2165,12 @@ const SEASON_META_HEADERS = {
             // Match analyzer mobile detection
             const isMobileRadar = window.matchMedia('(max-width: 640px)').matches;
             const radarLayoutPadding = {
-                top: isMobileRadar ? 2 : 4,
-                bottom: isMobileRadar ? 4 : 4,
+                top: isMobileRadar ? 0 : 4,
+                bottom: isMobileRadar ? 0 : 4,
                 left: isMobileRadar ? 0 : 4,
                 right: isMobileRadar ? 0 : 4,
             };
-            const radarPointLabelPadding = isMobileRadar ? 4 : 6;
+            const radarPointLabelPadding = isMobileRadar ? 4 : 0;
             const radarLabelOffset = isMobileRadar ? 14 : 18;
 
             // Fixed scale max at 100 for all positions
@@ -2218,7 +2218,7 @@ const SEASON_META_HEADERS = {
                             pointLabels: {
                                 color: '#EAEBF0',
                                 font: { 
-                                    size: 11, 
+                                    size: 12, 
                                     weight: '400', 
                                     family: "'Product Sans', 'Google Sans', sans-serif" 
                                 },
