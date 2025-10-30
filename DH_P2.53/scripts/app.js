@@ -2028,51 +2028,6 @@ const SEASON_META_HEADERS = {
             }
         };
 
-        const playerRadarStatValuePlugin = {
-            id: 'playerRadarStatValues',
-            afterDatasetsDraw(chart, args, options) {
-                const dataset = chart.data.datasets[0];
-                if (!dataset || !dataset.statValues || !dataset.statKeys) return;
-
-                const { ctx } = chart;
-                const scale = chart.scales?.r;
-                if (!scale) return;
-
-                const centerX = scale.xCenter;
-                const centerY = scale.yCenter;
-                const angleStep = (Math.PI * 2) / chart.data.labels.length;
-                const startAngle = -Math.PI / 2;
-
-                // Smaller font for stat values
-                const isMobile = window.innerWidth <= 768;
-                ctx.font = options.valueFont || (isMobile ? '8px "Product Sans"' : '9px "Product Sans"');
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-
-                dataset.statValues.forEach((value, index) => {
-                    const angle = startAngle + angleStep * index;
-                    const statKey = dataset.statKeys[index];
-                    const formattedValue = formatRadarStatValue(statKey, value);
-                    
-                    // Position below the axis label
-                    const labelRadius = scale.drawingArea + scale.options.ticks.backdropPadding;
-                    const valueOffset = options.valueOffset || 12;
-                    const valueRadius = labelRadius + valueOffset;
-                    
-                    const x = centerX + Math.cos(angle) * valueRadius;
-                    const y = centerY + Math.sin(angle) * valueRadius;
-
-                    // Color based on rank value (same as rank labels)
-                    const rawRank = dataset.rawRanks?.[index];
-                    const rankColor = getConditionalColorByRank(rawRank, dataset.position);
-                    ctx.fillStyle = rankColor;
-
-                    // Render with spaces to prevent Unicode conversion
-                    ctx.fillText('( ' + formattedValue + ' )', x, y);
-                });
-            }
-        };
-
     function createRankAnnotation(rank, { wrapInParens = true, ordinal = false, variant = 'default' } = {}) {
                     const span = document.createElement('span');
                     // base class plus variant-specific class so CSS can target per-context
@@ -2232,7 +2187,12 @@ const SEASON_META_HEADERS = {
             new Chart(ctx, {
                 type: 'radar',
                 data: {
-                    labels: radarData.labels,
+                    labels: radarData.labels.map((label, index) => {
+                        const statKey = radarData.statKeys[index];
+                        const statValue = radarData.statValues[index];
+                        const formattedValue = formatRadarStatValue(statKey, statValue);
+                        return [label, `(${formattedValue})`];
+                    }),
                     datasets: [{
                         label: 'Player Rank',
                         data: radarData.ranks,
@@ -2296,14 +2256,10 @@ const SEASON_META_HEADERS = {
                         playerRadarLabels: {
                             font: '12px "Product Sans", "Google Sans", sans-serif',
                             offset: radarLabelOffset
-                        },
-                        playerRadarStatValues: {
-                            valueFont: isMobileRadar ? '8px "Product Sans"' : '9px "Product Sans"',
-                            valueOffset: 12
                         }
                     }
                 },
-                plugins: [playerRadarBackgroundPlugin, playerRadarLabelPlugin, playerRadarStatValuePlugin]
+                plugins: [playerRadarBackgroundPlugin, playerRadarLabelPlugin]
             });
 
             // Store chart instance for cleanup
@@ -3390,6 +3346,26 @@ const wrTeStatOrder = [
                                 return sum + 0;
                             }, 0);
                             displayValue = totalPoints.toFixed(1);
+                        }
+                    } else if (key === 'ppg') {
+                        // Calculate PPG from FPTS and games played
+                        if (state.isGameLogFromStatsPage) {
+                            const statsData = state.statsPagePlayerData;
+                            const ppg = statsData?.ppg || 0;
+                            displayValue = ppg.toFixed(1);
+                        } else {
+                            // Calculate from matchup data for rosters page
+                            const totalPoints = gameLogsWithData.reduce((sum, week) => {
+                                const weekNum = week.week;
+                                const playerId = player.id;
+                                if (state.matchupDataLoaded && state.leagueMatchupStats[weekNum]?.[playerId] !== undefined) {
+                                    return sum + state.leagueMatchupStats[weekNum][playerId];
+                                }
+                                return sum + 0;
+                            }, 0);
+                            const gamesPlayed = gameLogsWithData.length;
+                            const ppg = gamesPlayed > 0 ? totalPoints / gamesPlayed : 0;
+                            displayValue = ppg.toFixed(1);
                         }
                     } else if (key === 'ypc') {
                         const totalYards = seasonTotals && typeof seasonTotals.rush_yd === 'number' ? seasonTotals.rush_yd : (aggregatedTotals['rush_yd'] || 0);
