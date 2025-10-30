@@ -7583,4 +7583,8 @@ body[data-page="research"] #secondary-header-row {
         max-height: 400px;
         height: 350px !important;
     }
+    
+    #game-logs-modal #modal-body #radar-chart-container {
+        padding: 0.5rem 1rem;
+    }
 }
