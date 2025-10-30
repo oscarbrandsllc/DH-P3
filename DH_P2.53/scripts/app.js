@@ -2755,7 +2755,7 @@ const wrTeStatOrder = [
             };
             assignStatGroup('all', ['fpts', 'proj', 'snp_pct', 'yds_total', 'imp_per_g', 'fum', 'fpoe']);
             assignStatGroup('passing', [
-                'pass_rtg', 'pass_yd', 'pass_td', 'pass_att', 'pass_cmp', 'pass_fd',
+                'pass_rtg', 'pass_yd', 'pass_td', 'cmp_pct', 'pass_att', 'pass_cmp', 'pass_fd',
                 'pass_imp', 'pass_imp_per_att', 'ttt', 'prs_pct', 'pass_sack', 'pass_int'
             ]);
             assignStatGroup('rushing', [
