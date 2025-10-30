@@ -2323,8 +2323,8 @@ const SEASON_META_HEADERS = {
             const radarLayoutPadding = {
                 top: isMobileRadar ? 30 : 33,
                 bottom: isMobileRadar ? 38 : 32,
-                left: isMobileRadar ? 25 : 14,
-                right: isMobileRadar ? 25 : 14,
+                left: isMobileRadar ? 29 : 24,
+                right: isMobileRadar ? 29 : 24,
             };
             const radarLabelOffset = isMobileRadar ? 14 : 18;
 
