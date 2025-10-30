@@ -3845,7 +3845,6 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
         box-shadow: 0 8px 32px rgba(31, 38, 105, 0.15), inset 0 6px 20px rgba(255, 255, 255, 0.013);
         height: 416px;
         min-height: 416px;
-        overflow: hidden;
     }
     .modal-body::after {
         content: '';
@@ -3874,21 +3873,31 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
       display: flex;
       flex-direction: column;
       gap: 0;
-      margin-bottom: -8px;
+      margin-bottom: 0;
     }
     #game-logs-modal .game-logs-hscroll {
       width: 100%;
       overflow-x: auto;
       overflow-y: hidden;
       -webkit-overflow-scrolling: touch;
-      margin-bottom: -8px;
+      margin-bottom: 0;
+      padding-bottom: 0;
+    }
+    /* Hide horizontal scrollbar on mobile to prevent covering rank annotations */
+    @media (max-width: 640px) {
+      #game-logs-modal .game-logs-hscroll::-webkit-scrollbar {
+        height: 0;
+      }
+      #game-logs-modal .game-logs-hscroll {
+        scrollbar-width: none;
+      }
     }
     #game-logs-modal .game-logs-hscroll-content { display: inline-block; vertical-align: top; }
     #game-logs-modal .game-logs-table-header,
     #game-logs-modal .game-logs-table-footer {
       overflow: visible;
       margin: 0;
-      padding: 0;
+      padding: 0 0 8px 0;
     }
     #game-logs-modal .game-logs-table-body {
       max-height: 316px;
