@@ -3507,6 +3507,14 @@ const wrTeStatOrder = [
                     footerRow.appendChild(td);
                 }
                 
+                // Calculate and store PPG for radar chart (not in sheets, calculated from FPTS)
+                if (footerStatsForRadar.fpts !== undefined) {
+                    const gamesPlayed = gameLogsWithData.length;
+                    if (gamesPlayed > 0) {
+                        footerStatsForRadar.ppg = footerStatsForRadar.fpts / gamesPlayed;
+                    }
+                }
+                
                 // Store calculated footer stats in state for radar chart
                 state.currentGameLogsFooterStats = footerStatsForRadar;
                 
