@@ -7565,6 +7565,7 @@ body[data-page="research"] #secondary-header-row {
     max-height: 500px;
     width: 100% !important;
     height: 360px !important;
+    padding: 8px 4px 0px 4px;
 }
 
 .no-data-message {
