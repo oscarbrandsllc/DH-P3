@@ -7576,6 +7576,19 @@ body[data-page="research"] #secondary-header-row {
 }
 
 @media (max-width: 640px) {
+    #game-logs-modal:not(.hidden) .modal-content, #player-comparison-modal:not(.hidden) .modal-content {
+        height: 539px;
+    }
+    
+    .modal-body {
+        height: 352px;
+        max-height: 65vh;
+    }
+    
+    #game-logs-modal .game-logs-table-body {
+        max-height: 252px;
+    }
+    
     .radar-chart-content {
         padding: 0;
         min-height: 310px;
@@ -7585,13 +7598,11 @@ body[data-page="research"] #secondary-header-row {
         max-width: 100%;
         max-height: 400px;
         height: 310px !important;
+        padding: 0px 4px 0px 4px;
+
     }
     
     #game-logs-modal #modal-body #radar-chart-container {
-        padding: 0.41rem;
-    }
-    
-    #modal-body {
-        max-height: 65vh;
+        padding: 0.21rem;
     }
 }
