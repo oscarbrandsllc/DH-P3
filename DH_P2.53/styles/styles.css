@@ -3904,7 +3904,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     }
     /* Reduce any gap above the horizontal scrollbar and ensure footer isn't clipped */
     #game-logs-modal .game-logs-hscroll { padding-bottom: 0; }
-    #game-logs-modal .game-logs-table-footer { padding-bottom: 2px; margin-bottom: 0.35rem; }
+    #game-logs-modal .game-logs-table-footer {padding-bottom: 2px;}
     #game-logs-modal .game-logs-table thead,
     #game-logs-modal .game-logs-table tfoot {
       display: table;
@@ -7586,7 +7586,7 @@ body[data-page="research"] #secondary-header-row {
     }
     
     #game-logs-modal .game-logs-table-body {
-        max-height: 252px;
+        max-height: 259px;
     }
     
     .radar-chart-content {
