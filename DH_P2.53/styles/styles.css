@@ -4558,7 +4558,7 @@ inset 0px 0px 155px rgba(216, 215, 255, 0.1);
 
 .stats-key-panel h4 {
     font-size: 0.95rem;
-    font-weight: 700;
+    font-weight: 200;
     color: var(--color-text-primary);
     margin-bottom: 0.3rem;
     margin-top: 0rem;
