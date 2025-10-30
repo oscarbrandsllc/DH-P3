@@ -4539,6 +4539,7 @@ inset 0px 0px 155px rgba(216, 215, 255, 0.1);
     background: radial-gradient(circle at center, #151723 15%, #262940 100%);
     box-shadow: 0 8px 32px rgba(31, 38, 105, 0.2), inset 0 6px 18px rgba(255, 255, 255, 0.04);
     z-index: 5;
+    border: 1px solid #7779;
 }
 
 /* News Container - Same overlay behavior */
@@ -7613,7 +7614,7 @@ body[data-page="research"] #secondary-header-row {
     #player-radar-canvas {
         max-width: 100%;
         max-height: 360px;
-        height: 307px !important;
+        height: 294px !important;
         padding: 0px 4px 0px 4px;
     }
     
