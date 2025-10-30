@@ -5044,9 +5044,14 @@ const wrTeStatOrder = [
                 return numericValue.toFixed(1) + '%';
             }
             
+            // FPTS and PPG - always 1 decimal place
+            if (statKey === 'fpts' || statKey === 'ppg') {
+                return numericValue.toFixed(1);
+            }
+            
             // Whole number stats
             if (statKey === 'rec' || statKey === 'rec_tgt' || statKey === 'ttt' || 
-                statKey === 'yds_total' || statKey === 'fpts') {
+                statKey === 'yds_total') {
                 return Math.round(numericValue).toString();
             }
             
