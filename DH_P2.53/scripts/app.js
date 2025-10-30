@@ -1918,23 +1918,22 @@ const SEASON_META_HEADERS = {
                 const rankValue = getSeasonRankValue(playerId, statKey);
                 radarData.rawRanks.push(rankValue);
 
-                // Scale so rank 1 appears at ~85% of max (where rank 7 would be on full scale)
-                // rank 1 -> 85, rank 7 -> ~73, rank maxRank -> 0
-                // Formula: map rank 1-7 to 85-73, then 7-maxRank to 73-0
+                // Scale ranks from 10% to 85% of radar
+                // rank 1 -> 85, rank 7 -> ~73, rank maxRank -> 10
                 if (rankValue === null || rankValue === undefined || Number.isNaN(rankValue)) {
-                    radarData.ranks.push(0);
+                    radarData.ranks.push(10); // No data shows at 10%
                 } else if (rankValue <= 1) {
                     radarData.ranks.push(85); // Rank 1 at 85% of max
                 } else if (rankValue >= config.maxRank) {
-                    radarData.ranks.push(0);
+                    radarData.ranks.push(10); // Worst rank at 10%
                 } else if (rankValue <= 7) {
                     // Compress ranks 1-7 into the 73-85 range
                     // rank 1 = 85, rank 7 = 73
                     const scaledValue = 85 - ((rankValue - 1) / 6) * 12;
                     radarData.ranks.push(scaledValue);
                 } else {
-                    // Scale ranks 7-maxRank linearly from 73 to 0
-                    const scaledValue = 73 * ((config.maxRank - rankValue) / (config.maxRank - 7));
+                    // Scale ranks 7-maxRank linearly from 73 to 10
+                    const scaledValue = 73 - ((rankValue - 7) / (config.maxRank - 7)) * 63;
                     radarData.ranks.push(scaledValue);
                 }
             });

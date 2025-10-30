@@ -7575,16 +7575,16 @@ body[data-page="research"] #secondary-header-row {
 @media (max-width: 640px) {
     .radar-chart-content {
         padding: 0;
-        min-height: 350px;
+        min-height: 310px;
     }
     
     #player-radar-canvas {
         max-width: 100%;
         max-height: 400px;
-        height: 350px !important;
+        height: 310px !important;
     }
     
     #game-logs-modal #modal-body #radar-chart-container {
-        padding: 0.05rem 0.01rem;
+        padding: 0rem 0.1rem;
     }
 }
