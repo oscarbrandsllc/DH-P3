@@ -1988,13 +1988,11 @@ const SEASON_META_HEADERS = {
                     const trimmed = statValue.trim();
                     if (trimmed.length === 0) {
                         statValue = null;
+                    } else if (statKey === 'fpts' || statKey === 'ppg') {
+                        statValue = trimmed;
                     } else {
                         const numericCandidate = Number(trimmed);
-                        if (!Number.isNaN(numericCandidate)) {
-                            statValue = numericCandidate;
-                        } else {
-                            statValue = trimmed;
-                        }
+                        statValue = Number.isNaN(numericCandidate) ? trimmed : numericCandidate;
                     }
                 }
                 radarData.statValues.push(statValue);
@@ -2325,8 +2323,8 @@ const SEASON_META_HEADERS = {
             const radarLayoutPadding = {
                 top: isMobileRadar ? 30 : 33,
                 bottom: isMobileRadar ? 38 : 32,
-                left: isMobileRadar ? 20 : 14,
-                right: isMobileRadar ? 20 : 14,
+                left: isMobileRadar ? 25 : 14,
+                right: isMobileRadar ? 25 : 14,
             };
             const radarLabelOffset = isMobileRadar ? 14 : 18;
 
@@ -5188,7 +5186,12 @@ const wrTeStatOrder = [
             return numericValue.toFixed(decimals) + '%';
         }
         function formatRadarStatValue(statKey, value) {
-            // Format stat values for radar chart display
+            // Reuse preformatted strings (matches summary chip display for league-specific stats)
+            if (typeof value === 'string') {
+                const trimmed = value.trim();
+                if (trimmed) return trimmed;
+            }
+
             if (value === null || value === undefined || Number.isNaN(value)) return 'N/A';
             
             const numericValue = Number(value);
