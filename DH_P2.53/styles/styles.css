@@ -7572,15 +7572,15 @@ body[data-page="research"] #secondary-header-row {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 350px;
+    min-height: 320px;
     position: relative;
 }
 
 #player-radar-canvas {
     max-width: 100%;
-    max-height: 500px;
+    max-height: 460px;
     width: 100% !important;
-    height: 360px !important;
+    height: 320px !important;
     padding: 8px 4px 0px 4px;
 }
 
@@ -7607,13 +7607,13 @@ body[data-page="research"] #secondary-header-row {
     
     .radar-chart-content {
         padding: 0;
-        min-height: 310px;
+        min-height: 280px;
     }
     
     #player-radar-canvas {
         max-width: 100%;
-        max-height: 400px;
-        height: 310px !important;
+        max-height: 360px;
+        height: 280px !important;
         padding: 0px 4px 0px 4px;
 
     }
