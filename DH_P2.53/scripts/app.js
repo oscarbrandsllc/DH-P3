@@ -2218,8 +2218,8 @@ const SEASON_META_HEADERS = {
                             pointLabels: {
                                 color: '#EAEBF0',
                                 font: { 
-                                    size: 12, 
-                                    weight: '600', 
+                                    size: 11, 
+                                    weight: '400', 
                                     family: "'Product Sans', 'Google Sans', sans-serif" 
                                 },
                                 padding: radarPointLabelPadding
@@ -2239,7 +2239,7 @@ const SEASON_META_HEADERS = {
                             ]
                         },
                         playerRadarLabels: {
-                            font: '10px "Product Sans", "Google Sans", sans-serif',
+                            font: '12px "Product Sans", "Google Sans", sans-serif',
                             offset: radarLabelOffset
                         }
                     }
