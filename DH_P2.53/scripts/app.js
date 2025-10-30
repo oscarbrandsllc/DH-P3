@@ -310,7 +310,7 @@ if (pageType === 'welcome') {
     }
 }
         // --- State ---
-let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, lastLiveStatsWeek: null, lastLiveStatsFetchTs: 0, calculatedRankCache: null, playerProjectionWeeks: {}, isStartSitMode: false, startSitSelections: [], startSitNextSide: 'left', startSitTeamName: null, leagueMatchupStats: {}, matchupDataLoaded: false, isGameLogFromStatsPage: false, statsPagePlayerData: null, currentGameLogsPlayerRanks: null };
+let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, lastLiveStatsWeek: null, lastLiveStatsFetchTs: 0, calculatedRankCache: null, playerProjectionWeeks: {}, isStartSitMode: false, startSitSelections: [], startSitNextSide: 'left', startSitTeamName: null, leagueMatchupStats: {}, matchupDataLoaded: false, isGameLogFromStatsPage: false, statsPagePlayerData: null };
         const assignedLeagueColors = new Map();
         let nextColorIndex = 0;
         const assignedRyColors = new Map();
@@ -1919,7 +1919,6 @@ const SEASON_META_HEADERS = {
             // Use footer stats that were already calculated
             const footerStats = state.currentGameLogsFooterStats || {};
             const seasonTotals = state.playerSeasonStats?.[playerId] || null;
-            const playerRanks = state.currentGameLogsPlayerRanks || null;
 
             config.stats.forEach(statKey => {
                 const rankValue = getSeasonRankValue(playerId, statKey);
@@ -1936,9 +1935,6 @@ const SEASON_META_HEADERS = {
                     } else if (statKey === 'ppg') {
                         if (state.isGameLogFromStatsPage && state.statsPagePlayerData) {
                             statValue = state.statsPagePlayerData.ppg || null;
-                        } else if (playerRanks && playerRanks.ppg !== undefined) {
-                            const parsedPpg = parseFloat(playerRanks.ppg);
-                            statValue = Number.isFinite(parsedPpg) ? parsedPpg : null;
                         } else if (footerStats.fpts !== undefined) {
                             const gamesPlayed = footerStats.__gamesPlayed;
                             statValue = Number.isFinite(gamesPlayed) && gamesPlayed > 0
@@ -1979,10 +1975,6 @@ const SEASON_META_HEADERS = {
                     if (!Number.isNaN(numericCandidate)) {
                         statValue = numericCandidate;
                     }
-                }
-                if (typeof statValue === 'string') {
-                    const numericCandidate = Number(statValue);
-                    statValue = Number.isNaN(numericCandidate) ? statValue : numericCandidate;
                 }
                 radarData.statValues.push(statValue);
 
@@ -2104,7 +2096,7 @@ const SEASON_META_HEADERS = {
                 const valueFont = `${valueFontSize}px "Product Sans", "Google Sans", sans-serif`;
                 const labelColor = options?.labelColor || '#EAEBF0';
                 const labelOffset = options?.labelOffset ?? (isMobile ? 14 : 18);
-                const valueGap = options?.valueGap ?? (isMobile ? 10 : 12);
+                const valueSpacing = options?.valueSpacing ?? (isMobile ? 3 : 4);
 
                 const { ctx } = chart;
                 const angleStep = (Math.PI * 2) / labels.length;
@@ -2127,9 +2119,9 @@ const SEASON_META_HEADERS = {
                         textBaseline = sin < 0 ? 'bottom' : 'top';
                     }
 
-                    const labelRadius = scale.drawingArea + labelOffset;
-                    const x = scale.xCenter + cos * labelRadius;
-                    const y = scale.yCenter + sin * labelRadius;
+                    const radius = scale.drawingArea + labelOffset;
+                    const x = scale.xCenter + cos * radius;
+                    const y = scale.yCenter + sin * radius;
 
                     const labelText = (typeof labels[index] === 'string')
                         ? labels[index]
@@ -2147,15 +2139,19 @@ const SEASON_META_HEADERS = {
                     const rawRank = dataset.rawRanks?.[index];
                     const valueColor = getConditionalColorByRank(rawRank, dataset.position) || labelColor;
 
-                    const valueRadius = labelRadius - valueGap;
-                    const valueX = scale.xCenter + cos * valueRadius;
-                    const valueY = scale.yCenter + sin * valueRadius;
+                    let valueY = y;
+                    if (textBaseline === 'top') {
+                        valueY = y + labelFontSize + valueSpacing;
+                    } else if (textBaseline === 'middle') {
+                        valueY = y + (labelFontSize / 2) + valueSpacing;
+                    } else {
+                        valueY = y + valueSpacing;
+                    }
 
                     ctx.font = valueFont;
-                    ctx.textAlign = textAlign;
-                    ctx.textBaseline = 'middle';
+                    ctx.textBaseline = 'top';
                     ctx.fillStyle = valueColor;
-                    ctx.fillText(`(${formattedValue})`, valueX, valueY);
+                    ctx.fillText(`(${formattedValue})`, x, valueY);
                 }
                 ctx.restore();
             }
@@ -2306,10 +2302,10 @@ const SEASON_META_HEADERS = {
             // Match analyzer mobile detection
             const isMobileRadar = window.matchMedia('(max-width: 640px)').matches;
             const radarLayoutPadding = {
-                top: isMobileRadar ? 18 : 28,
-                bottom: isMobileRadar ? 18 : 28,
-                left: isMobileRadar ? 14 : 22,
-                right: isMobileRadar ? 14 : 22,
+                top: isMobileRadar ? 2 : 2,
+                bottom: isMobileRadar ? 2 : 2,
+                left: isMobileRadar ? 0 : 4,
+                right: isMobileRadar ? 0 : 4,
             };
             const radarLabelOffset = isMobileRadar ? 14 : 18;
 
@@ -2384,7 +2380,7 @@ const SEASON_META_HEADERS = {
                             valueFontSize: 10,
                             valueFontSizeMobile: 9,
                             labelOffset: isMobileRadar ? 14 : 18,
-                            valueGap: isMobileRadar ? 10 : 12,
+                            valueSpacing: isMobileRadar ? 3 : 4,
                             labelColor: '#EAEBF0'
                         }
                     }
@@ -2703,13 +2699,13 @@ const SEASON_META_HEADERS = {
                 maxRank: 48
             },
             WR: {
-                stats: ['fpts', 'ppg', 'rec', 'rec_ypg', 'ts_per_rr', 'yprr', 'first_down_rec_rate', 'imp_per_g'],
-                labels: ['FPTS', 'PPG', 'REC', 'recYPG', 'TS%', 'YPRR', '1DRR', 'IMP/G'],
+                stats: ['ppg', 'fpts', 'rec', 'rec_ypg', 'ts_per_rr', 'yprr', 'first_down_rec_rate', 'imp_per_g'],
+                labels: ['PPG', 'FPTS', 'REC', 'recYPG', 'TS%', 'YPRR', '1DRR', 'IMP/G'],
                 maxRank: 72
             },
             TE: {
-                stats: ['fpts', 'ppg', 'rec', 'rec_ypg', 'ts_per_rr', 'yprr', 'first_down_rec_rate', 'imp_per_g'],
-                labels: ['FPTS', 'PPG', 'REC', 'recYPG', 'TS%', 'YPRR', '1DRR', 'IMP/G'],
+                stats: ['ppg', 'fpts', 'rec', 'rec_ypg', 'ts_per_rr', 'yprr', 'first_down_rec_rate', 'imp_per_g'],
+                labels: ['PPG', 'FPTS', 'REC', 'recYPG', 'TS%', 'YPRR', '1DRR', 'IMP/G'],
                 maxRank: 24
             }
         };
@@ -2717,7 +2713,6 @@ const SEASON_META_HEADERS = {
         async function renderGameLogs(gameLogs, player, playerRanks) {
             // Store current player for modal panel interactions (e.g., radar chart)
             state.currentGameLogsPlayer = player;
-            state.currentGameLogsPlayerRanks = playerRanks;
             
             const league = state.leagues.find(l => l.league_id === state.currentLeagueId);
             if (!league) return;
@@ -3382,6 +3377,7 @@ const wrTeStatOrder = [
                 tableBodyTbody.insertBefore(dividerRow, referenceRow);
             }
             // Add table footer for totals
+            state.currentGameLogsFooterStats = { __gamesPlayed: gameLogsWithData.length };
             if (gameLogsWithData.length > 0) {
                 tableFooterTfoot.innerHTML = '';
                 // Append a footer header row to mirror the column labels
@@ -3416,7 +3412,7 @@ const wrTeStatOrder = [
                 const statValueCounts = {};
                 
                 // Store calculated footer stats for radar chart
-                const footerStatsForRadar = { __gamesPlayed: gameLogsWithData.length };
+                const footerStatsForRadar = {};
                 
                 gameLogsWithData.forEach(weekStats => {
                     for (const key in weekStats.stats) {
@@ -5743,7 +5739,6 @@ const wrTeStatOrder = [
             
             // Clear current player reference
             state.currentGameLogsPlayer = null;
-            state.currentGameLogsPlayerRanks = null;
             
             if (!state.isGameLogModalOpenFromComparison) {
                 closeComparisonModal();
