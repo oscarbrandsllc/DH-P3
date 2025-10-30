@@ -3051,14 +3051,14 @@ const wrTeStatOrder = [
                         if (typeof stats[key] === 'number') value = stats[key];
                         else value = stats['imp'] || 0;
                     }
-                    else if (key === 'prs_pct' || key === 'snp_pct') value = typeof stats[key] === 'number' ? stats[key] : 0;
+                    else if (key === 'prs_pct' || key === 'snp_pct' || key === 'cmp_pct') value = typeof stats[key] === 'number' ? stats[key] : 0;
                     else if (key === 'ttt') value = typeof stats[key] === 'number' ? stats[key] : 0;
                     else value = stats[key] || 0;
                     let displayValue;
                     if (value === null || typeof value !== 'number') displayValue = 'N/A';
                     else if (key === 'yco_per_att') displayValue = value.toFixed(2);
                     else if (key === 'mtf_per_att' || key === 'ypc' || key === 'ttt' || key === 'ypr' || key === 'yprr' || key === 'first_down_rec_rate') displayValue = value.toFixed(2);
-                    else if (key === 'pass_imp_per_att' || key === 'prs_pct' || key === 'snp_pct' || key === 'ts_per_rr') displayValue = formatPercentage(value);
+                    else if (key === 'pass_imp_per_att' || key === 'prs_pct' || key === 'snp_pct' || key === 'ts_per_rr' || key === 'cmp_pct') displayValue = formatPercentage(value);
                     else if (key === 'pass_rtg' || key === 'fpts') displayValue = value.toFixed(1);
                     else displayValue = Number.isInteger(value) ? String(value) : value.toFixed(2);
                     rowData[key] = createTextDescriptor(displayValue);
@@ -3304,7 +3304,7 @@ const wrTeStatOrder = [
                         const raw = (seasonTotals && typeof seasonTotals[key] === 'number') ? seasonTotals[key] : null;
                         if (raw === null) {
                             displayValue = 'N/A';
-                        } else if (key === 'snp_pct' || key === 'prs_pct' || key === 'ts_per_rr') {
+                        } else if (key === 'snp_pct' || key === 'prs_pct' || key === 'ts_per_rr' || key === 'cmp_pct') {
                             displayValue = formatPercentage(raw);
                         } else {
                             displayValue = Number.isInteger(raw) ? String(raw) : Number(raw).toFixed(2);
@@ -3376,6 +3376,14 @@ const wrTeStatOrder = [
                         if (pctValue === null) {
                             const total = aggregatedTotals['prs_pct'] || 0;
                             const count = statValueCounts['prs_pct'] || 0;
+                            pctValue = count > 0 ? total / count : 0;
+                        }
+                        displayValue = formatPercentage(pctValue);
+                    } else if (key === 'cmp_pct') {
+                        let pctValue = seasonTotals && typeof seasonTotals.cmp_pct === 'number' ? seasonTotals.cmp_pct : null;
+                        if (pctValue === null) {
+                            const total = aggregatedTotals['cmp_pct'] || 0;
+                            const count = statValueCounts['cmp_pct'] || 0;
                             pctValue = count > 0 ? total / count : 0;
                         }
                         displayValue = formatPercentage(pctValue);
@@ -3870,7 +3878,7 @@ const wrTeStatOrder = [
                         const raw = (seasonTotals && typeof seasonTotals[statKey] === 'number') ? seasonTotals[statKey] : null;
                         calculatedValue = (raw === null) ? null : raw;
                         if (raw === null) displayValue = 'N/A';
-                        else if (statKey === 'snp_pct' || statKey === 'prs_pct' || statKey === 'ts_per_rr') displayValue = formatPercentage(raw);
+                        else if (statKey === 'snp_pct' || statKey === 'prs_pct' || statKey === 'ts_per_rr' || statKey === 'cmp_pct') displayValue = formatPercentage(raw);
                         else displayValue = Number.isInteger(raw) ? String(raw) : Number(raw).toFixed(2);
                     } else {
                         const computeStat = (() => {
@@ -3916,6 +3924,11 @@ const wrTeStatOrder = [
                                 case 'prs_pct': {
                                     const total = aggregatedTotals['prs_pct'] || 0;
                                     const count = statValueCounts['prs_pct'] || 0;
+                                    cv = count > 0 ? total / count : 0; dv = formatPercentage(cv); break;
+                                }
+                                case 'cmp_pct': {
+                                    const total = aggregatedTotals['cmp_pct'] || 0;
+                                    const count = statValueCounts['cmp_pct'] || 0;
                                     cv = count > 0 ? total / count : 0; dv = formatPercentage(cv); break;
                                 }
                                 case 'pass_rtg': {
