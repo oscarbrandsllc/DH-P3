@@ -310,7 +310,7 @@ if (pageType === 'welcome') {
     }
 }
         // --- State ---
-let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, lastLiveStatsWeek: null, lastLiveStatsFetchTs: 0, calculatedRankCache: null, playerProjectionWeeks: {}, isStartSitMode: false, startSitSelections: [], startSitNextSide: 'left', startSitTeamName: null, leagueMatchupStats: {}, matchupDataLoaded: false, isGameLogFromStatsPage: false, statsPagePlayerData: null, currentGameLogsPlayerRanks: null };
+let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, lastLiveStatsWeek: null, lastLiveStatsFetchTs: 0, calculatedRankCache: null, playerProjectionWeeks: {}, isStartSitMode: false, startSitSelections: [], startSitNextSide: 'left', startSitTeamName: null, leagueMatchupStats: {}, matchupDataLoaded: false, isGameLogFromStatsPage: false, statsPagePlayerData: null, currentGameLogsPlayerRanks: null, currentGameLogsSummary: null };
         const assignedLeagueColors = new Map();
         let nextColorIndex = 0;
         const assignedRyColors = new Map();
@@ -1920,6 +1920,7 @@ const SEASON_META_HEADERS = {
             const footerStats = state.currentGameLogsFooterStats || {};
             const seasonTotals = state.playerSeasonStats?.[playerId] || null;
             const playerRanks = state.currentGameLogsPlayerRanks || null;
+            const summarySnapshot = state.currentGameLogsSummary || null;
 
             config.stats.forEach(statKey => {
                 const rankValue = getSeasonRankValue(playerId, statKey);
@@ -1928,25 +1929,34 @@ const SEASON_META_HEADERS = {
                 let statValue = footerStats[statKey];
                 if (statValue === undefined) {
                     if (statKey === 'fpts') {
-                        if (state.isGameLogFromStatsPage && state.statsPagePlayerData) {
-                            statValue = state.statsPagePlayerData.fpts || state.statsPagePlayerData.totalPts || null;
-                        } else if (seasonTotals && typeof seasonTotals.fpts_ppr === 'number') {
-                            statValue = seasonTotals.fpts_ppr;
+                        if (summarySnapshot && summarySnapshot.fpts !== undefined) {
+                            statValue = summarySnapshot.fpts;
+                        }
+                        if (statValue === undefined) {
+                            if (state.isGameLogFromStatsPage && state.statsPagePlayerData) {
+                                statValue = state.statsPagePlayerData.fpts || state.statsPagePlayerData.totalPts || null;
+                            } else if (seasonTotals && typeof seasonTotals.fpts_ppr === 'number') {
+                                statValue = seasonTotals.fpts_ppr;
+                            }
                         }
                     } else if (statKey === 'ppg') {
-                        if (state.isGameLogFromStatsPage && state.statsPagePlayerData) {
-                            statValue = state.statsPagePlayerData.ppg || null;
-                        } else if (playerRanks && playerRanks.ppg !== undefined) {
-                            const parsed = parseFloat(playerRanks.ppg);
-                            statValue = Number.isFinite(parsed) ? parsed : null;
-                        } else if (footerStats.fpts !== undefined) {
-                            const gamesPlayed = footerStats.__gamesPlayed;
-                            statValue = Number.isFinite(gamesPlayed) && gamesPlayed > 0
-                                ? footerStats.fpts / gamesPlayed
-                                : null;
-                        } else if (seasonTotals && typeof seasonTotals.fpts_ppr === 'number') {
-                            const games = typeof seasonTotals.games_played === 'number' ? seasonTotals.games_played : 0;
-                            statValue = games > 0 ? seasonTotals.fpts_ppr / games : null;
+                        if (summarySnapshot && summarySnapshot.ppg !== undefined) {
+                            statValue = summarySnapshot.ppg;
+                        }
+                        if (statValue === undefined) {
+                            if (state.isGameLogFromStatsPage && state.statsPagePlayerData) {
+                                statValue = state.statsPagePlayerData.ppg || null;
+                            } else if (playerRanks && playerRanks.ppg !== undefined) {
+                                statValue = playerRanks.ppg;
+                            } else if (footerStats.fpts !== undefined) {
+                                const gamesPlayed = footerStats.__gamesPlayed;
+                                statValue = Number.isFinite(gamesPlayed) && gamesPlayed > 0
+                                    ? footerStats.fpts / gamesPlayed
+                                    : null;
+                            } else if (seasonTotals && typeof seasonTotals.fpts_ppr === 'number') {
+                                const games = typeof seasonTotals.games_played === 'number' ? seasonTotals.games_played : 0;
+                                statValue = games > 0 ? seasonTotals.fpts_ppr / games : null;
+                            }
                         }
                     } else if (statKey === 'ypc') {
                         if (seasonTotals && typeof seasonTotals.rush_att === 'number' && seasonTotals.rush_att > 0) {
@@ -1975,9 +1985,16 @@ const SEASON_META_HEADERS = {
                     }
                 }
                 if (typeof statValue === 'string') {
-                    const numericCandidate = Number(statValue);
-                    if (!Number.isNaN(numericCandidate)) {
-                        statValue = numericCandidate;
+                    const trimmed = statValue.trim();
+                    if (trimmed.length === 0) {
+                        statValue = null;
+                    } else {
+                        const numericCandidate = Number(trimmed);
+                        if (!Number.isNaN(numericCandidate)) {
+                            statValue = numericCandidate;
+                        } else {
+                            statValue = trimmed;
+                        }
                     }
                 }
                 radarData.statValues.push(statValue);
@@ -2306,10 +2323,10 @@ const SEASON_META_HEADERS = {
             // Match analyzer mobile detection
             const isMobileRadar = window.matchMedia('(max-width: 640px)').matches;
             const radarLayoutPadding = {
-                top: isMobileRadar ? 28 : 33,
-                bottom: isMobileRadar ? 36 : 32,
-                left: isMobileRadar ? 14 : 14,
-                right: isMobileRadar ? 14 : 14,
+                top: isMobileRadar ? 30 : 33,
+                bottom: isMobileRadar ? 38 : 32,
+                left: isMobileRadar ? 20 : 14,
+                right: isMobileRadar ? 20 : 14,
             };
             const radarLabelOffset = isMobileRadar ? 14 : 18;
 
@@ -2718,6 +2735,10 @@ const SEASON_META_HEADERS = {
             // Store current player for modal panel interactions (e.g., radar chart)
             state.currentGameLogsPlayer = player;
             state.currentGameLogsPlayerRanks = playerRanks;
+            state.currentGameLogsSummary = {
+                fpts: playerRanks?.total_pts,
+                ppg: playerRanks?.ppg
+            };
             
             const league = state.leagues.find(l => l.league_id === state.currentLeagueId);
             if (!league) return;
@@ -5745,6 +5766,7 @@ const wrTeStatOrder = [
             // Clear current player reference
             state.currentGameLogsPlayer = null;
             state.currentGameLogsPlayerRanks = null;
+            state.currentGameLogsSummary = null;
             
             if (!state.isGameLogModalOpenFromComparison) {
                 closeComparisonModal();
