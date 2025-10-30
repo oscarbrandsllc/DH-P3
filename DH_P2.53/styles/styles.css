@@ -7585,6 +7585,6 @@ body[data-page="research"] #secondary-header-row {
     }
     
     #game-logs-modal #modal-body #radar-chart-container {
-        padding: 0.5rem 1rem;
+        padding: 0.05rem 0.01rem;
     }
 }
