@@ -2412,7 +2412,7 @@ const SEASON_META_HEADERS = {
                         padding: radarLayoutPadding
                     },
                     elements: {
-                        line: { tension: 0.32 }
+                        line: { tension: 0.40 }
                     },
                     scales: {
                         r: {
@@ -2466,10 +2466,11 @@ const SEASON_META_HEADERS = {
                 const radius = scale.drawingArea;
                 
             const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
-            gradient.addColorStop(0, 'rgba(80, 0, 255, 0.14)');   // #5300ff at 18% opacity (center)
-            gradient.addColorStop(0.5, 'rgba(92, 0, 255, 0.33)'); // #5700ff at 33% opacity (mid)
-            gradient.addColorStop(1, 'rgba(111, 0, 255, 0.50)');   // #6300ff at 55% opacity (outer edge)
-                
+            gradient.addColorStop(0, 'rgba(121, 0, 245, 0.13)');   // #5300ff at 18% opacity (center)
+            gradient.addColorStop(0.4, 'rgba(92, 0, 255, 0.20)'); // #5700ff at 33% opacity (mid)
+            gradient.addColorStop(0.78, 'rgba(75, 0, 255, 0.34)');   // #6300ff at 55% opacity (outer edge)
+            gradient.addColorStop(1, 'rgba(34, 0, 255, 0.91)');        
+
                 chartInstance.data.datasets[0].backgroundColor = gradient;
                 chartInstance.update('none'); // Update without animation
             }
