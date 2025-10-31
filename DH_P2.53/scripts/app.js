@@ -414,28 +414,65 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
                 modalCloseBtn.addEventListener('click', () => closeModal());
                 modalOverlay.addEventListener('click', () => closeModal());
                 
-                // Panel toggle buttons with mutual exclusivity
+                // Panel toggle buttons with tab-like behavior
                 modalInfoBtns.forEach(btn => {
                     btn.addEventListener('click', () => {
                         const targetPanel = btn.getAttribute('data-panel');
                         const containers = {
+                            'game-logs': modalBody,
                             'stats-key': statsKeyContainer,
                             'radar-chart': radarChartContainer,
                             'news': newsContainer
                         };
                         
-                        // Check if the clicked panel is currently visible BEFORE closing
+                        // Check if the clicked panel is currently visible
                         const isCurrentlyVisible = containers[targetPanel] && 
                                                    !containers[targetPanel].classList.contains('hidden');
                         
-                        // Close all panels
-                        Object.values(containers).forEach(container => {
-                            if (container) container.classList.add('hidden');
-                        });
+                        // Special handling for game-logs - can't be toggled off
+                        if (targetPanel === 'game-logs') {
+                            // If already active, do nothing
+                            if (isCurrentlyVisible) return;
+                            
+                            // Otherwise, activate game-logs and hide others
+                            Object.entries(containers).forEach(([panel, container]) => {
+                                if (container && panel !== 'game-logs') {
+                                    container.classList.add('hidden');
+                                }
+                            });
+                            modalBody.classList.remove('hidden');
+                            
+                            // Update button active states
+                            modalInfoBtns.forEach(b => b.classList.remove('active'));
+                            btn.classList.add('active');
+                            return;
+                        }
                         
-                        // If the clicked panel was hidden, open it (toggle behavior)
-                        if (!isCurrentlyVisible && containers[targetPanel]) {
+                        // For other panels (stats-key, radar-chart, news)
+                        if (isCurrentlyVisible) {
+                            // Toggling off - return to game-logs
+                            containers[targetPanel].classList.add('hidden');
+                            modalBody.classList.remove('hidden');
+                            
+                            // Update button active states - activate game-logs
+                            modalInfoBtns.forEach(b => {
+                                b.classList.remove('active');
+                                if (b.getAttribute('data-panel') === 'game-logs') {
+                                    b.classList.add('active');
+                                }
+                            });
+                        } else {
+                            // Opening a new panel - hide all others including game-logs
+                            Object.values(containers).forEach(container => {
+                                if (container) container.classList.add('hidden');
+                            });
+                            
+                            // Show the target panel
                             containers[targetPanel].classList.remove('hidden');
+                            
+                            // Update button active states
+                            modalInfoBtns.forEach(b => b.classList.remove('active'));
+                            btn.classList.add('active');
                             
                             // If opening radar chart panel, render chart
                             if (targetPanel === 'radar-chart' && state.currentGameLogsPlayer) {
@@ -5738,15 +5775,29 @@ const wrTeStatOrder = [
         }
         function openModal() {
             gameLogsModal.classList.remove('hidden');
+            modalBody.classList.remove('hidden'); // Ensure game logs table is visible
             statsKeyContainer.classList.add('hidden');
             if (radarChartContainer) radarChartContainer.classList.add('hidden');
             if (newsContainer) newsContainer.classList.add('hidden');
+            
+            // Reset all buttons to inactive, then activate game-logs button
+            const modalInfoBtns = document.querySelectorAll('.modal-info-btn');
+            modalInfoBtns.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-panel') === 'game-logs') {
+                    btn.classList.add('active');
+                }
+            });
         }
         function closeModal() {
             gameLogsModal.classList.add('hidden');
             statsKeyContainer.classList.add('hidden');
             if (radarChartContainer) radarChartContainer.classList.add('hidden');
             if (newsContainer) newsContainer.classList.add('hidden');
+            
+            // Reset all button active states
+            const modalInfoBtns = document.querySelectorAll('.modal-info-btn');
+            modalInfoBtns.forEach(btn => btn.classList.remove('active'));
             
             // Destroy radar chart if exists to prevent memory leaks
             const radarContainer = document.querySelector('#radar-chart-container .radar-chart-content');
