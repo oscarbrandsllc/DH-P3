@@ -3651,11 +3651,11 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     .modal-content {
       position: relative;
       z-index: 101;
-      padding: 0.65rem 1.1rem 0.25rem 1.1rem;
+      padding: 0.65rem 0.85rem 0.25rem 0.85rem;
       border-radius: var(--panel-border-radius);
       max-width: 90%;
-      width: 600px;
-      max-height: 80vh;
+      width: 686px;
+      max-height: 90vh;
       transform: scale(0.95);
       opacity: 0;
       transition: transform 0.2s ease-in-out, opacity 0.2s ease-in-out;
@@ -3663,6 +3663,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     #game-logs-modal:not(.hidden) .modal-content, #player-comparison-modal:not(.hidden) .modal-content {
         transform: scale(1);
         opacity: 1;
+        height: 618px;
     }
     .modal-close-btn {
       position: absolute;
@@ -3820,7 +3821,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
       overflow-x: auto;
       overflow-y: auto;
       border-radius: 8px;
-      max-height: 60vh;
+      max-height: 70vh;
       scrollbar-width: none;
     }
     #modal-body:hover {
@@ -3842,6 +3843,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
         border: 1px solid rgba(250, 250, 250, 0.1);
         border-radius: 9px;
         box-shadow: 0 8px 32px rgba(31, 38, 105, 0.15), inset 0 6px 20px rgba(255, 255, 255, 0.013);
+        height: 416px;
     }
     .modal-body::after {
         content: '';
@@ -3870,12 +3872,23 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
       display: flex;
       flex-direction: column;
       gap: 0;
+      height: 100%;
     }
     #game-logs-modal .game-logs-hscroll {
       width: 100%;
       overflow-x: auto;
       overflow-y: hidden;
       -webkit-overflow-scrolling: touch;
+    }
+    /* Hide horizontal scrollbar on mobile to prevent covering rank annotations */
+    @media (max-width: 640px) {
+      #game-logs-modal .game-logs-hscroll::-webkit-scrollbar {
+        height: 6px;
+      }
+      #game-logs-modal .game-logs-hscroll::-webkit-scrollbar-thumb {
+        background-color: rgba(255,255,255,0.06);
+        border-radius: 3px;
+      }
     }
     #game-logs-modal .game-logs-hscroll-content { display: inline-block; vertical-align: top; }
     #game-logs-modal .game-logs-table-header,
@@ -3885,7 +3898,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
       padding: 0;
     }
     #game-logs-modal .game-logs-table-body {
-      max-height: 200px;
+      max-height: 316px;
       overflow-y: auto;
       overflow-x: hidden; /* horizontal handled by parent hscroll */
       /* Narrow, subtle scrollbars (match stats page) */
@@ -3902,7 +3915,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     }
     /* Reduce any gap above the horizontal scrollbar and ensure footer isn't clipped */
     #game-logs-modal .game-logs-hscroll { padding-bottom: 0; }
-    #game-logs-modal .game-logs-table-footer { padding-bottom: 2px; margin-bottom: 0.35rem; }
+    #game-logs-modal .game-logs-table-footer { padding-bottom: 8px; margin-bottom: 0; }
     #game-logs-modal .game-logs-table thead,
     #game-logs-modal .game-logs-table tfoot {
       display: table;
@@ -3968,15 +3981,20 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     #modal-body tfoot th {
         color: var(--color-accent-primary);
         white-space:nowrap;
-        padding: 0.25rem 0rem 0.15rem 0.02rem;    }
+        padding: 0.25rem 0rem 0.35rem 0.02rem;
+    }
     #game-logs-modal .game-logs-table-footer tfoot tr:first-child th {
         padding-top: 0.35rem;
-        padding-bottom: 0.3rem;
+        padding-bottom: 0.35rem;
     }
     #modal-body .no-logs {
         text-align: center;
         padding: 2rem;
         font-style: italic;
+        min-height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
     #modal-header {
       text-align: center;
@@ -4437,17 +4455,12 @@ padding: 0.15rem 0rem 0rem 0rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.2em;
+    gap: 0.5rem;
     margin-top: 0.35rem;
     margin-bottom: 0.15rem;
     font-size: 0.75rem;
     line-height:0.75rem;
     color: var(--color-text-tertiary);
-    cursor: pointer;
-    transition: color 0.2s ease;
-}
-.modal-footer:hover {
-    color: var(--color-text-primary);
 }
 #player-comparison-modal .modal-footer {
     margin-top: 0.25rem;
@@ -4455,7 +4468,9 @@ padding: 0.15rem 0rem 0rem 0rem;
 }
 .modal-info-btn {
     font-size: 0.8rem;
-    line-height: 0.8rem; /* Keep icon slightly larger than text */
+    line-height: 0.8rem;
+    cursor: pointer;
+    transition: color 0.2s ease;
 }
 .modal-info-btn:hover {
     color: var(--color-text-primary);
@@ -4505,22 +4520,54 @@ padding: 0.15rem 0rem 0rem 0rem;
     max-height: none;
     overflow-y: auto;
     border-radius: 9px;
+    background: rgb(21 22 37 / 95%);
+    border: 1px solid #4423c60a;
+    box-shadow: 0 2px 8px rgba(250, 250, 254, 0.92), 
+inset 0px 0px 155px rgba(216, 215, 255, 0.1);
+    z-index: 5;
+}
+
+/* Radar Chart Container - Same overlay behavior */
+#game-logs-modal #modal-body #radar-chart-container {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0.41rem;
+    max-height: none;
+    overflow-y: auto;
+    border-radius: 9px;
+    background: radial-gradient(circle at center, #151723 15%, #262940 100%);
+    box-shadow: 0 8px 32px rgba(31, 38, 105, 0.2), inset 0 6px 18px rgba(255, 255, 255, 0.04);
+    z-index: 5;
+    border: 1px solid #7779;
+}
+
+/* News Container - Same overlay behavior */
+#game-logs-modal #modal-body #news-container {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 1rem;
+    max-height: none;
+    overflow-y: auto;
+    border-radius: 9px;
     background: rgba(13, 14, 27, 0.95);
     border: 1px solid #444;
     box-shadow: 0 8px 32px rgba(31, 38, 105, 0.2), inset 0 6px 18px rgba(255, 255, 255, 0.04);
     z-index: 5;
 }
+
 .stats-key-panel h4 {
     font-size: 0.95rem;
-    font-weight: 700;
+    font-weight: 200;
     color: var(--color-text-primary);
     margin-bottom: 0.3rem;
     margin-top: 0rem;
     text-align: center;
     border: 1px solid var(--color-panel-border);
-    backdrop-filter: blur(3px) saturate(170%);
     border: 0.0625rem solid rgba(250, 250, 250, 0.06);
     border-radius: 5px;
+    background: #4f40701f;
 }
 .stats-key-panel ul {
     list-style: none;
@@ -4534,13 +4581,12 @@ padding: 0.15rem 0rem 0rem 0rem;
 @media (max-width: 540px) {
     .stats-key-panel ul {
         grid-template-columns: 1fr;
-        gap: 0.25rem;
+        gap: 0.05rem;
         padding: 0 0.5rem;
     }
     .stats-key-panel li {
         display: flex;
-        justify-content: space-between;
-        padding: 0.2rem 0.5rem;
+        padding: 0.12rem 1rem !important;
     }
     .stats-key-panel strong {
         width: auto;
@@ -4548,7 +4594,7 @@ padding: 0.15rem 0rem 0rem 0rem;
     }
 }
     .stats-key-panel li {
-        font-size: 0.8rem;
+        font-size: 0.7rem;
         color: var(--color-text-teriary);
         padding: 0 0.25rem;
         border-radius: 4px;
@@ -4559,10 +4605,11 @@ padding: 0.15rem 0rem 0rem 0rem;
     }
     .stats-key-panel strong {
         color: var(--color-text-secondary);
-        font-weight: 600;
+        font-weight: 700;
         margin-right: 0.5em;
         display: inline-block;
-        width: 70px;
+        width: 74px;
+        text-align-last: center;
     }
     /* ⬇︎ PLAYER-COMP MODAL ⬇︎ */
     #player-comparison-modal .modal-content {
@@ -7519,3 +7566,59 @@ body[data-page="research"] #secondary-header-row {
             margin-top: 0.25rem;
         }
     }
+
+/* === Radar Chart Styles === */
+.radar-chart-content {
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 320px;
+    position: relative;
+}
+
+#player-radar-canvas {
+    max-width: 100%;
+    max-height: 460px;
+    width: 100% !important;
+    height: 320px !important;
+    padding: 8px 4px 0px 4px;
+}
+
+.no-data-message {
+    color: #97a6d2;
+    font-size: 14px;
+    text-align: center;
+    font-family: 'Product Sans', sans-serif;
+}
+
+@media (max-width: 640px) {
+    #game-logs-modal:not(.hidden) .modal-content, #player-comparison-modal:not(.hidden) .modal-content {
+        height: 539px;
+    }
+    
+    .modal-body {
+        height: 352px;
+        max-height: 65vh;
+    }
+    
+    #game-logs-modal .game-logs-table-body {
+        max-height: 259px;
+    }
+    
+    .radar-chart-content {
+        padding: 0;
+        min-height: 310px;
+    }
+    
+    #player-radar-canvas {
+        max-width: 100%;
+        max-height: 360px;
+        height: 294px !important;
+        padding: 0px 4px 0px 4px;
+    }
+    
+    #game-logs-modal #modal-body #radar-chart-container {
+        padding: 0.21rem;
+    }
+}
