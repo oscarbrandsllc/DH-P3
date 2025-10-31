@@ -2381,19 +2381,8 @@ const SEASON_META_HEADERS = {
 
             // Fixed scale max at 100 for all positions
             const scaleMax = 100;
-            
-            // Create radial gradient for fill
-            // Note: These coordinates are estimates; Chart.js will handle the actual rendering
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const radius = Math.min(centerX, centerY) * 0.85;
-            
-            const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
-            gradient.addColorStop(0, 'rgba(99, 0, 255, 0.55)');   // #6300ff at 55% opacity
-            gradient.addColorStop(0.5, 'rgba(87, 0, 255, 0.33)'); // #5700ff at 33% opacity
-            gradient.addColorStop(1, 'rgba(83, 0, 255, 0.18)');   // #5300ff at 18% opacity
 
-            new Chart(ctx, {
+            const chartInstance = new Chart(ctx, {
                 type: 'radar',
                 data: {
                     labels: radarData.labels,
@@ -2405,7 +2394,7 @@ const SEASON_META_HEADERS = {
                         statKeys: radarData.statKeys,
                         position: position,
                         fill: true,
-                        backgroundColor: gradient,
+                        backgroundColor: 'rgba(83, 0, 255, 0.33)', // Fallback color
                         borderColor: '#6700ff',
                         borderWidth: 2,
                         pointBackgroundColor: '#6300ff',
@@ -2468,6 +2457,22 @@ const SEASON_META_HEADERS = {
                 },
                 plugins: [playerRadarBackgroundPlugin, playerRadarLabelPlugin, playerRadarAxisLabelsPlugin]
             });
+            
+            // Update gradient after chart is rendered using actual scale center
+            const scale = chartInstance.scales?.r;
+            if (scale) {
+                const centerX = scale.xCenter;
+                const centerY = scale.yCenter;
+                const radius = scale.drawingArea;
+                
+            const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+            gradient.addColorStop(0, 'rgba(80, 0, 255, 0.14)');   // #5300ff at 18% opacity (center)
+            gradient.addColorStop(0.5, 'rgba(87, 0, 255, 0.27)'); // #5700ff at 33% opacity (mid)
+            gradient.addColorStop(1, 'rgba(101, 0, 255, 0.39)');   // #6300ff at 55% opacity (outer edge)
+                
+                chartInstance.data.datasets[0].backgroundColor = gradient;
+                chartInstance.update('none'); // Update without animation
+            }
 
             // Store chart instance for cleanup
             container._chartInstance = Chart.getChart('player-radar-canvas');
