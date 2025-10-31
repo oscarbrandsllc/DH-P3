@@ -2129,7 +2129,7 @@ const SEASON_META_HEADERS = {
                         const suffixFontSize = parseInt(ctx.font) * 0.7; // 70% of original size
                         ctx.font = `${suffixFontSize}px "Product Sans"`;
                         // Position suffix to the right: center + half width of number + small gap
-                        ctx.fillText(suffix, dataPoint.x + offsetX + (metrics.width / 2) + 3, dataPoint.y + offsetY);
+                        ctx.fillText(suffix, dataPoint.x + offsetX + (metrics.width / 2) + 4, dataPoint.y + offsetY);
                         
                         // Reset font for next iteration
                         ctx.font = options.font || '11px "Product Sans"';
