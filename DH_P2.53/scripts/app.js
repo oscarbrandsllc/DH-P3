@@ -2092,6 +2092,13 @@ const SEASON_META_HEADERS = {
                 const angleStep = (Math.PI * 2) / chart.data.labels.length;
                 const startAngle = -Math.PI / 2;
 
+                // Helper function for ordinal suffix
+                const getOrdinalSuffix = (n) => {
+                    const s = ['th', 'st', 'nd', 'rd'];
+                    const v = n % 100;
+                    return s[(v - 20) % 10] || s[v] || s[0];
+                };
+
                 ctx.font = options.font || '11px "Product Sans"';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -2104,15 +2111,34 @@ const SEASON_META_HEADERS = {
                     const offsetY = Math.sin(angle) * offsetDistance;
 
                     const rawRank = dataset.rawRanks?.[index];
-                    const label = rawRank !== null && rawRank !== undefined && !Number.isNaN(rawRank)
-                        ? Math.round(rawRank).toString()
-                        : 'NA';
-
-                    // Color based on rank value
-                    const rankColor = getConditionalColorByRank(rawRank, dataset.position);
-                    ctx.fillStyle = rankColor;
-
-                    ctx.fillText(label, dataPoint.x + offsetX, dataPoint.y + offsetY);
+                    let label;
+                    if (rawRank !== null && rawRank !== undefined && !Number.isNaN(rawRank)) {
+                        const rankNum = Math.round(rawRank);
+                        const suffix = getOrdinalSuffix(rankNum);
+                        label = rankNum.toString();
+                        
+                        // Color based on rank value
+                        const rankColor = getConditionalColorByRank(rawRank, dataset.position);
+                        ctx.fillStyle = rankColor;
+                        
+                        // Draw the rank number
+                        ctx.fillText(label, dataPoint.x + offsetX, dataPoint.y + offsetY);
+                        
+                        // Draw the suffix smaller, same baseline, positioned after the number
+                        const metrics = ctx.measureText(label);
+                        const suffixFontSize = parseInt(ctx.font) * 0.7; // 70% of original size
+                        ctx.font = `${suffixFontSize}px "Product Sans"`;
+                        // Position suffix to the right: center + half width of number + small gap
+                        ctx.fillText(suffix, dataPoint.x + offsetX + (metrics.width / 2) + 3, dataPoint.y + offsetY);
+                        
+                        // Reset font for next iteration
+                        ctx.font = options.font || '11px "Product Sans"';
+                    } else {
+                        label = 'NA';
+                        const rankColor = getConditionalColorByRank(rawRank, dataset.position);
+                        ctx.fillStyle = rankColor;
+                        ctx.fillText(label, dataPoint.x + offsetX, dataPoint.y + offsetY);
+                    }
                 });
             }
         };
@@ -2189,7 +2215,7 @@ const SEASON_META_HEADERS = {
                     ctx.font = valueFont;
                     ctx.textBaseline = 'top';
                     ctx.fillStyle = valueColor;
-                    ctx.fillText(`(${formattedValue})`, x, valueY);
+                    ctx.fillText(`• ${formattedValue} •`, x, valueY);
                 }
                 ctx.restore();
             }
@@ -2340,8 +2366,8 @@ const SEASON_META_HEADERS = {
             // Match analyzer mobile detection
             const isMobileRadar = window.matchMedia('(max-width: 640px)').matches;
             const radarLayoutPadding = {
-                top: isMobileRadar ? 30 : 15,
-                bottom: isMobileRadar ? 38 : 15,
+                top: isMobileRadar ? 30 : 33,
+                bottom: isMobileRadar ? 38 : 52,
                 left: isMobileRadar ? 45 : 14,
                 right: isMobileRadar ? 45 : 14,
             };
