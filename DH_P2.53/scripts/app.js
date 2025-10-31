@@ -2106,7 +2106,13 @@ const SEASON_META_HEADERS = {
                 dataset.data.forEach((value, index) => {
                     const angle = startAngle + angleStep * index;
                     const dataPoint = scale.getPointPositionForValue(index, value);
-                    const offsetDistance = options.offset || 18;
+                    
+                    // Base offset, with extra spacing for left-side data points (indices 5, 6, 7)
+                    let offsetDistance = options.offset || 18;
+                    if (index === 5 || index === 6 || index === 7) {
+                        offsetDistance += 4; // Add 4 extra pixels for left-side points
+                    }
+                    
                     const offsetX = Math.cos(angle) * offsetDistance;
                     const offsetY = Math.sin(angle) * offsetDistance;
 
@@ -2375,6 +2381,17 @@ const SEASON_META_HEADERS = {
 
             // Fixed scale max at 100 for all positions
             const scaleMax = 100;
+            
+            // Create radial gradient for fill
+            // Note: These coordinates are estimates; Chart.js will handle the actual rendering
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(centerX, centerY) * 0.85;
+            
+            const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+            gradient.addColorStop(0, 'rgba(99, 0, 255, 0.55)');   // #6300ff at 55% opacity
+            gradient.addColorStop(0.5, 'rgba(87, 0, 255, 0.33)'); // #5700ff at 33% opacity
+            gradient.addColorStop(1, 'rgba(83, 0, 255, 0.18)');   // #5300ff at 18% opacity
 
             new Chart(ctx, {
                 type: 'radar',
@@ -2388,7 +2405,7 @@ const SEASON_META_HEADERS = {
                         statKeys: radarData.statKeys,
                         position: position,
                         fill: true,
-                        backgroundColor: 'rgba(83, 0, 255, 0.33)',
+                        backgroundColor: gradient,
                         borderColor: '#6700ff',
                         borderWidth: 2,
                         pointBackgroundColor: '#6300ff',
