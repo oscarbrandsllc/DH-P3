@@ -1926,62 +1926,52 @@ const SEASON_META_HEADERS = {
                 const rankValue = getSeasonRankValue(playerId, statKey);
                 radarData.rawRanks.push(rankValue);
 
-                let statValue = footerStats[statKey];
-                if (statValue === undefined) {
-                    if (statKey === 'fpts') {
-                        if (summarySnapshot && summarySnapshot.fpts !== undefined) {
-                            statValue = summarySnapshot.fpts;
-                        }
-                        if (statValue === undefined) {
-                            if (state.isGameLogFromStatsPage && state.statsPagePlayerData) {
-                                statValue = state.statsPagePlayerData.fpts || state.statsPagePlayerData.totalPts || null;
-                            } else if (seasonTotals && typeof seasonTotals.fpts_ppr === 'number') {
-                                statValue = seasonTotals.fpts_ppr;
+                let statValue;
+                
+                // PPG must ALWAYS use playerRanks.ppg (same source as summary chips)
+                if (statKey === 'ppg') {
+                    statValue = playerRanks?.ppg;
+                } else {
+                    // For all other stats, try footerStats first
+                    statValue = footerStats[statKey];
+                    
+                    if (statValue === undefined) {
+                        if (statKey === 'fpts') {
+                            if (summarySnapshot && summarySnapshot.fpts !== undefined) {
+                                statValue = summarySnapshot.fpts;
                             }
-                        }
-                    } else if (statKey === 'ppg') {
-                        if (summarySnapshot && summarySnapshot.ppg !== undefined) {
-                            statValue = summarySnapshot.ppg;
-                        }
-                        if (statValue === undefined) {
-                            if (state.isGameLogFromStatsPage && state.statsPagePlayerData) {
-                                statValue = state.statsPagePlayerData.ppg || null;
-                            } else if (playerRanks && playerRanks.ppg !== undefined) {
-                                statValue = playerRanks.ppg;
-                            } else if (footerStats.fpts !== undefined) {
-                                const gamesPlayed = footerStats.__gamesPlayed;
-                                statValue = Number.isFinite(gamesPlayed) && gamesPlayed > 0
-                                    ? footerStats.fpts / gamesPlayed
-                                    : null;
-                            } else if (seasonTotals && typeof seasonTotals.fpts_ppr === 'number') {
-                                const games = typeof seasonTotals.games_played === 'number' ? seasonTotals.games_played : 0;
-                                statValue = games > 0 ? seasonTotals.fpts_ppr / games : null;
+                            if (statValue === undefined) {
+                                if (state.isGameLogFromStatsPage && state.statsPagePlayerData) {
+                                    statValue = state.statsPagePlayerData.fpts || state.statsPagePlayerData.totalPts || null;
+                                } else if (seasonTotals && typeof seasonTotals.fpts_ppr === 'number') {
+                                    statValue = seasonTotals.fpts_ppr;
+                                }
                             }
+                        } else if (statKey === 'ypc') {
+                            if (seasonTotals && typeof seasonTotals.rush_att === 'number' && seasonTotals.rush_att > 0) {
+                                const totalYards = typeof seasonTotals.rush_yd === 'number' ? seasonTotals.rush_yd : 0;
+                                statValue = totalYards / seasonTotals.rush_att;
+                            }
+                        } else if (statKey === 'yco_per_att') {
+                            if (seasonTotals && typeof seasonTotals.rush_att === 'number' && seasonTotals.rush_att > 0) {
+                                const totalYco = typeof seasonTotals.rush_yac === 'number' ? seasonTotals.rush_yac : 0;
+                                statValue = totalYco / seasonTotals.rush_att;
+                            }
+                        } else if (statKey === 'mtf_per_att') {
+                            if (seasonTotals && typeof seasonTotals.rush_att === 'number' && seasonTotals.rush_att > 0) {
+                                const totalMtf = typeof seasonTotals.mtf === 'number' ? seasonTotals.mtf : 0;
+                                statValue = totalMtf / seasonTotals.rush_att;
+                            }
+                        } else if (statKey === 'pass_imp_per_att') {
+                            if (seasonTotals && typeof seasonTotals.pass_att === 'number' && seasonTotals.pass_att > 0) {
+                                const totalImp = typeof seasonTotals.pass_imp === 'number' ? seasonTotals.pass_imp : 0;
+                                statValue = (totalImp / seasonTotals.pass_att) * 100;
+                            }
+                        } else if (seasonTotals && typeof seasonTotals[statKey] === 'number') {
+                            statValue = seasonTotals[statKey];
+                        } else {
+                            statValue = null;
                         }
-                    } else if (statKey === 'ypc') {
-                        if (seasonTotals && typeof seasonTotals.rush_att === 'number' && seasonTotals.rush_att > 0) {
-                            const totalYards = typeof seasonTotals.rush_yd === 'number' ? seasonTotals.rush_yd : 0;
-                            statValue = totalYards / seasonTotals.rush_att;
-                        }
-                    } else if (statKey === 'yco_per_att') {
-                        if (seasonTotals && typeof seasonTotals.rush_att === 'number' && seasonTotals.rush_att > 0) {
-                            const totalYco = typeof seasonTotals.rush_yac === 'number' ? seasonTotals.rush_yac : 0;
-                            statValue = totalYco / seasonTotals.rush_att;
-                        }
-                    } else if (statKey === 'mtf_per_att') {
-                        if (seasonTotals && typeof seasonTotals.rush_att === 'number' && seasonTotals.rush_att > 0) {
-                            const totalMtf = typeof seasonTotals.mtf === 'number' ? seasonTotals.mtf : 0;
-                            statValue = totalMtf / seasonTotals.rush_att;
-                        }
-                    } else if (statKey === 'pass_imp_per_att') {
-                        if (seasonTotals && typeof seasonTotals.pass_att === 'number' && seasonTotals.pass_att > 0) {
-                            const totalImp = typeof seasonTotals.pass_imp === 'number' ? seasonTotals.pass_imp : 0;
-                            statValue = (totalImp / seasonTotals.pass_att) * 100;
-                        }
-                    } else if (seasonTotals && typeof seasonTotals[statKey] === 'number') {
-                        statValue = seasonTotals[statKey];
-                    } else {
-                        statValue = null;
                     }
                 }
                 if (typeof statValue === 'string') {
