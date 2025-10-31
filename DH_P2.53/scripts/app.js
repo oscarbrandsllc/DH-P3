@@ -418,29 +418,18 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
                 modalInfoBtns.forEach(btn => {
                     btn.addEventListener('click', () => {
                         const targetPanel = btn.getAttribute('data-panel');
-                        const containers = {
-                            'game-logs': modalBody,
+                        const overlayContainers = {
                             'stats-key': statsKeyContainer,
                             'radar-chart': radarChartContainer,
                             'news': newsContainer
                         };
                         
-                        // Check if the clicked panel is currently visible
-                        const isCurrentlyVisible = containers[targetPanel] && 
-                                                   !containers[targetPanel].classList.contains('hidden');
-                        
                         // Special handling for game-logs - can't be toggled off
                         if (targetPanel === 'game-logs') {
-                            // If already active, do nothing
-                            if (isCurrentlyVisible) return;
-                            
-                            // Otherwise, activate game-logs and hide others
-                            Object.entries(containers).forEach(([panel, container]) => {
-                                if (container && panel !== 'game-logs') {
-                                    container.classList.add('hidden');
-                                }
+                            // Hide all overlay panels to show game logs underneath
+                            Object.values(overlayContainers).forEach(container => {
+                                if (container) container.classList.add('hidden');
                             });
-                            modalBody.classList.remove('hidden');
                             
                             // Update button active states
                             modalInfoBtns.forEach(b => b.classList.remove('active'));
@@ -448,11 +437,14 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
                             return;
                         }
                         
-                        // For other panels (stats-key, radar-chart, news)
+                        // Check if the clicked overlay panel is currently visible
+                        const isCurrentlyVisible = overlayContainers[targetPanel] && 
+                                                   !overlayContainers[targetPanel].classList.contains('hidden');
+                        
+                        // For overlay panels (stats-key, radar-chart, news)
                         if (isCurrentlyVisible) {
-                            // Toggling off - return to game-logs
-                            containers[targetPanel].classList.add('hidden');
-                            modalBody.classList.remove('hidden');
+                            // Toggling off - return to game-logs view
+                            overlayContainers[targetPanel].classList.add('hidden');
                             
                             // Update button active states - activate game-logs
                             modalInfoBtns.forEach(b => {
@@ -462,13 +454,13 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
                                 }
                             });
                         } else {
-                            // Opening a new panel - hide all others including game-logs
-                            Object.values(containers).forEach(container => {
+                            // Opening a new overlay panel - hide other overlays first
+                            Object.values(overlayContainers).forEach(container => {
                                 if (container) container.classList.add('hidden');
                             });
                             
-                            // Show the target panel
-                            containers[targetPanel].classList.remove('hidden');
+                            // Show the target overlay panel
+                            overlayContainers[targetPanel].classList.remove('hidden');
                             
                             // Update button active states
                             modalInfoBtns.forEach(b => b.classList.remove('active'));
