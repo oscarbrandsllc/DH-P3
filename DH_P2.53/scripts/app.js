@@ -2311,10 +2311,10 @@ const SEASON_META_HEADERS = {
             // Match analyzer mobile detection
             const isMobileRadar = window.matchMedia('(max-width: 640px)').matches;
             const radarLayoutPadding = {
-                top: isMobileRadar ? 30 : 33,
-                bottom: isMobileRadar ? 38 : 32,
-                left: isMobileRadar ? 45 : 34,
-                right: isMobileRadar ? 45 : 34,
+                top: isMobileRadar ? 30 : 15,
+                bottom: isMobileRadar ? 38 : 15,
+                left: isMobileRadar ? 45 : 14,
+                right: isMobileRadar ? 45 : 14,
             };
             const radarLabelOffset = isMobileRadar ? 14 : 18;
 
