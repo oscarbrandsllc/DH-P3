@@ -2467,8 +2467,8 @@ const SEASON_META_HEADERS = {
                 
             const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
             gradient.addColorStop(0, 'rgba(80, 0, 255, 0.14)');   // #5300ff at 18% opacity (center)
-            gradient.addColorStop(0.5, 'rgba(87, 0, 255, 0.27)'); // #5700ff at 33% opacity (mid)
-            gradient.addColorStop(1, 'rgba(101, 0, 255, 0.39)');   // #6300ff at 55% opacity (outer edge)
+            gradient.addColorStop(0.5, 'rgba(92, 0, 255, 0.33)'); // #5700ff at 33% opacity (mid)
+            gradient.addColorStop(1, 'rgba(111, 0, 255, 0.50)');   // #6300ff at 55% opacity (outer edge)
                 
                 chartInstance.data.datasets[0].backgroundColor = gradient;
                 chartInstance.update('none'); // Update without animation
