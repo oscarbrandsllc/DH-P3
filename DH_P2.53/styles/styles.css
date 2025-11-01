@@ -3663,7 +3663,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     #game-logs-modal:not(.hidden) .modal-content, #player-comparison-modal:not(.hidden) .modal-content {
         transform: scale(1);
         opacity: 1;
-        height: 618px;
+        height: 600px;
     }
     .modal-close-btn {
       position: absolute;
@@ -5502,6 +5502,160 @@ img.team-logo.glow[alt="WAS"] {
     filter: blur(6px) drop-shadow(10px 4px 10px black) brightness(110%);
     pointer-events: none;
 }
+/* === Radar Chart Styles === */
+.radar-chart-content {
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 320px;
+    position: relative;
+}
+
+#player-radar-canvas {
+    max-width: 100%;
+    max-height: 460px;
+    width: 100% !important;
+    height: 370px !important;
+    padding: 8px 4px 0px 4px;
+}
+
+.no-data-message {
+    color: #97a6d2;
+    font-size: 14px;
+    text-align: center;
+    font-family: 'Product Sans', sans-serif;
+}
+
+/* === Game Logs Loading Animation === */
+.game-logs-loading-container {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    background: linear-gradient(180deg, rgba(21, 22, 37, 0.07) 15%, rgba(38, 41, 64, 0.15) 100%);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border-radius: 9px;
+    z-index: 10;
+    padding: 2rem;
+}
+
+.game-logs-loading-spinner {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.game-logs-loading-spinner::before,
+.game-logs-loading-spinner::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+}
+
+/* Outer ring */
+.game-logs-loading-spinner::before {
+    width: 140px;
+    height: 140px;
+    border: 4px solid rgba(154, 153, 242, 0.12);
+    border-top-color: rgba(154, 153, 242, 0.85);
+    border-right-color: rgba(154, 153, 242, 0.65);
+    animation: game-logs-spin 1.4s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+    box-shadow: 0 0 20px rgba(154, 153, 242, 0.3);
+}
+
+/* Inner glow */
+.game-logs-loading-spinner::after {
+    width: 100px;
+    height: 100px;
+    background: radial-gradient(circle, rgba(154, 153, 242, 0.35), transparent 70%);
+    animation: game-logs-pulse 1.8s ease-in-out infinite alternate;
+}
+
+@keyframes game-logs-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes game-logs-pulse {
+    0% { opacity: 0.5; transform: scale(0.88); }
+    100% { opacity: 0.95; transform: scale(1.08); }
+}
+
+.game-logs-loading-message {
+    font-size: 1.25rem;
+    line-height: 1.65;
+    color: #BDC1D8;
+    text-align: center;
+    max-width: 420px;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.game-logs-loading-message strong {
+    color: var(--color-text-primary);
+    font-weight: 600;
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+/* Hide modal body background during loading */
+#game-logs-modal .modal-body.loading {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+#game-logs-modal .modal-body.loading::after {
+    display: none;
+}
+
+/* Hide footer buttons completely during loading */
+#game-logs-modal.loading .modal-footer {
+    display: none;
+}
+/* === End Game Logs Loading Animation === */
+
+@media (max-width: 640px) {
+    #game-logs-modal:not(.hidden) .modal-content, #player-comparison-modal:not(.hidden) .modal-content {
+        height: 539px;
+    }
+    
+    .modal-body {
+        height: 352px;
+        max-height: 65vh;
+    }
+    
+    #game-logs-modal .game-logs-table-body {
+        max-height: 259px;
+    }
+    
+    .radar-chart-content {
+        padding: 0;
+        min-height: 310px;
+    }
+    
+    #player-radar-canvas {
+        max-width: 100%;
+        max-height: 360px;
+        height: 294px !important;
+        padding: 0px 4px 0px 4px;
+    }
+    
+    #game-logs-modal #modal-body #radar-chart-container {
+        padding: 0.21rem;
+    }
+}
+
+
 /* ========================= SYOP PAGE LAYOUT & VISUALS ========================= */
 body[data-page="research"] {
   background-color: #0a0f1e;
@@ -7583,128 +7737,4 @@ body[data-page="research"] #secondary-header-row {
         }
     }
 
-/* === Radar Chart Styles === */
-.radar-chart-content {
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 320px;
-    position: relative;
-}
 
-#player-radar-canvas {
-    max-width: 100%;
-    max-height: 460px;
-    width: 100% !important;
-    height: 370px !important;
-    padding: 8px 4px 0px 4px;
-}
-
-.no-data-message {
-    color: #97a6d2;
-    font-size: 14px;
-    text-align: center;
-    font-family: 'Product Sans', sans-serif;
-}
-
-/* === Game Logs Loading Animation === */
-.game-logs-loading-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 1.25rem;
-    padding: 3rem 2rem;
-    min-height: 280px;
-}
-
-.game-logs-loading-spinner {
-    position: relative;
-    width: 52px;
-    height: 52px;
-}
-
-.game-logs-loading-spinner::before,
-.game-logs-loading-spinner::after {
-    content: '';
-    position: absolute;
-    border-radius: 50%;
-}
-
-/* Outer ring */
-.game-logs-loading-spinner::before {
-    width: 52px;
-    height: 52px;
-    border: 3px solid rgba(154, 153, 242, 0.15);
-    border-top-color: rgba(154, 153, 242, 0.75);
-    border-right-color: rgba(154, 153, 242, 0.65);
-    animation: game-logs-spin 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-}
-
-/* Inner glow */
-.game-logs-loading-spinner::after {
-    width: 40px;
-    height: 40px;
-    top: 6px;
-    left: 6px;
-    background: radial-gradient(circle, rgba(154, 153, 242, 0.25), transparent 65%);
-    animation: game-logs-pulse 1.5s ease-in-out infinite alternate;
-}
-
-@keyframes game-logs-spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-@keyframes game-logs-pulse {
-    0% { opacity: 0.4; transform: scale(0.92); }
-    100% { opacity: 0.85; transform: scale(1.05); }
-}
-
-.game-logs-loading-message {
-    font-size: 0.95rem;
-    line-height: 1.6;
-    color: #9096C0;
-    text-align: center;
-    max-width: 340px;
-    font-weight: 400;
-    letter-spacing: 0.01em;
-}
-
-.game-logs-loading-message strong {
-    color: var(--color-text-primary);
-    font-weight: 600;
-}
-/* === End Game Logs Loading Animation === */
-
-@media (max-width: 640px) {
-    #game-logs-modal:not(.hidden) .modal-content, #player-comparison-modal:not(.hidden) .modal-content {
-        height: 539px;
-    }
-    
-    .modal-body {
-        height: 352px;
-        max-height: 65vh;
-    }
-    
-    #game-logs-modal .game-logs-table-body {
-        max-height: 259px;
-    }
-    
-    .radar-chart-content {
-        padding: 0;
-        min-height: 310px;
-    }
-    
-    #player-radar-canvas {
-        max-width: 100%;
-        max-height: 360px;
-        height: 294px !important;
-        padding: 0px 4px 0px 4px;
-    }
-    
-    #game-logs-modal #modal-body #radar-chart-container {
-        padding: 0.21rem;
-    }
-}

@@ -2107,9 +2107,15 @@ const SEASON_META_HEADERS = {
                     const angle = startAngle + angleStep * index;
                     const dataPoint = scale.getPointPositionForValue(index, value);
                     
-                    // Base offset, with extra spacing for left-side data points (indices 5, 6, 7)
+                    // Base offset with custom spacing adjustments
                     let offsetDistance = options.offset || 18;
-                    if (index === 5 || index === 6 || index === 7) {
+                    
+                    // Top 3 data points (1st, 2nd, 8th clockwise) - bring labels closer
+                    if (index === 0 || index === 1 || index === 7) {
+                        offsetDistance -= 3; // Reduce by 3 pixels for top points
+                    }
+                    // Left-side data points - add extra spacing
+                    else if (index === 5 || index === 6) {
                         offsetDistance += 4; // Add 4 extra pixels for left-side points
                     }
                     
@@ -2708,12 +2714,15 @@ const SEASON_META_HEADERS = {
             const existingHeaderContainer = document.querySelector('.modal-header-left-container');
             if(existingHeaderContainer) existingHeaderContainer.remove();
             
-            // Enhanced loading state with animation
+            // Enhanced loading state with animation - add loading classes
+            modalBody.classList.add('loading');
+            gameLogsModal.classList.add('loading');
             modalBody.innerHTML = `
                 <div class="game-logs-loading-container">
                     <div class="game-logs-loading-spinner"></div>
                     <p class="game-logs-loading-message">
-                        <strong>Syncing player game logs</strong> across all your leagues — this may take a few seconds
+                        <strong>Syncing Game Logs for All Players</strong>
+                        Fetching Game Logs Across All Your Leagues — This May Take a Few Seconds...
                     </p>
                 </div>
             `;
@@ -2723,6 +2732,11 @@ const SEASON_META_HEADERS = {
             }
             openModal();
             const gameLogs = await fetchGameLogs(player.id);
+            
+            // Remove loading classes before rendering content
+            modalBody.classList.remove('loading');
+            gameLogsModal.classList.remove('loading');
+            
             // Stats page uses sheet data, other pages calculate from weekly data
             const playerRanks = state.isGameLogFromStatsPage 
                 ? getStatsPagePlayerRanks(player.id)
