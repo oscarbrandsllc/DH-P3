@@ -2721,15 +2721,30 @@ const SEASON_META_HEADERS = {
             // Enhanced loading state with animation - add loading classes
             modalBody.classList.add('loading');
             gameLogsModal.classList.add('loading');
-            modalBody.innerHTML = `
-                <div class="game-logs-loading-container">
+            
+            // Clear modal body
+            modalBody.innerHTML = '';
+            
+            // Insert loading panel as sibling to modal-body (inside modal-content)
+            const modalContent = gameLogsModal.querySelector('.modal-content');
+            const existingLoadingPanel = modalContent.querySelector('.game-logs-loading-container');
+            if (existingLoadingPanel) existingLoadingPanel.remove();
+            
+            const loadingPanel = document.createElement('div');
+            loadingPanel.className = 'game-logs-loading-container';
+            loadingPanel.innerHTML = `
+                <div class="game-logs-loading-content">
                     <div class="game-logs-loading-spinner"></div>
                     <p class="game-logs-loading-message">
                         <strong>Syncing Game Logs for All Players</strong>
                         Fetching Game Logs Across All Your Leagues — This May Take a Few Seconds...
                     </p>
                 </div>
+                <p class="game-logs-loading-footer">
+                    <em>One-Time Sync - Synced Across the Board → After the initial load, access every gamelog instantly—no extra loading (per-session)</em>
+                </p>
             `;
+            modalContent.appendChild(loadingPanel);
             
             if (state.isGameLogModalOpenFromComparison) {
                 gameLogsModal.style.zIndex = '1050';
@@ -2737,9 +2752,11 @@ const SEASON_META_HEADERS = {
             openModal();
             const gameLogs = await fetchGameLogs(player.id);
             
-            // Remove loading classes before rendering content
+            // Remove loading classes and panel before rendering content
             modalBody.classList.remove('loading');
             gameLogsModal.classList.remove('loading');
+            const existingPanel = gameLogsModal.querySelector('.game-logs-loading-container');
+            if (existingPanel) existingPanel.remove();
             
             // Stats page uses sheet data, other pages calculate from weekly data
             const playerRanks = state.isGameLogFromStatsPage 
