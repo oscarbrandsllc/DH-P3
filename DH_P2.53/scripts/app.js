@@ -2110,9 +2110,13 @@ const SEASON_META_HEADERS = {
                     // Base offset with custom spacing adjustments
                     let offsetDistance = options.offset || 18;
                     
-                    // Top 3 data points (1st, 2nd, 8th clockwise) - bring labels closer
-                    if (index === 0 || index === 1 || index === 7) {
+                    // Top 2 data points (1st, 2nd clockwise) - bring labels closer
+                    if (index === 0 || index === 1) {
                         offsetDistance -= 3; // Reduce by 3 pixels for top points
+                    }
+                    // 8th position (top-left) - slightly closer
+                    else if (index === 7) {
+                        offsetDistance -= 1.5; // Reduce by 1.5 pixels for 8th position
                     }
                     // Left-side data points - add extra spacing
                     else if (index === 5 || index === 6) {
@@ -2129,7 +2133,7 @@ const SEASON_META_HEADERS = {
                         const suffix = getOrdinalSuffix(rankNum);
                         label = rankNum.toString();
                         
-                        // Color based on rank value
+                        // Color based on rank values
                         const rankColor = getConditionalColorByRank(rawRank, dataset.position);
                         ctx.fillStyle = rankColor;
                         
