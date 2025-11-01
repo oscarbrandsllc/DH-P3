@@ -3802,8 +3802,8 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     }
     /* · · Modal Header · · */
     #modal-header h3 {
-      font-size: 1.1rem;
-      font-weight: 400;
+      font-size: 1.15rem;
+      font-weight: 200;
       color: var(--color-text-primary);
       margin-bottom: 0.2rem;
       text-align: center;
@@ -4602,7 +4602,7 @@ inset 0px 0px 155px rgba(216, 215, 255, 0.1);
     }
     .stats-key-panel li {
         display: flex;
-        padding: 0.12rem 1rem !important;
+        padding: 0.12rem 0rem !important;
     }
     .stats-key-panel strong {
         width: auto;
