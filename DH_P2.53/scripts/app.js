@@ -2707,7 +2707,17 @@ const SEASON_META_HEADERS = {
             document.getElementById('modal-summary-chips').innerHTML = ''; // Clear previous chips
             const existingHeaderContainer = document.querySelector('.modal-header-left-container');
             if(existingHeaderContainer) existingHeaderContainer.remove();
-            modalBody.innerHTML = '<p class="text-center p-4">Loading game logs...</p>';
+            
+            // Enhanced loading state with animation
+            modalBody.innerHTML = `
+                <div class="game-logs-loading-container">
+                    <div class="game-logs-loading-spinner"></div>
+                    <p class="game-logs-loading-message">
+                        <strong>Syncing player game logs</strong> across all your leagues — this may take a few seconds
+                    </p>
+                </div>
+            `;
+            
             if (state.isGameLogModalOpenFromComparison) {
                 gameLogsModal.style.zIndex = '1050';
             }

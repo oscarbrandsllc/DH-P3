@@ -4472,8 +4472,11 @@ padding: 0.15rem 0rem 0rem 0rem;
     cursor: pointer;
     transition: color 0.2s ease, filter 0.2s ease, transform 0.1s ease;
 }
-.modal-info-btn:hover {
-    color: var(--color-text-primary);
+/* Desktop-only hover (prevents color sticking on mobile) */
+@media (hover: hover) and (pointer: fine) {
+    .modal-info-btn:hover {
+        color: var(--color-text-primary);
+    }
 }
 .modal-info-btn.active {
     color: var(--color-text-primary);
@@ -7604,6 +7607,76 @@ body[data-page="research"] #secondary-header-row {
     text-align: center;
     font-family: 'Product Sans', sans-serif;
 }
+
+/* === Game Logs Loading Animation === */
+.game-logs-loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    padding: 3rem 2rem;
+    min-height: 280px;
+}
+
+.game-logs-loading-spinner {
+    position: relative;
+    width: 52px;
+    height: 52px;
+}
+
+.game-logs-loading-spinner::before,
+.game-logs-loading-spinner::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+}
+
+/* Outer ring */
+.game-logs-loading-spinner::before {
+    width: 52px;
+    height: 52px;
+    border: 3px solid rgba(154, 153, 242, 0.15);
+    border-top-color: rgba(154, 153, 242, 0.75);
+    border-right-color: rgba(154, 153, 242, 0.65);
+    animation: game-logs-spin 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+}
+
+/* Inner glow */
+.game-logs-loading-spinner::after {
+    width: 40px;
+    height: 40px;
+    top: 6px;
+    left: 6px;
+    background: radial-gradient(circle, rgba(154, 153, 242, 0.25), transparent 65%);
+    animation: game-logs-pulse 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes game-logs-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes game-logs-pulse {
+    0% { opacity: 0.4; transform: scale(0.92); }
+    100% { opacity: 0.85; transform: scale(1.05); }
+}
+
+.game-logs-loading-message {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #9096C0;
+    text-align: center;
+    max-width: 340px;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+}
+
+.game-logs-loading-message strong {
+    color: var(--color-text-primary);
+    font-weight: 600;
+}
+/* === End Game Logs Loading Animation === */
 
 @media (max-width: 640px) {
     #game-logs-modal:not(.hidden) .modal-content, #player-comparison-modal:not(.hidden) .modal-content {
