@@ -73,6 +73,16 @@
             "support.variable.property"
           ],
           "settings": { "foreground": "#46f8bd" }
+        },
+
+        /* Markdown comments → salmon */
+        {
+          "name": "Markdown comments → salmon",
+          "scope": [
+            "text.html.markdown comment",
+            "text.html.markdown punctuation.definition.comment"
+          ],
+          "settings": { "foreground": "#FA8072" }
         }
       ]
     }
@@ -88,5 +98,26 @@
       }
     }
   },
-  "liveServer.settings.port": 5501
+
+  /* ---------- TODO Highlight (Markdown-only, no yellow background) ---------- */
+  "todohighlight.include": ["**/*.md"],
+  "todohighlight.isCaseSensitive": true,
+  "todohighlight.defaultStyle": {
+    "backgroundColor": "#00000000",
+    "overviewRulerColor": "#00000000",
+    "border": "none"
+  },
+  "todohighlight.keywords": [
+    { "text": "oscarbrandsllc:",  "color": "#FA8072", "backgroundColor": "#00000000", "isWholeLine": false },
+    { "text": "GitHub Copilot:",  "color": "#FA8072", "backgroundColor": "#00000000", "isWholeLine": false },
+    { "text": "⤵️ NEW PROMPT ⤵️", "color": "#FA8072", "backgroundColor": "#00000000", "isWholeLine": false },
+    { "text": "<!-- —————————————————————— ⤵️ NEW PROMPT ⤵️ ——————————————————————— -->",
+      "color": "#FA8072", "backgroundColor": "#00000000", "isWholeLine": false },
+    { "text": "<!-- —————————————————————— ⤵️ Copilot Response ⤵️ ——————————————————————— -->", "color": "#FA8072", "backgroundColor": "#00000000", "isWholeLine": false }
+  ],
+  /* ------------------------------------------------------------------------ */
+
+  "liveServer.settings.port": 5501,
+  "editor.colorDecorators": true,
+  "editor.colorDecoratorsLimit": 2200
 }

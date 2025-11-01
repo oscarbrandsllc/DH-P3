@@ -16,7 +16,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@200;300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Product+Sans:wght@100;200;300;400;500;700;900&amp;display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css?family=Google+Sans:100,200,300,400,500,600,700" rel="stylesheet"/>
-<link href="../manifest.webmanifest?v=20250827002411?v=20250826235225" rel="manifest"/><link rel="apple-touch-icon" sizes="180x180" href="../assets/icons/apple-touch-icon-180.png?v=20250926r5c" /><meta content="#0D0E1B" name="theme-color"/><link href="../styles/styles.css?v=20250827002411?v=20250826235225" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script>  <link rel="icon" type="image/png" sizes="32x32" href="../assets/icons/favicon-32.png?v=20250926r5c" />
+<link href="../manifest.webmanifest?v=20250827002411?v=20250826235225" rel="manifest"/><link rel="apple-touch-icon" sizes="180x180" href="../assets/icons/apple-touch-icon-180.png?v=20250926r5c" /><meta content="#0D0E1B" name="theme-color"/><link href="../styles/styles.css?v=20250827002411?v=20250826235225" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script src="https://cdn.jsdelivr.net/npm/chart.js"></script>  <link rel="icon" type="image/png" sizes="32x32" href="../assets/icons/favicon-32.png?v=20250926r5c" />
   <link rel="icon" type="image/png" sizes="16x16" href="../assets/icons/favicon-16.png?v=20250926r5c" />
   <link rel="shortcut icon" href="../assets/icons/favicon.ico?v=20250926r5c" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer"/>
@@ -225,7 +225,7 @@
       <!-- Game logs will be rendered here -->
     </div>
     <div id="stats-key-container" class="hidden stats-key-panel">
-        <h4> Player Game Log & Stats Key </h4>
+        <h4> Stats Key </h4>
         <ul>
 						<li><strong>FPTS:</strong> Fantasy Points</li>
 						<li><strong>(t):</strong> Total • Passing, Rushing, & Receiving</li>
@@ -274,8 +274,32 @@
 						<li><strong>FUM:</strong> Fumbles Lost</li>
       </ul>
     </div>
+    <div id="radar-chart-container" class="hidden stats-key-panel">
+        <h4> Efficiency & Production • Position Rankings </h4>
+        <div class="radar-chart-content">
+          <!-- Radar chart will be dynamically rendered here -->
+        </div>
+    </div>
+    <div id="news-container" class="hidden stats-key-panel">
+        <h4>Player News & Updates</h4>
+        <div class="news-content">
+          <!-- News content will be rendered here -->
+        </div>
+    </div>
    <div class="modal-footer">
-  <div class="key-chip modal-info-btn">
+  <div class="key-chip modal-info-btn active" data-panel="game-logs">
+    <i class="fa-solid fa-rectangle-list"></i>
+    <span>GM-Logs</span>
+  </div>
+  <div class="key-chip modal-info-btn" data-panel="radar-chart">
+    <i class="fa-solid fa-chart-area"></i>
+    <span>POS-RK Map</span>
+  </div>
+  <div class="key-chip modal-info-btn" data-panel="news">
+    <i class="fa-solid fa-newspaper"></i>
+    <span>News</span>
+  </div>
+  <div class="key-chip modal-info-btn" data-panel="stats-key">
     <i class="fa-solid fa-key"></i>
     <span>Key</span>
   </div>

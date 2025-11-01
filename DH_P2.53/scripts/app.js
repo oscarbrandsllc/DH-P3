@@ -36,8 +36,10 @@ function showLegend(){ try{ document.getElementById('legend-section')?.classList
         const startSitButton = document.getElementById('startSitButton');
         const gameLogsModal = document.getElementById('game-logs-modal');
         const modalCloseBtn = document.querySelector('.modal-close-btn');
-        const modalInfoBtn = document.querySelector('.modal-info-btn');
+        const modalInfoBtns = document.querySelectorAll('.modal-info-btn');
         const statsKeyContainer = document.getElementById('stats-key-container');
+        const radarChartContainer = document.getElementById('radar-chart-container');
+        const newsContainer = document.getElementById('news-container');
         const modalOverlay = document.querySelector('.modal-overlay');
         const modalPlayerName = document.getElementById('modal-player-name');
         const modalPlayerVitals = document.getElementById('modal-player-vitals');
@@ -308,7 +310,7 @@ if (pageType === 'welcome') {
     }
 }
         // --- State ---
-let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, lastLiveStatsWeek: null, lastLiveStatsFetchTs: 0, calculatedRankCache: null, playerProjectionWeeks: {}, isStartSitMode: false, startSitSelections: [], startSitNextSide: 'left', startSitTeamName: null, leagueMatchupStats: {}, matchupDataLoaded: false, isGameLogFromStatsPage: false, statsPagePlayerData: null };
+let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {}, currentLeagueId: null, isSuperflex: false, cache: {}, teamsToCompare: new Set(), isCompareMode: false, currentRosterView: 'positional', activePositions: new Set(), tradeBlock: {}, isTradeCollapsed: false, weeklyStats: {}, playerSeasonStats: {}, playerSeasonRanks: {}, playerWeeklyStats: {}, statsSheetsLoaded: false, seasonRankCache: null, isGameLogModalOpenFromComparison: false, liveWeeklyStats: {}, liveStatsLoaded: false, currentNflSeason: null, currentNflWeek: null, lastLiveStatsWeek: null, lastLiveStatsFetchTs: 0, calculatedRankCache: null, playerProjectionWeeks: {}, isStartSitMode: false, startSitSelections: [], startSitNextSide: 'left', startSitTeamName: null, leagueMatchupStats: {}, matchupDataLoaded: false, isGameLogFromStatsPage: false, statsPagePlayerData: null, currentGameLogsPlayerRanks: null, currentGameLogsSummary: null };
         const assignedLeagueColors = new Map();
         let nextColorIndex = 0;
         const assignedRyColors = new Map();
@@ -319,7 +321,7 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
         const PLAYER_STATS_SHEET_ID = '1i-cKqSfYw0iFiV9S-wBw8lwZePwXZ7kcaWMdnaMTHDs';
         const PLAYER_STATS_SHEETS = { season: 'SZN', seasonRanks: 'SZN_RKs', weeks: { 1: 'WK1', 2: 'WK2', 3: 'WK3', 4: 'WK4', 5: 'WK5', 6: 'WK6', 7: 'WK7', 8: 'WK8' } };
         // UPDATE THIS: Total number of weeks to display in game logs (including unplayed weeks with projections)
-        const MAX_DISPLAY_WEEKS = 13;
+        const MAX_DISPLAY_WEEKS = 17;
         const TAG_COLORS = { QB:"var(--pos-qb)", RB:"var(--pos-rb)", WR:"var(--pos-wr)", TE:"var(--pos-te)", BN:"var(--pos-bn)", TX:"var(--pos-tx)", FLX: "var(--pos-flx)", SFLX: "var(--pos-sflx)" };
         const INJURY_DESIGNATION_COLORS = {
             'IR': '#d93d76',
@@ -411,9 +413,70 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
             if (gameLogsModal) {
                 modalCloseBtn.addEventListener('click', () => closeModal());
                 modalOverlay.addEventListener('click', () => closeModal());
-                modalInfoBtn.addEventListener('click', () => {
-                    statsKeyContainer.classList.toggle('hidden');
+                
+                // Panel toggle buttons with tab-like behavior
+                modalInfoBtns.forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const targetPanel = btn.getAttribute('data-panel');
+                        const overlayContainers = {
+                            'stats-key': statsKeyContainer,
+                            'radar-chart': radarChartContainer,
+                            'news': newsContainer
+                        };
+                        
+                        // Special handling for game-logs - can't be toggled off
+                        if (targetPanel === 'game-logs') {
+                            // Hide all overlay panels to show game logs underneath
+                            Object.values(overlayContainers).forEach(container => {
+                                if (container) container.classList.add('hidden');
+                            });
+                            
+                            // Update button active states
+                            modalInfoBtns.forEach(b => b.classList.remove('active'));
+                            btn.classList.add('active');
+                            return;
+                        }
+                        
+                        // Check if the clicked overlay panel is currently visible
+                        const isCurrentlyVisible = overlayContainers[targetPanel] && 
+                                                   !overlayContainers[targetPanel].classList.contains('hidden');
+                        
+                        // For overlay panels (stats-key, radar-chart, news)
+                        if (isCurrentlyVisible) {
+                            // Toggling off - return to game-logs view
+                            overlayContainers[targetPanel].classList.add('hidden');
+                            
+                            // Update button active states - activate game-logs
+                            modalInfoBtns.forEach(b => {
+                                b.classList.remove('active');
+                                if (b.getAttribute('data-panel') === 'game-logs') {
+                                    b.classList.add('active');
+                                }
+                            });
+                        } else {
+                            // Opening a new overlay panel - hide other overlays first
+                            Object.values(overlayContainers).forEach(container => {
+                                if (container) container.classList.add('hidden');
+                            });
+                            
+                            // Show the target overlay panel
+                            overlayContainers[targetPanel].classList.remove('hidden');
+                            
+                            // Update button active states
+                            modalInfoBtns.forEach(b => b.classList.remove('active'));
+                            btn.classList.add('active');
+                            
+                            // If opening radar chart panel, render chart
+                            if (targetPanel === 'radar-chart' && state.currentGameLogsPlayer) {
+                                const player = state.currentGameLogsPlayer;
+                                if (player && player.pos) {
+                                    renderPlayerRadarChart(player.id, player.pos);
+                                }
+                            }
+                        }
+                    });
                 });
+                
                 document.addEventListener('keydown', (e) => {
                     if (e.key === 'Escape' && !gameLogsModal.classList.contains('hidden')) {
                         closeModal();
@@ -1219,28 +1282,40 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
                     ppgPosRank: null,
                 };
             }
-            const combinedWeeklyStats = getCombinedWeeklyStats();
-            for (const week of Object.keys(combinedWeeklyStats)) {
-                const weeklyData = combinedWeeklyStats[week];
-                for (const [pId, statLine] of Object.entries(weeklyData)) {
-                    const playerEntry = playersById[pId];
-                    if (!playerEntry) continue;
-                    
-                    // Use league-specific matchup data if available
-                    let points;
-                    if (state.matchupDataLoaded && state.leagueMatchupStats[week]?.[pId] !== undefined) {
-                        points = state.leagueMatchupStats[week][pId];
-                    } else {
-                        // Fallback to calculated points if matchup data not available
-                        points = calculateFantasyPoints(statLine, scoringSettings);
+            
+            // If matchup data is loaded, use it directly for FPTS/PPG calculation
+            if (state.matchupDataLoaded && state.leagueMatchupStats) {
+                for (const week of Object.keys(state.leagueMatchupStats)) {
+                    const weekData = state.leagueMatchupStats[week];
+                    for (const [pId, points] of Object.entries(weekData)) {
+                        const playerEntry = playersById[pId];
+                        if (!playerEntry) continue;
+                        
+                        playerEntry.totalPts += points;
+                        if (points > 0) {
+                            playerEntry.gamesPlayed += 1;
+                        }
                     }
-                    
-                    playerEntry.totalPts += points;
-                    if (points > 0) {
-                        playerEntry.gamesPlayed += 1;
+                }
+            } else {
+                // Fallback: use combined weekly stats from Google Sheets
+                const combinedWeeklyStats = getCombinedWeeklyStats();
+                for (const week of Object.keys(combinedWeeklyStats)) {
+                    const weeklyData = combinedWeeklyStats[week];
+                    for (const [pId, statLine] of Object.entries(weeklyData)) {
+                        const playerEntry = playersById[pId];
+                        if (!playerEntry) continue;
+                        
+                        const points = calculateFantasyPoints(statLine, scoringSettings);
+                        
+                        playerEntry.totalPts += points;
+                        if (points > 0) {
+                            playerEntry.gamesPlayed += 1;
+                        }
                     }
                 }
             }
+            
             const entries = Object.values(playersById);
             entries.forEach(entry => {
                 entry.ppg = entry.gamesPlayed > 0 ? entry.totalPts / entry.gamesPlayed : 0;
@@ -1634,6 +1709,7 @@ let state = { userId: null, leagues: [], players: {}, oneQbData: {}, sflxData: {
         const PLAYER_STAT_HEADER_MAP = {
             'paATT': 'pass_att',
             'CMP': 'pass_cmp',
+            'CMP%': 'cmp_pct',
             'paYDS': 'pass_yd',
             'paTD': 'pass_td',
             'pa1D': 'pass_fd',
@@ -1855,6 +1931,312 @@ const SEASON_META_HEADERS = {
             if (upper === 'NA' || upper === 'N/A') return 'NA';
             return rankStr;
         }
+
+        function getPlayerRadarData(playerId, position) {
+            const config = RADAR_STATS_CONFIG[position];
+            if (!config) return null;
+
+            const radarData = {
+                labels: config.labels,
+                ranks: [],
+                rawRanks: [],
+                statValues: [],
+                statKeys: config.stats, // Include stat keys for formatting
+                maxRank: config.maxRank
+            };
+
+            // Use footer stats that were already calculated
+            const footerStats = state.currentGameLogsFooterStats || {};
+            const seasonTotals = state.playerSeasonStats?.[playerId] || null;
+            const playerRanks = state.currentGameLogsPlayerRanks || null;
+            const summarySnapshot = state.currentGameLogsSummary || null;
+
+            config.stats.forEach(statKey => {
+                const rankValue = getSeasonRankValue(playerId, statKey);
+                radarData.rawRanks.push(rankValue);
+
+                let statValue;
+                
+                // PPG must ALWAYS use playerRanks.ppg (same source as summary chips)
+                if (statKey === 'ppg') {
+                    statValue = playerRanks?.ppg;
+                } else {
+                    // For all other stats, try footerStats first
+                    statValue = footerStats[statKey];
+                    
+                    if (statValue === undefined) {
+                        if (statKey === 'fpts') {
+                            if (summarySnapshot && summarySnapshot.fpts !== undefined) {
+                                statValue = summarySnapshot.fpts;
+                            }
+                            if (statValue === undefined) {
+                                if (state.isGameLogFromStatsPage && state.statsPagePlayerData) {
+                                    statValue = state.statsPagePlayerData.fpts || state.statsPagePlayerData.totalPts || null;
+                                } else if (seasonTotals && typeof seasonTotals.fpts_ppr === 'number') {
+                                    statValue = seasonTotals.fpts_ppr;
+                                }
+                            }
+                        } else if (statKey === 'ypc') {
+                            if (seasonTotals && typeof seasonTotals.rush_att === 'number' && seasonTotals.rush_att > 0) {
+                                const totalYards = typeof seasonTotals.rush_yd === 'number' ? seasonTotals.rush_yd : 0;
+                                statValue = totalYards / seasonTotals.rush_att;
+                            }
+                        } else if (statKey === 'yco_per_att') {
+                            if (seasonTotals && typeof seasonTotals.rush_att === 'number' && seasonTotals.rush_att > 0) {
+                                const totalYco = typeof seasonTotals.rush_yac === 'number' ? seasonTotals.rush_yac : 0;
+                                statValue = totalYco / seasonTotals.rush_att;
+                            }
+                        } else if (statKey === 'mtf_per_att') {
+                            if (seasonTotals && typeof seasonTotals.rush_att === 'number' && seasonTotals.rush_att > 0) {
+                                const totalMtf = typeof seasonTotals.mtf === 'number' ? seasonTotals.mtf : 0;
+                                statValue = totalMtf / seasonTotals.rush_att;
+                            }
+                        } else if (statKey === 'pass_imp_per_att') {
+                            if (seasonTotals && typeof seasonTotals.pass_att === 'number' && seasonTotals.pass_att > 0) {
+                                const totalImp = typeof seasonTotals.pass_imp === 'number' ? seasonTotals.pass_imp : 0;
+                                statValue = (totalImp / seasonTotals.pass_att) * 100;
+                            }
+                        } else if (seasonTotals && typeof seasonTotals[statKey] === 'number') {
+                            statValue = seasonTotals[statKey];
+                        } else {
+                            statValue = null;
+                        }
+                    }
+                }
+                if (typeof statValue === 'string') {
+                    const trimmed = statValue.trim();
+                    if (trimmed.length === 0) {
+                        statValue = null;
+                    } else if (statKey === 'fpts' || statKey === 'ppg') {
+                        statValue = trimmed;
+                    } else {
+                        const numericCandidate = Number(trimmed);
+                        statValue = Number.isNaN(numericCandidate) ? trimmed : numericCandidate;
+                    }
+                }
+                radarData.statValues.push(statValue);
+
+                // Scale ranks from 10% to 85% of radar
+                // rank 1 -> 85, rank 7 -> ~73, rank maxRank -> 10
+                if (rankValue === null || rankValue === undefined || Number.isNaN(rankValue)) {
+                    radarData.ranks.push(10); // No data shows at 10%
+                } else if (rankValue <= 1) {
+                    radarData.ranks.push(85); // Rank 1 at 85% of max
+                } else if (rankValue >= config.maxRank) {
+                    radarData.ranks.push(10); // Worst rank at 10%
+                } else if (rankValue <= 7) {
+                    // Compress ranks 1-7 into the 73-85 range
+                    // rank 1 = 85, rank 7 = 73
+                    const scaledValue = 85 - ((rankValue - 1) / 6) * 12;
+                    radarData.ranks.push(scaledValue);
+                } else {
+                    // Scale ranks 7-maxRank linearly from 73 to 10
+                    const scaledValue = 73 - ((rankValue - 7) / (config.maxRank - 7)) * 63;
+                    radarData.ranks.push(scaledValue);
+                }
+            });
+
+            return radarData;
+        }
+
+        // Chart.js plugins for player radar chart
+        const playerRadarBackgroundPlugin = {
+            id: 'playerRadarBackground',
+            beforeDraw(chart, args, options) {
+                const scale = chart.scales?.r;
+                if (!scale) return;
+                const { ctx } = chart;
+                const centerX = scale.xCenter;
+                const centerY = scale.yCenter;
+                const angleStep = (Math.PI * 2) / chart.data.labels.length;
+                const startAngle = -Math.PI / 2; // Start at top
+                const maxRadius = scale.drawingArea;
+
+                const levels = options.levels || [];
+
+                levels.forEach((level) => {
+                    const radius = maxRadius * (level.ratio ?? 1);
+                    ctx.beginPath();
+                    ctx.strokeStyle = level.stroke || 'rgba(151, 166, 210, 0.15)';
+                    ctx.fillStyle = level.fill || 'transparent';
+                    ctx.lineWidth = 1;
+
+                    chart.data.labels.forEach((label, index) => {
+                        const angle = startAngle + angleStep * index;
+                        const x = centerX + Math.cos(angle) * radius;
+                        const y = centerY + Math.sin(angle) * radius;
+
+                        if (index === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    });
+
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                });
+            }
+        };
+
+        const playerRadarLabelPlugin = {
+            id: 'playerRadarLabels',
+            afterDatasetsDraw(chart, args, options) {
+                const dataset = chart.data.datasets[0];
+                if (!dataset || !dataset.data) return;
+
+                const { ctx } = chart;
+                const scale = chart.scales?.r;
+                if (!scale) return;
+
+                const centerX = scale.xCenter;
+                const centerY = scale.yCenter;
+                const angleStep = (Math.PI * 2) / chart.data.labels.length;
+                const startAngle = -Math.PI / 2;
+
+                // Helper function for ordinal suffix
+                const getOrdinalSuffix = (n) => {
+                    const s = ['th', 'st', 'nd', 'rd'];
+                    const v = n % 100;
+                    return s[(v - 20) % 10] || s[v] || s[0];
+                };
+
+                ctx.font = options.font || '11px "Product Sans"';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                dataset.data.forEach((value, index) => {
+                    const angle = startAngle + angleStep * index;
+                    const dataPoint = scale.getPointPositionForValue(index, value);
+                    
+                    // Base offset with custom spacing adjustments
+                    let offsetDistance = options.offset || 18;
+                    
+                    // Top 2 data points (1st, 2nd clockwise) - bring labels closer
+                    if (index === 0 || index === 1) {
+                        offsetDistance -= 3; // Reduce by 3 pixels for top points
+                    }
+                    // 8th position (top-left) - slightly closer
+                    else if (index === 7) {
+                        offsetDistance -= 1.5; // Reduce by 1.5 pixels for 8th position
+                    }
+                    // Left-side data points - add extra spacing
+                    else if (index === 5 || index === 6) {
+                        offsetDistance += 4; // Add 4 extra pixels for left-side points
+                    }
+                    
+                    const offsetX = Math.cos(angle) * offsetDistance;
+                    const offsetY = Math.sin(angle) * offsetDistance;
+
+                    const rawRank = dataset.rawRanks?.[index];
+                    let label;
+                    if (rawRank !== null && rawRank !== undefined && !Number.isNaN(rawRank)) {
+                        const rankNum = Math.round(rawRank);
+                        const suffix = getOrdinalSuffix(rankNum);
+                        label = rankNum.toString();
+                        
+                        // Color based on rank values
+                        const rankColor = getConditionalColorByRank(rawRank, dataset.position);
+                        ctx.fillStyle = rankColor;
+                        
+                        // Draw the rank number
+                        ctx.fillText(label, dataPoint.x + offsetX, dataPoint.y + offsetY);
+                        
+                        // Draw the suffix smaller, same baseline, positioned after the number
+                        const metrics = ctx.measureText(label);
+                        const suffixFontSize = parseInt(ctx.font) * 0.7; // 70% of original size
+                        ctx.font = `${suffixFontSize}px "Product Sans"`;
+                        // Position suffix to the right: center + half width of number + small gap
+                        ctx.fillText(suffix, dataPoint.x + offsetX + (metrics.width / 2) + 4, dataPoint.y + offsetY);
+                        
+                        // Reset font for next iteration
+                        ctx.font = options.font || '11px "Product Sans"';
+                    } else {
+                        label = 'NA';
+                        const rankColor = getConditionalColorByRank(rawRank, dataset.position);
+                        ctx.fillStyle = rankColor;
+                        ctx.fillText(label, dataPoint.x + offsetX, dataPoint.y + offsetY);
+                    }
+                });
+            }
+        };
+
+        const playerRadarAxisLabelsPlugin = {
+            id: 'playerRadarAxisLabels',
+            afterDraw(chart, args, options) {
+                const scale = chart.scales?.r;
+                if (!scale) return;
+                const dataset = chart.data.datasets[0];
+                if (!dataset) return;
+                const labels = chart.data.labels;
+                if (!labels || !labels.length) return;
+
+                const isMobile = window.matchMedia('(max-width: 640px)').matches;
+                const labelFontSize = isMobile ? (options?.labelFontSizeMobile ?? 11) : (options?.labelFontSize ?? 12);
+                const valueFontSize = isMobile ? (options?.valueFontSizeMobile ?? 9) : (options?.valueFontSize ?? 10);
+                const labelFont = `${labelFontSize}px "Product Sans", "Google Sans", sans-serif`;
+                const valueFont = `${valueFontSize}px "Product Sans", "Google Sans", sans-serif`;
+                const labelColor = options?.labelColor || '#EAEBF0';
+                const labelOffset = options?.labelOffset ?? (isMobile ? 14 : 18);
+                const valueSpacing = options?.valueSpacing ?? (isMobile ? 3 : 4);
+
+                const { ctx } = chart;
+                const angleStep = (Math.PI * 2) / labels.length;
+                const startAngle = -Math.PI / 2;
+
+                ctx.save();
+                for (let index = 0; index < labels.length; index++) {
+                    const angle = startAngle + angleStep * index;
+                    const cos = Math.cos(angle);
+                    const sin = Math.sin(angle);
+
+                    let textAlign = 'center';
+                    if (Math.abs(cos) > 1e-4) {
+                        textAlign = cos < 0 ? 'right' : 'left';
+                    }
+                    let textBaseline;
+                    if (Math.abs(sin) <= 1e-4) {
+                        textBaseline = 'middle';
+                    } else {
+                        textBaseline = sin < 0 ? 'bottom' : 'top';
+                    }
+
+                    const radius = scale.drawingArea + labelOffset;
+                    const x = scale.xCenter + cos * radius;
+                    const y = scale.yCenter + sin * radius;
+
+                    const labelText = (typeof labels[index] === 'string')
+                        ? labels[index]
+                        : String(labels[index] ?? '');
+
+                    ctx.font = labelFont;
+                    ctx.textAlign = textAlign;
+                    ctx.textBaseline = textBaseline;
+                    ctx.fillStyle = labelColor;
+                    ctx.fillText(labelText, x, y);
+
+                    const statKey = dataset.statKeys?.[index];
+                    const statValue = dataset.statValues?.[index];
+                    const formattedValue = formatRadarStatValue(statKey, statValue);
+                    const rawRank = dataset.rawRanks?.[index];
+                    const valueColor = getConditionalColorByRank(rawRank, dataset.position) || labelColor;
+
+                    let valueY = y;
+                    if (textBaseline === 'top') {
+                        valueY = y + labelFontSize + valueSpacing;
+                    } else if (textBaseline === 'middle') {
+                        valueY = y + (labelFontSize / 2) + valueSpacing;
+                    } else {
+                        valueY = y + valueSpacing;
+                    }
+
+                    ctx.font = valueFont;
+                    ctx.textBaseline = 'top';
+                    ctx.fillStyle = valueColor;
+                    ctx.fillText(`• ${formattedValue} •`, x, valueY);
+                }
+                ctx.restore();
+            }
+        };
+
     function createRankAnnotation(rank, { wrapInParens = true, ordinal = false, variant = 'default' } = {}) {
                     const span = document.createElement('span');
                     // base class plus variant-specific class so CSS can target per-context
@@ -1976,6 +2358,137 @@ const SEASON_META_HEADERS = {
                 positional: positionalRankings
             };
         }
+
+        function renderPlayerRadarChart(playerId, position) {
+            const container = document.querySelector('#radar-chart-container .radar-chart-content');
+            if (!container) return;
+
+            // Clear existing chart
+            container.innerHTML = '';
+
+            const radarData = getPlayerRadarData(playerId, position);
+            if (!radarData) {
+                container.innerHTML = '<p class="no-data-message">No radar data available for this position.</p>';
+                return;
+            }
+
+            // Create canvas
+            const canvas = document.createElement('canvas');
+            canvas.id = 'player-radar-canvas';
+            container.appendChild(canvas);
+
+            const ctx = canvas.getContext('2d');
+            
+            // Match analyzer mobile detection
+            const isMobileRadar = window.matchMedia('(max-width: 640px)').matches;
+            const radarLayoutPadding = {
+                top: isMobileRadar ? 30 : 33,
+                bottom: isMobileRadar ? 38 : 52,
+                left: isMobileRadar ? 45 : 14,
+                right: isMobileRadar ? 45 : 14,
+            };
+            const radarLabelOffset = isMobileRadar ? 14 : 18;
+
+            // Fixed scale max at 100 for all positions
+            const scaleMax = 100;
+
+            const chartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: radarData.labels,
+                    datasets: [{
+                        label: 'Player Rank',
+                        data: radarData.ranks,
+                        rawRanks: radarData.rawRanks,
+                        statValues: radarData.statValues,
+                        statKeys: radarData.statKeys,
+                        position: position,
+                        fill: true,
+                        backgroundColor: 'rgba(83, 0, 255, 0.33)', // Fallback color
+                        borderColor: '#6700ff',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#6300ff',
+                        pointBorderColor: '#0D0E1B',
+                        pointRadius: 4.5,
+                        analyzerLabels: true,
+                        order: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    events: [],
+                    layout: {
+                        padding: radarLayoutPadding
+                    },
+                    elements: {
+                        line: { tension: 0.40 }
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            suggestedMin: 0,
+                            suggestedMax: scaleMax,
+                            max: scaleMax,
+                            grid: { display: false },
+                            angleLines: { display: false },
+                            ticks: { display: false },
+                            pointLabels: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false },
+                        playerRadarBackground: {
+                            levels: [
+                                { ratio: 0.95, fill: '#2c334f62', stroke: '#525a7739', lineWidth: 1 },
+                                { ratio: 0.75, fill: '#2D345153', stroke: '#525a7729', lineWidth: 1 },
+                                { ratio: 0.55, fill: '#2F365250', stroke: '#525a7729', lineWidth: 1 },
+                                { ratio: 0.35, fill: '#30375455', stroke: '#525a7729', lineWidth: 1 },
+                                { ratio: 0.18, fill: '#31385565', stroke: '#525a7735', lineWidth: 1 }
+                            ]
+                        },
+                        playerRadarLabels: {
+                            font: '12px "Product Sans", "Google Sans", sans-serif',
+                            offset: radarLabelOffset
+                        },
+                        playerRadarAxisLabels: {
+                            labelFontSize: 12,
+                            labelFontSizeMobile: 11,
+                            valueFontSize: 10,
+                            valueFontSizeMobile: 9,
+                            labelOffset: isMobileRadar ? 14 : 18,
+                            valueSpacing: isMobileRadar ? 3 : 4,
+                            labelColor: '#EAEBF0'
+                        }
+                    }
+                },
+                plugins: [playerRadarBackgroundPlugin, playerRadarLabelPlugin, playerRadarAxisLabelsPlugin]
+            });
+            
+            // Update gradient after chart is rendered using actual scale center
+            const scale = chartInstance.scales?.r;
+            if (scale) {
+                const centerX = scale.xCenter;
+                const centerY = scale.yCenter;
+                const radius = scale.drawingArea;
+                
+            const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+            gradient.addColorStop(0, 'rgba(121, 0, 245, 0.13)');   // #5300ff at 18% opacity (center)
+            gradient.addColorStop(0.4, 'rgba(92, 0, 255, 0.20)'); // #5700ff at 33% opacity (mid)
+            gradient.addColorStop(0.78, 'rgba(75, 0, 255, 0.34)');   // #6300ff at 55% opacity (outer edge)
+            gradient.addColorStop(1, 'rgba(34, 0, 255, 0.91)');        
+
+                chartInstance.data.datasets[0].backgroundColor = gradient;
+                chartInstance.update('none'); // Update without animation
+            }
+
+            // Store chart instance for cleanup
+            container._chartInstance = Chart.getChart('player-radar-canvas');
+        }
+
         function parseWeeklyStatsCsv(csvText) {
             const { headers, rows } = parseCsv(csvText);
             const normalizedHeaders = headers.map(normalizeHeader);
@@ -2204,12 +2717,47 @@ const SEASON_META_HEADERS = {
             document.getElementById('modal-summary-chips').innerHTML = ''; // Clear previous chips
             const existingHeaderContainer = document.querySelector('.modal-header-left-container');
             if(existingHeaderContainer) existingHeaderContainer.remove();
-            modalBody.innerHTML = '<p class="text-center p-4">Loading game logs...</p>';
+            
+            // Enhanced loading state with animation - add loading classes
+            modalBody.classList.add('loading');
+            gameLogsModal.classList.add('loading');
+            
+            // Clear modal body
+            modalBody.innerHTML = '';
+            
+            // Insert loading panel as sibling to modal-body (inside modal-content)
+            const modalContent = gameLogsModal.querySelector('.modal-content');
+            const existingLoadingPanel = modalContent.querySelector('.game-logs-loading-container');
+            if (existingLoadingPanel) existingLoadingPanel.remove();
+            
+            const loadingPanel = document.createElement('div');
+            loadingPanel.className = 'game-logs-loading-container';
+            loadingPanel.innerHTML = `
+                <div class="game-logs-loading-content">
+                    <div class="game-logs-loading-spinner"></div>
+                    <p class="game-logs-loading-message">
+                        <strong>Syncing Game Logs for All Players</strong>
+                        Fetching Game Logs Across All Your Leagues — This May Take a Few Seconds...
+                    </p>
+                </div>
+                <p class="game-logs-loading-footer">
+                    <em>One-Time Sync - Synced Across the Board → After the initial load, access every game log instantly—no extra loading (per-session)</em>
+                </p>
+            `;
+            modalContent.appendChild(loadingPanel);
+            
             if (state.isGameLogModalOpenFromComparison) {
                 gameLogsModal.style.zIndex = '1050';
             }
             openModal();
             const gameLogs = await fetchGameLogs(player.id);
+            
+            // Remove loading classes and panel before rendering content
+            modalBody.classList.remove('loading');
+            gameLogsModal.classList.remove('loading');
+            const existingPanel = gameLogsModal.querySelector('.game-logs-loading-container');
+            if (existingPanel) existingPanel.remove();
+            
             // Stats page uses sheet data, other pages calculate from weekly data
             const playerRanks = state.isGameLogFromStatsPage 
                 ? getStatsPagePlayerRanks(player.id)
@@ -2267,13 +2815,53 @@ const SEASON_META_HEADERS = {
             });
             return tableCoreLoaderPromise;
         }
+
+        // Configuration for radar chart stats per position
+        // Stats use internal stat keys (values from PLAYER_STAT_HEADER_MAP)
+        // Labels use exact spreadsheet column headers (keys from PLAYER_STAT_HEADER_MAP)
+        const RADAR_STATS_CONFIG = {
+            QB: {
+                stats: ['fpts', 'ppg', 'pass_rtg', 'cmp_pct', 'pa_ypg', 'ttt', 'yds_total', 'imp_per_g'],
+                labels: ['FPTS', 'PPG', 'paRTG', 'CMP%', 'paYPG', 'TTT', 'YDS(t)', 'IMP/G'],
+                maxRank: 36
+            },
+            RB: {
+                stats: ['fpts', 'ppg', 'yds_total', 'snp_pct', 'ypc', 'rec_tgt', 'mtf_per_att', 'yco_per_att'],
+                labels: ['FPTS', 'PPG', 'YDS(t)', 'SNP%', 'YPC', 'TGT', 'MTF/A', 'YCO/A'],
+                maxRank: 48
+            },
+            WR: {
+                stats: ['fpts', 'ppg', 'rec', 'rec_ypg', 'ts_per_rr', 'yprr', 'first_down_rec_rate', 'imp_per_g'],
+                labels: ['FPTS', 'PPG', 'REC', 'recYPG', 'TS%', 'YPRR', '1DRR', 'IMP/G'],
+                maxRank: 72
+            },
+            TE: {
+                stats: ['fpts', 'ppg', 'rec', 'rec_ypg', 'ts_per_rr', 'yprr', 'first_down_rec_rate', 'imp_per_g'],
+                labels: ['FPTS', 'PPG', 'REC', 'recYPG', 'TS%', 'YPRR', '1DRR', 'IMP/G'],
+                maxRank: 24
+            }
+        };
+
         async function renderGameLogs(gameLogs, player, playerRanks) {
+            // Store current player for modal panel interactions (e.g., radar chart)
+            state.currentGameLogsPlayer = player;
+            state.currentGameLogsPlayerRanks = playerRanks;
+            state.currentGameLogsSummary = {
+                fpts: playerRanks?.total_pts,
+                ppg: playerRanks?.ppg
+            };
+            
             const league = state.leagues.find(l => l.league_id === state.currentLeagueId);
             if (!league) return;
             const scoringSettings = league.scoring_settings;
             const fullPlayer = state.players[player.id];
             const playerName = fullPlayer ? `${fullPlayer.first_name} ${fullPlayer.last_name}` : player.name;
             const modalHeader = document.getElementById('modal-header');
+            
+            // Clean up any existing header containers
+            const existingContainer = modalHeader.querySelector('.modal-header-left-container');
+            if (existingContainer) existingContainer.remove();
+            
             const modalHeaderLeftContainer = document.createElement('div');
             modalHeaderLeftContainer.className = 'modal-header-left-container';
             const posTag = document.createElement('div');
@@ -2353,6 +2941,14 @@ const SEASON_META_HEADERS = {
                     statsKeyContainer.classList.add('hidden');
                     modalBody.appendChild(statsKeyContainer);
                 }
+                if (radarChartContainer) {
+                    radarChartContainer.classList.add('hidden');
+                    modalBody.appendChild(radarChartContainer);
+                }
+                if (newsContainer) {
+                    newsContainer.classList.add('hidden');
+                    modalBody.appendChild(newsContainer);
+                }
                 return;
             }
             const statLabels = buildStatLabels();
@@ -2362,11 +2958,12 @@ const qbStatOrder = [
   'pass_rtg',
   'pass_yd',
   'pass_td',
-  'pass_att',
-  'pass_cmp',
+  'cmp_pct',
   'yds_total',
   'rush_yd',
   'rush_td',
+  'pass_att',
+  'pass_cmp',
   'pass_fd',
   'imp_per_g',
   'pass_imp',
@@ -2429,13 +3026,14 @@ const wrTeStatOrder = [
   'ypc',
   'fum'
 ];
+
             const statGroupByKey = new Map();
             const assignStatGroup = (group, keys) => {
                 for (const key of keys) statGroupByKey.set(key, group);
             };
             assignStatGroup('all', ['fpts', 'proj', 'snp_pct', 'yds_total', 'imp_per_g', 'fum', 'fpoe']);
             assignStatGroup('passing', [
-                'pass_rtg', 'pass_yd', 'pass_td', 'pass_att', 'pass_cmp', 'pass_fd',
+                'pass_rtg', 'pass_yd', 'pass_td', 'cmp_pct', 'pass_att', 'pass_cmp', 'pass_fd',
                 'pass_imp', 'pass_imp_per_att', 'ttt', 'prs_pct', 'pass_sack', 'pass_int'
             ]);
             assignStatGroup('rushing', [
@@ -2731,14 +3329,14 @@ const wrTeStatOrder = [
                         if (typeof stats[key] === 'number') value = stats[key];
                         else value = stats['imp'] || 0;
                     }
-                    else if (key === 'prs_pct' || key === 'snp_pct') value = typeof stats[key] === 'number' ? stats[key] : 0;
+                    else if (key === 'prs_pct' || key === 'snp_pct' || key === 'cmp_pct') value = typeof stats[key] === 'number' ? stats[key] : 0;
                     else if (key === 'ttt') value = typeof stats[key] === 'number' ? stats[key] : 0;
                     else value = stats[key] || 0;
                     let displayValue;
                     if (value === null || typeof value !== 'number') displayValue = 'N/A';
                     else if (key === 'yco_per_att') displayValue = value.toFixed(2);
                     else if (key === 'mtf_per_att' || key === 'ypc' || key === 'ttt' || key === 'ypr' || key === 'yprr' || key === 'first_down_rec_rate') displayValue = value.toFixed(2);
-                    else if (key === 'pass_imp_per_att' || key === 'prs_pct' || key === 'snp_pct' || key === 'ts_per_rr') displayValue = formatPercentage(value);
+                    else if (key === 'pass_imp_per_att' || key === 'prs_pct' || key === 'snp_pct' || key === 'ts_per_rr' || key === 'cmp_pct') displayValue = formatPercentage(value);
                     else if (key === 'pass_rtg' || key === 'fpts') displayValue = value.toFixed(1);
                     else displayValue = Number.isInteger(value) ? String(value) : value.toFixed(2);
                     rowData[key] = createTextDescriptor(displayValue);
@@ -2916,6 +3514,7 @@ const wrTeStatOrder = [
                 tableBodyTbody.insertBefore(dividerRow, referenceRow);
             }
             // Add table footer for totals
+            state.currentGameLogsFooterStats = { __gamesPlayed: gameLogsWithData.length };
             if (gameLogsWithData.length > 0) {
                 tableFooterTfoot.innerHTML = '';
                 // Append a footer header row to mirror the column labels
@@ -2948,6 +3547,10 @@ const wrTeStatOrder = [
                 const aggregatedTotals = {};
                 const snapPctValues = [];
                 const statValueCounts = {};
+                
+                // Store calculated footer stats for radar chart
+                const footerStatsForRadar = {};
+                
                 gameLogsWithData.forEach(weekStats => {
                     for (const key in weekStats.stats) {
                         const statValue = parseFloat(weekStats.stats[key]);
@@ -2984,7 +3587,7 @@ const wrTeStatOrder = [
                         const raw = (seasonTotals && typeof seasonTotals[key] === 'number') ? seasonTotals[key] : null;
                         if (raw === null) {
                             displayValue = 'N/A';
-                        } else if (key === 'snp_pct' || key === 'prs_pct' || key === 'ts_per_rr') {
+                        } else if (key === 'snp_pct' || key === 'prs_pct' || key === 'ts_per_rr' || key === 'cmp_pct') {
                             displayValue = formatPercentage(raw);
                         } else {
                             displayValue = Number.isInteger(raw) ? String(raw) : Number(raw).toFixed(2);
@@ -3007,6 +3610,26 @@ const wrTeStatOrder = [
                                 return sum + 0;
                             }, 0);
                             displayValue = totalPoints.toFixed(1);
+                        }
+                    } else if (key === 'ppg') {
+                        // Calculate PPG from FPTS and games played
+                        if (state.isGameLogFromStatsPage) {
+                            const statsData = state.statsPagePlayerData;
+                            const ppg = statsData?.ppg || 0;
+                            displayValue = ppg.toFixed(1);
+                        } else {
+                            // Calculate from matchup data for rosters page
+                            const totalPoints = gameLogsWithData.reduce((sum, week) => {
+                                const weekNum = week.week;
+                                const playerId = player.id;
+                                if (state.matchupDataLoaded && state.leagueMatchupStats[weekNum]?.[playerId] !== undefined) {
+                                    return sum + state.leagueMatchupStats[weekNum][playerId];
+                                }
+                                return sum + 0;
+                            }, 0);
+                            const gamesPlayed = gameLogsWithData.length;
+                            const ppg = gamesPlayed > 0 ? totalPoints / gamesPlayed : 0;
+                            displayValue = ppg.toFixed(1);
                         }
                     } else if (key === 'ypc') {
                         const totalYards = seasonTotals && typeof seasonTotals.rush_yd === 'number' ? seasonTotals.rush_yd : (aggregatedTotals['rush_yd'] || 0);
@@ -3056,6 +3679,14 @@ const wrTeStatOrder = [
                         if (pctValue === null) {
                             const total = aggregatedTotals['prs_pct'] || 0;
                             const count = statValueCounts['prs_pct'] || 0;
+                            pctValue = count > 0 ? total / count : 0;
+                        }
+                        displayValue = formatPercentage(pctValue);
+                    } else if (key === 'cmp_pct') {
+                        let pctValue = seasonTotals && typeof seasonTotals.cmp_pct === 'number' ? seasonTotals.cmp_pct : null;
+                        if (pctValue === null) {
+                            const total = aggregatedTotals['cmp_pct'] || 0;
+                            const count = statValueCounts['cmp_pct'] || 0;
                             pctValue = count > 0 ? total / count : 0;
                         }
                         displayValue = formatPercentage(pctValue);
@@ -3129,8 +3760,31 @@ const wrTeStatOrder = [
                     td.appendChild(rankAnnotation);
                     td.classList.add('has-rank-annotation');
                     rankAnnotation.style.color = getConditionalColorByRank(rankValue, player.pos);
+                    
+                    // Store the calculated numeric value for radar chart
+                    // Remove formatting to get raw number
+                    const numericValue = parseFloat(displayValue.replace(/[,%]/g, ''));
+                    if (!Number.isNaN(numericValue)) {
+                        footerStatsForRadar[key] = numericValue;
+                    }
+                    
                     footerRow.appendChild(td);
                 }
+                
+                // Calculate and store PPG for radar chart (not in sheets, calculated from FPTS)
+                if (footerStatsForRadar.fpts !== undefined) {
+                    const gamesPlayed = gameLogsWithData.length;
+                    footerStatsForRadar.__gamesPlayed = gamesPlayed;
+                    if (gamesPlayed > 0) {
+                        footerStatsForRadar.ppg = footerStatsForRadar.fpts / gamesPlayed;
+                    }
+                } else {
+                    footerStatsForRadar.__gamesPlayed = gameLogsWithData.length;
+                }
+                
+                // Store calculated footer stats in state for radar chart
+                state.currentGameLogsFooterStats = footerStatsForRadar;
+                
                 tableFooterTfoot.appendChild(footerRow);
                 footerWrapper.classList.remove('hidden');
             } else {
@@ -3151,6 +3805,14 @@ const wrTeStatOrder = [
             if (statsKeyContainer) {
                 statsKeyContainer.classList.add('hidden');
                 modalBody.appendChild(statsKeyContainer);
+            }
+            if (radarChartContainer) {
+                radarChartContainer.classList.add('hidden');
+                modalBody.appendChild(radarChartContainer);
+            }
+            if (newsContainer) {
+                newsContainer.classList.add('hidden');
+                modalBody.appendChild(newsContainer);
             }
             hScroll.scrollLeft = 0;
             bodyWrapper.scrollTop = 0;
@@ -3423,17 +4085,18 @@ const wrTeStatOrder = [
             const otherPlayer = players[1];
             const getStatOrderForPosition = (pos) => {
 const qbStatOrder = [
-  'fpts',
+   'fpts',
   'proj',
   'pass_rtg',
   'pass_yd',
   'pass_td',
-  'pass_att',
-  'pass_cmp',
-  'yds_total',
+  'cmp_pct',
   'pa_ypg',
+  'yds_total',
   'rush_yd',
   'rush_td',
+  'pass_att',
+  'pass_cmp',
   'pass_fd',
   'imp_per_g',
   'pass_imp',
@@ -3541,7 +4204,7 @@ const wrTeStatOrder = [
                         const raw = (seasonTotals && typeof seasonTotals[statKey] === 'number') ? seasonTotals[statKey] : null;
                         calculatedValue = (raw === null) ? null : raw;
                         if (raw === null) displayValue = 'N/A';
-                        else if (statKey === 'snp_pct' || statKey === 'prs_pct' || statKey === 'ts_per_rr') displayValue = formatPercentage(raw);
+                        else if (statKey === 'snp_pct' || statKey === 'prs_pct' || statKey === 'ts_per_rr' || statKey === 'cmp_pct') displayValue = formatPercentage(raw);
                         else displayValue = Number.isInteger(raw) ? String(raw) : Number(raw).toFixed(2);
                     } else {
                         const computeStat = (() => {
@@ -3587,6 +4250,11 @@ const wrTeStatOrder = [
                                 case 'prs_pct': {
                                     const total = aggregatedTotals['prs_pct'] || 0;
                                     const count = statValueCounts['prs_pct'] || 0;
+                                    cv = count > 0 ? total / count : 0; dv = formatPercentage(cv); break;
+                                }
+                                case 'cmp_pct': {
+                                    const total = aggregatedTotals['cmp_pct'] || 0;
+                                    const count = statValueCounts['cmp_pct'] || 0;
                                     cv = count > 0 ? total / count : 0; dv = formatPercentage(cv); break;
                                 }
                                 case 'pass_rtg': {
@@ -3884,7 +4552,7 @@ const wrTeStatOrder = [
                 // high-PPG players from slipping through.
                 const playerKtc = (player.ktc || 0);
                 const playerPpg = (player.ppg || 0);
-                const meetsStarCriteria = (playerKtc >= 3000) || (playerPpg >= 9 && playerKtc >= 2200);
+                const meetsStarCriteria = (playerKtc >= 3900) || (playerPpg >= 12 && playerKtc >= 2900);
                 if (isStarActive && !meetsStarCriteria) {
                     return false;
                 }
@@ -3960,7 +4628,7 @@ const wrTeStatOrder = [
                         filteredData = data.filter(player => {
                             const playerKtc = (player.ktc || 0);
                             const playerPpg = (player.ppg || 0);
-                            return (playerKtc >= 3000) || (playerPpg >= 9 && playerKtc >= 2200);
+                            return (playerKtc >= 3900) || (playerPpg >= 12 && playerKtc >= 2900);
                         });
                     }
                     const h3 = el.querySelector('h3');
@@ -4058,7 +4726,7 @@ const wrTeStatOrder = [
             const normalizedKey = logoKeyMap[teamKey] || teamKey.toLowerCase();
             const src = `../assets/NFL-Tags_webp/${normalizedKey}.webp`;
             const teamTagHTML = (player.team && player.team !== 'FA')
-              ? `<img class="team-logo glow" src="${src}" alt="${teamKey}" width="19" height="19" loading="lazy" decoding="async">`
+              ? `<img class="team-logo glow" src="${src}" alt="${teamKey}" width="19" height="19" loading="eager" decoding="async">`
               : `<div class="team-tag" style="background-color: #64748b; color: white;">FA</div>`;
             const basePos = (player.pos || fullPlayer?.position || displaySlot || '').toUpperCase();
             const fptsPosRankNumber = Number.parseInt(playerRanks.posRank, 10);
@@ -4630,6 +5298,48 @@ const wrTeStatOrder = [
             if (Number.isNaN(numericValue)) return fallback;
             return numericValue.toFixed(decimals) + '%';
         }
+        function formatRadarStatValue(statKey, value) {
+            // Reuse preformatted strings (matches summary chip display for league-specific stats)
+            if (typeof value === 'string') {
+                const trimmed = value.trim();
+                if (trimmed) return trimmed;
+            }
+
+            if (value === null || value === undefined || Number.isNaN(value)) return 'N/A';
+            
+            const numericValue = Number(value);
+            if (Number.isNaN(numericValue)) return 'N/A';
+
+            // Percentage stats
+            if (statKey === 'cmp_pct' || statKey === 'snp_pct' || statKey === 'ts_per_rr' || 
+                statKey === 'first_down_rec_rate' || statKey === 'prs_pct' || statKey === 'pass_imp_per_att') {
+                return numericValue.toFixed(1) + '%';
+            }
+            
+            // FPTS and PPG - always 1 decimal place
+            if (statKey === 'fpts' || statKey === 'ppg') {
+                return numericValue.toFixed(1);
+            }
+            
+            // Whole number stats
+            if (statKey === 'rec' || statKey === 'rec_tgt') {
+                return Math.round(numericValue).toString();
+            }
+            if (statKey === 'yds_total') {
+                return Math.round(numericValue).toString();
+            }
+            
+            // Rating stats (1 decimal)
+            if (statKey === 'pass_rtg') {
+                return numericValue.toFixed(1);
+            }
+            if (statKey === 'ttt' || statKey === 'imp_per_g') {
+                return numericValue.toFixed(2);
+            }
+            
+            // All other stats (2 decimals)
+            return numericValue.toFixed(2);
+        }
         function getPlayerVitals(playerId) {
             const fallback = { age: '—', height: '—', weight: '—' };
             const playerData = state.players?.[playerId];
@@ -5151,11 +5861,43 @@ const wrTeStatOrder = [
         }
         function openModal() {
             gameLogsModal.classList.remove('hidden');
+            modalBody.classList.remove('hidden'); // Ensure game logs table is visible
             statsKeyContainer.classList.add('hidden');
+            if (radarChartContainer) radarChartContainer.classList.add('hidden');
+            if (newsContainer) newsContainer.classList.add('hidden');
+            
+            // Reset all buttons to inactive, then activate game-logs button
+            const modalInfoBtns = document.querySelectorAll('.modal-info-btn');
+            modalInfoBtns.forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-panel') === 'game-logs') {
+                    btn.classList.add('active');
+                }
+            });
         }
         function closeModal() {
             gameLogsModal.classList.add('hidden');
             statsKeyContainer.classList.add('hidden');
+            if (radarChartContainer) radarChartContainer.classList.add('hidden');
+            if (newsContainer) newsContainer.classList.add('hidden');
+            
+            // Reset all button active states
+            const modalInfoBtns = document.querySelectorAll('.modal-info-btn');
+            modalInfoBtns.forEach(btn => btn.classList.remove('active'));
+            
+            // Destroy radar chart if exists to prevent memory leaks
+            const radarContainer = document.querySelector('#radar-chart-container .radar-chart-content');
+            if (radarContainer && radarContainer._chartInstance) {
+                radarContainer._chartInstance.destroy();
+                radarContainer.innerHTML = '';
+                radarContainer._chartInstance = null;
+            }
+            
+            // Clear current player reference
+            state.currentGameLogsPlayer = null;
+            state.currentGameLogsPlayerRanks = null;
+            state.currentGameLogsSummary = null;
+            
             if (!state.isGameLogModalOpenFromComparison) {
                 closeComparisonModal();
             } else {
