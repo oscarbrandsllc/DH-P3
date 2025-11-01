@@ -5534,7 +5534,7 @@ img.team-logo.glow[alt="WAS"] {
 
 .game-logs-loading-container {
     position: absolute;
-    top: 60px; /* Below header - adjust based on actual header height */
+    top: 20px; /* Below header - adjust based on actual header height */
     left: 0;
     right: 0;
     bottom: 0;
@@ -5542,9 +5542,6 @@ img.team-logo.glow[alt="WAS"] {
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
-    background: linear-gradient(180deg, rgba(21, 22, 37, 0.07) 15%, rgba(38, 41, 64, 0.15) 100%);
-    backdrop-filter: blur(28px);
-    -webkit-backdrop-filter: blur(28px);
     border-radius: 0 0 9px 9px;
     z-index: 100;
     padding: 2rem;
@@ -5605,7 +5602,7 @@ img.team-logo.glow[alt="WAS"] {
 }
 
 .game-logs-loading-message {
-    font-size: 1.25rem;
+    font-size: 1rem;
     line-height: 1.65;
     color: #BDC1D8;
     text-align: center;
@@ -5617,6 +5614,7 @@ img.team-logo.glow[alt="WAS"] {
 
 .game-logs-loading-message strong {
     color: var(--color-text-primary);
+    font-size: 1.2rem;
     font-weight: 600;
     display: block;
     margin-bottom: 0.25rem;
