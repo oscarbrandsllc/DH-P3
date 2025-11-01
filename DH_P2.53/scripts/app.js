@@ -4552,7 +4552,7 @@ const wrTeStatOrder = [
                 // high-PPG players from slipping through.
                 const playerKtc = (player.ktc || 0);
                 const playerPpg = (player.ppg || 0);
-                const meetsStarCriteria = (playerKtc >= 3000) || (playerPpg >= 9 && playerKtc >= 2200);
+                const meetsStarCriteria = (playerKtc >= 3900) || (playerPpg >= 12 && playerKtc >= 2900);
                 if (isStarActive && !meetsStarCriteria) {
                     return false;
                 }
@@ -4628,7 +4628,7 @@ const wrTeStatOrder = [
                         filteredData = data.filter(player => {
                             const playerKtc = (player.ktc || 0);
                             const playerPpg = (player.ppg || 0);
-                            return (playerKtc >= 3000) || (playerPpg >= 9 && playerKtc >= 2200);
+                            return (playerKtc >= 3900) || (playerPpg >= 12 && playerKtc >= 2900);
                         });
                     }
                     const h3 = el.querySelector('h3');
