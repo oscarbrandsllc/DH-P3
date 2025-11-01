@@ -5534,7 +5534,7 @@ img.team-logo.glow[alt="WAS"] {
 
 .game-logs-loading-container {
     position: absolute;
-    top: 29px; /* Below header - adjust based on actual header height */
+    top: 32px; /* Below header - adjust based on actual header height */
     left: 0;
     right: 0;
     bottom: 0;
