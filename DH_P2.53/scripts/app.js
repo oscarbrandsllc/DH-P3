@@ -2741,7 +2741,7 @@ const SEASON_META_HEADERS = {
                     </p>
                 </div>
                 <p class="game-logs-loading-footer">
-                    <em>One-Time Sync - Synced Across the Board → After the initial load, access every gamelog instantly—no extra loading (per-session)</em>
+                    <em>One-Time Sync - Synced Across the Board → After the initial load, access every game log instantly—no extra loading (per-session)</em>
                 </p>
             `;
             modalContent.appendChild(loadingPanel);
