@@ -410,10 +410,12 @@
 #secondary-header-row .username-area {
     width: auto;
     flex: 1 1 0;
+    min-width: 160px; /* Ensure it has a base width */
 }
 #secondary-header-row .custom-select-wrapper {
     width: auto;
     flex: 1 1 0;
+    min-width: 160px; /* Match username area to prevent layout shift on load */
 }
 .compact-switcher {
     display: flex;
