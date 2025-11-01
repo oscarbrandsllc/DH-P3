@@ -3986,6 +3986,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
     #game-logs-modal .game-logs-table-footer tfoot tr:first-child th {
         padding-top: 0.35rem;
         padding-bottom: 0.35rem;
+        vertical-align: middle;
     }
     #modal-body .no-logs {
         text-align: center;
@@ -4381,6 +4382,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
         line-height: 1.1;
         padding-top: 0.3rem;
         padding-bottom: 0rem;
+        vertical-align: middle;
     }
     .modal-table-footer-label .season-label{
         margin-top: 4px;
@@ -4388,7 +4390,7 @@ body[data-page="rosters"] #secondary-header-row #analyzeLeagueButton.active {
         color: var(--color-text-secondary);
         }
     .modal-table-footer-label .gp-label {
-        font-size: 0.85em;
+        font-size: 0.95em;
         color: var(--color-text-tertiary);
         display: block;
         margin-top: 2px;
