@@ -24,9 +24,8 @@
 // ============================================================================
 // CACHE VERSION — CHANGE THIS TO FORCE A FULL CACHE RESET
 // ============================================================================
-// LeagueHub compact mobile headers and desktop tab dividers: refresh the cache
-// so the new header markup and matching column widths arrive with their styles.
-const CACHE_NAME = 'DH3.44';
+// Refresh LeagueHub's shorter mobile AVG / SEASON label and narrower column.
+const CACHE_NAME = 'DH3.44a';
 
 // ============================================================================
 // CORE ASSETS — Pre-cached during install

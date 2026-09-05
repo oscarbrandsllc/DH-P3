@@ -1766,7 +1766,8 @@
         { width: '126px', pxWidth: 126 },
         { width: '64px', pxWidth: 64 },
         { width: '88px', pxWidth: 88 },
-        { width: '104px', pxWidth: 104 },
+        // Mobile AVG / SEASON needs only room for SEASON and its calendar icon.
+        { width: '72px', pxWidth: 72 },
         { width: '140px', pxWidth: 140 },
         { width: '72px', pxWidth: 72 },
         { width: '56px', pxWidth: 56 },
@@ -1867,7 +1868,7 @@
           <tr class="leaguehub-trades-table-column-row">
             <th scope="col" class="is-numeric"><span><i class="fa-solid fa-right-left" aria-hidden="true"></i><span class="leaguehub-trades-header-label">TRADE<br> COUNT</span></span></th>
             <th scope="col" class="is-numeric"><span><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span class="leaguehub-trades-header-label">% LEAGUE<br> TRADES</span></span></th>
-            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-calendar-days" aria-hidden="true"></i><span class="leaguehub-trades-header-label">AVG TRADES /<br> SEASON</span></span></th>
+            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-calendar-days" aria-hidden="true"></i><span class="leaguehub-trades-header-label">AVG /<br> SEASON</span></span></th>
             <th scope="col"><span><i class="fa-solid fa-link" aria-hidden="true"></i><span class="leaguehub-trades-header-label">TOP TRADE<br> PARTNER</span></span></th>
             <th scope="col" class="is-numeric"><span><i class="fa-solid fa-user-plus" aria-hidden="true"></i><span class="leaguehub-trades-header-label">PLAYERS<br> IN</span></span></th>
             <th scope="col" class="is-numeric"><span><i class="fa-solid fa-ticket" aria-hidden="true"></i><span class="leaguehub-trades-header-label">PICKS<br> IN</span></span></th>
