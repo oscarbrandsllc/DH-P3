@@ -1760,18 +1760,18 @@
         { width: '82px', pxWidth: 82 },
         { width: '96px', pxWidth: 96 },
       ], 2, [
-        // Mobile owns independently expanded widths for the longer labels, so
-        // later narrow-screen tuning cannot change the desktop proportions.
+        // Mobile's explicit two-line labels allow narrower metric columns.
+        // Keep enough room for values and the single-column Trade Network group.
         { width: '40px', pxWidth: 40 },
         { width: '126px', pxWidth: 126 },
+        { width: '64px', pxWidth: 64 },
+        { width: '88px', pxWidth: 88 },
         { width: '104px', pxWidth: 104 },
-        { width: '132px', pxWidth: 132 },
-        { width: '136px', pxWidth: 136 },
-        { width: '176px', pxWidth: 176 },
-        { width: '84px', pxWidth: 84 },
+        { width: '140px', pxWidth: 140 },
+        { width: '72px', pxWidth: 72 },
+        { width: '56px', pxWidth: 56 },
         { width: '78px', pxWidth: 78 },
-        { width: '86px', pxWidth: 86 },
-        { width: '136px', pxWidth: 136 },
+        { width: '104px', pxWidth: 104 },
       ]);
       const rows = currentMembers.map((member) => {
         const memberTrades = visibleTrades.filter((trade) => trade.participantOwnerIds.includes(member.ownerId));
@@ -1856,6 +1856,8 @@
           </tr>`;
       }
       if (elements.tradesMobileScrollHead) {
+        // Only the mobile table receives manual line breaks and SEASON wording;
+        // its separate desktop header retains the original single-line labels.
         elements.tradesMobileScrollHead.innerHTML = `
           <tr class="leaguehub-trades-table-group-row">
             <th scope="colgroup" colspan="3"><span><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Trade activity</span></th>
@@ -1863,14 +1865,14 @@
             <th scope="colgroup" colspan="4"><span><i class="fa-solid fa-box-open" aria-hidden="true"></i> Assets received</span></th>
           </tr>
           <tr class="leaguehub-trades-table-column-row">
-            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-right-left" aria-hidden="true"></i> TRADE COUNT</span></th>
-            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-chart-pie" aria-hidden="true"></i> % LEAGUE TRADES</span></th>
-            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-calendar-days" aria-hidden="true"></i> AVG TRADES / SZN</span></th>
-            <th scope="col"><span><i class="fa-solid fa-link" aria-hidden="true"></i> TOP TRADE PARTNER</span></th>
-            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-user-plus" aria-hidden="true"></i> PLAYERS IN</span></th>
-            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-ticket" aria-hidden="true"></i> PICKS IN</span></th>
-            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-coins" aria-hidden="true"></i> KTC in</span></th>
-            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i> AVG KTC IN / TRADE</span></th>
+            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-right-left" aria-hidden="true"></i><span class="leaguehub-trades-header-label">TRADE<br> COUNT</span></span></th>
+            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span class="leaguehub-trades-header-label">% LEAGUE<br> TRADES</span></span></th>
+            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-calendar-days" aria-hidden="true"></i><span class="leaguehub-trades-header-label">AVG TRADES /<br> SEASON</span></span></th>
+            <th scope="col"><span><i class="fa-solid fa-link" aria-hidden="true"></i><span class="leaguehub-trades-header-label">TOP TRADE<br> PARTNER</span></span></th>
+            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-user-plus" aria-hidden="true"></i><span class="leaguehub-trades-header-label">PLAYERS<br> IN</span></span></th>
+            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-ticket" aria-hidden="true"></i><span class="leaguehub-trades-header-label">PICKS<br> IN</span></span></th>
+            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-coins" aria-hidden="true"></i><span class="leaguehub-trades-header-label">KTC<br> IN</span></span></th>
+            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-scale-balanced" aria-hidden="true"></i><span class="leaguehub-trades-header-label">AVG KTC IN /<br> TRADE</span></span></th>
           </tr>`;
       }
       if (elements.tradesAnalysisBody) {
@@ -2016,15 +2018,15 @@
         { width: '88px', pxWidth: 88 },
         { width: '88px', pxWidth: 88 },
       ], 1, [
-        // Member-mode mobile widths remain independent from desktop and leave
-        // the expanded Trade Count / Players In labels comfortably readable.
+        // Compact the same incoming metrics in member mode. Trade Count keeps
+        // room for its Activity group heading; outgoing columns retain their widths.
         { width: '170px', pxWidth: 170 },
-        { width: '104px', pxWidth: 104 },
+        { width: '96px', pxWidth: 96 },
+        { width: '72px', pxWidth: 72 },
         { width: '84px', pxWidth: 84 },
-        { width: '84px', pxWidth: 84 },
+        { width: '56px', pxWidth: 56 },
         { width: '70px', pxWidth: 70 },
-        { width: '70px', pxWidth: 70 },
-        { width: '92px', pxWidth: 92 },
+        { width: '78px', pxWidth: 78 },
         { width: '92px', pxWidth: 92 },
       ]);
       if (elements.tradesAnalysisHead) {
@@ -2060,12 +2062,12 @@
             <th scope="colgroup" colspan="6"><span><i class="fa-solid fa-arrow-right-arrow-left" aria-hidden="true"></i> Asset movement</span></th>
           </tr>
           <tr class="leaguehub-trades-table-column-row">
-            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-right-left" aria-hidden="true"></i> TRADE COUNT</span></th>
-            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-user-plus" aria-hidden="true"></i> Players in</span></th>
+            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-right-left" aria-hidden="true"></i><span class="leaguehub-trades-header-label">TRADE<br> COUNT</span></span></th>
+            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-user-plus" aria-hidden="true"></i><span class="leaguehub-trades-header-label">PLAYERS<br> IN</span></span></th>
             <th scope="col" class="is-numeric"><span><i class="fa-solid fa-user-minus" aria-hidden="true"></i> Players out</span></th>
-            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-circle-down" aria-hidden="true"></i> Picks in</span></th>
+            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-circle-down" aria-hidden="true"></i><span class="leaguehub-trades-header-label">PICKS<br> IN</span></span></th>
             <th scope="col" class="is-numeric"><span><i class="fa-solid fa-circle-up" aria-hidden="true"></i> Picks out</span></th>
-            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-coins" aria-hidden="true"></i> KTC in</span></th>
+            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-coins" aria-hidden="true"></i><span class="leaguehub-trades-header-label">KTC<br> IN</span></span></th>
             <th scope="col" class="is-numeric"><span><i class="fa-solid fa-money-bill-transfer" aria-hidden="true"></i> KTC out</span></th>
           </tr>`;
       }

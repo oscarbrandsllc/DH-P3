@@ -24,10 +24,9 @@
 // ============================================================================
 // CACHE VERSION — CHANGE THIS TO FORCE A FULL CACHE RESET
 // ============================================================================
-// LeagueHub mobile identity, touch scrolling, and Archive column refinement:
-// retire the prior cache so layout and interaction fixes arrive together on
-// each user's next normal refresh.
-const CACHE_NAME = 'DH3.43';
+// LeagueHub compact mobile headers and desktop tab dividers: refresh the cache
+// so the new header markup and matching column widths arrive with their styles.
+const CACHE_NAME = 'DH3.44';
 
 // ============================================================================
 // CORE ASSETS — Pre-cached during install

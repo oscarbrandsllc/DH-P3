@@ -4932,13 +4932,39 @@ body[data-page="leaguehub"] .leaguehub-trade-stat-chip strong {
   }
 
   body[data-page="leaguehub"] .leaguehub-context-row {
+    --leaguehub-context-gap: 2.16rem;
     grid-template-columns: minmax(16.5rem, 0.9fr) minmax(19rem, 1.28fr) minmax(11.5rem, 0.84fr);
     grid-template-areas:
       "session tabs league";
-    gap: 2.16rem;
+    gap: var(--leaguehub-context-gap);
     align-items: end;
     padding-top: 0;
     border-top: 0;
+  }
+
+  /* Desktop context dividers sit halfway across each existing tab-side gap,
+     keeping the username, tabs, and league selector in their current positions. */
+  body[data-page="leaguehub"] .leaguehub-tab-shell {
+    position: relative;
+  }
+
+  body[data-page="leaguehub"] .leaguehub-tab-shell::before,
+  body[data-page="leaguehub"] .leaguehub-tab-shell::after {
+    content: "";
+    position: absolute;
+    top: 0.2rem;
+    bottom: 0.2rem;
+    width: 1px;
+    background: linear-gradient(180deg, transparent, rgba(148, 181, 228, 0.5) 25%, rgba(148, 181, 228, 0.5) 75%, transparent);
+    pointer-events: none;
+  }
+
+  body[data-page="leaguehub"] .leaguehub-tab-shell::before {
+    left: calc(var(--leaguehub-context-gap) / -2);
+  }
+
+  body[data-page="leaguehub"] .leaguehub-tab-shell::after {
+    right: calc(var(--leaguehub-context-gap) / -2);
   }
 
   body[data-page="leaguehub"] .leaguehub-hero-session,
@@ -5340,6 +5366,15 @@ body[data-page="leaguehub"] .leaguehub-trade-stat-chip strong {
   body[data-page="leaguehub"] .leaguehub-trades-mobile-table .leaguehub-trades-table-column-row th {
     height: 2.55rem;
     padding: 0.34rem 0.25rem;
+  }
+
+  /* Explicit mobile label breaks keep both lines centered beside their icon.
+     Preserve matched header heights across the frozen and scrolling tables. */
+  body[data-page="leaguehub"] .leaguehub-trades-mobile-table .leaguehub-trades-header-label {
+    display: block;
+    line-height: 1.15;
+    text-align: center;
+    white-space: nowrap;
   }
 
   body[data-page="leaguehub"] .leaguehub-trades-mobile-table .leaguehub-trades-table tbody tr {
