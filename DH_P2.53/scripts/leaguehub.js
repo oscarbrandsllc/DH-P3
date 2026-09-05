@@ -1765,7 +1765,7 @@
         { width: '40px', pxWidth: 40 },
         { width: '126px', pxWidth: 126 },
         { width: '64px', pxWidth: 64 },
-        { width: '88px', pxWidth: 88 },
+        { width: '80px', pxWidth: 80 },
         // Mobile AVG / SEASON needs only room for SEASON and its calendar icon.
         { width: '72px', pxWidth: 72 },
         { width: '140px', pxWidth: 140 },
@@ -1837,7 +1837,7 @@
             <th scope="col" class="is-numeric"><span><i class="fa-solid fa-ranking-star" aria-hidden="true"></i> RK</span></th>
             <th scope="col"><span><i class="fa-solid fa-user-group" aria-hidden="true"></i> Team</span></th>
             <th scope="col" class="is-numeric"><span><i class="fa-solid fa-right-left" aria-hidden="true"></i> TRADE COUNT</span></th>
-            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-chart-pie" aria-hidden="true"></i> % LEAGUE TRADES</span></th>
+            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span><span class="leaguehub-trades-header-percent">%</span> LEAGUE TRADES</span></span></th>
             <th scope="col" class="is-numeric"><span><i class="fa-solid fa-calendar-days" aria-hidden="true"></i> AVG TRADES / SZN</span></th>
             <th scope="col"><span><i class="fa-solid fa-link" aria-hidden="true"></i> TOP TRADE PARTNER</span></th>
             <th scope="col" class="is-numeric"><span><i class="fa-solid fa-user-plus" aria-hidden="true"></i> PLAYERS IN</span></th>
@@ -1867,7 +1867,7 @@
           </tr>
           <tr class="leaguehub-trades-table-column-row">
             <th scope="col" class="is-numeric"><span><i class="fa-solid fa-right-left" aria-hidden="true"></i><span class="leaguehub-trades-header-label">TRADE<br> COUNT</span></span></th>
-            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span class="leaguehub-trades-header-label">% LEAGUE<br> TRADES</span></span></th>
+            <th scope="col" class="is-numeric"><span><i class="fa-solid fa-chart-pie" aria-hidden="true"></i><span class="leaguehub-trades-header-label"><span class="leaguehub-trades-header-percent">%</span> LEAGUE<br> TRADES</span></span></th>
             <th scope="col" class="is-numeric"><span><i class="fa-solid fa-calendar-days" aria-hidden="true"></i><span class="leaguehub-trades-header-label">AVG /<br> SEASON</span></span></th>
             <th scope="col"><span><i class="fa-solid fa-link" aria-hidden="true"></i><span class="leaguehub-trades-header-label">TOP TRADE<br> PARTNER</span></span></th>
             <th scope="col" class="is-numeric"><span><i class="fa-solid fa-user-plus" aria-hidden="true"></i><span class="leaguehub-trades-header-label">PLAYERS<br> IN</span></span></th>

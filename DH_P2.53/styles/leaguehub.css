@@ -4286,6 +4286,12 @@ body[data-page="leaguehub"] .leaguehub-trades-table-column-row i {
   font-size: 0.66rem;
 }
 
+/* Emphasize just the League Share header's percent symbol on both layouts. */
+body[data-page="leaguehub"] .leaguehub-trades-table-column-row .leaguehub-trades-header-percent {
+  font-size: 1.15em;
+  line-height: 1;
+}
+
 body[data-page="leaguehub"] .leaguehub-trades-table tbody tr {
   background: #0f1628;
 }
@@ -4433,7 +4439,9 @@ body[data-page="leaguehub"] .leaguehub-trades-share-value {
 
 body[data-page="leaguehub"] .leaguehub-trades-share-track {
   display: block;
-  width: 2.9rem;
+  /* Use the column's available space on both layouts, retaining a small inset.
+     The displayed percentage and existing fill calculation stay unchanged. */
+  width: calc(100% - 0.25rem);
   height: 7px;
   margin: 0.28rem auto 0;
   overflow: hidden;

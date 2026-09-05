@@ -24,8 +24,8 @@
 // ============================================================================
 // CACHE VERSION — CHANGE THIS TO FORCE A FULL CACHE RESET
 // ============================================================================
-// Refresh LeagueHub's shorter mobile AVG / SEASON label and narrower column.
-const CACHE_NAME = 'DH3.44a';
+// Refresh LeagueHub's wider share bars, percent header accent, and mobile width.
+const CACHE_NAME = 'DH3.44b';
 
 // ============================================================================
 // CORE ASSETS — Pre-cached during install
