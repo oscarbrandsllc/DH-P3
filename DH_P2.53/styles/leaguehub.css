@@ -5326,7 +5326,7 @@ body[data-page="leaguehub"] .leaguehub-trade-stat-chip strong {
 
   /* The compact share track is mobile-only; desktop keeps its 5.5rem width. */
   body[data-page="leaguehub"] .leaguehub-trades-share-track {
-    width: 2.9rem;
+    width: 3.6rem;
   }
 
   body[data-page="leaguehub"] .leaguehub-trades-mobile-table {
