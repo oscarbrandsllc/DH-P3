@@ -384,7 +384,7 @@ main#content {
   font-size: clamp(1.4rem, 5vw, 3.1rem);
   font-weight: 200;
   color: #979fbf;
-  text-shadow: 0 0 9px #5300ffaa, 2px 2px 0px #eef2, 4px 4px 3px #0005;
+  text-shadow: 0 0 9px #5300ffaa, 1px 1px 0px #eef5, 3px 3px 3px #0005;
   position: relative;
   z-index: 1;
   white-space: nowrap;

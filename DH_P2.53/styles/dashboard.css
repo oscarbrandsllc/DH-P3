@@ -2737,7 +2737,7 @@ body[data-page="welcome"] .app-header {
     letter-spacing: -0.05em;
     font-weight: 600;
     -webkit-text-stroke: 0px #16254394;
-    text-shadow: 0 0 9px #5300ffaa, 2px 2px 0px #eef8, 4px 7px 3px #0005;
+    text-shadow: 0 0 9px #5300ffaa, 2px 2px 0px #eef4, 4px 5px 3px #0005;
   }
 
   /* Adjust Header Container on Desktop */
