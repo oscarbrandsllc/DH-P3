@@ -5334,7 +5334,7 @@ body[data-page="leaguehub"] .leaguehub-trade-stat-chip strong {
     grid-template-columns: var(--leaguehub-frozen-table-width, 158px) minmax(0, 1fr);
     width: 100%;
     min-width: 0;
-    margin-top: 0.62rem;
+    margin-top: -4px;
     overflow: hidden;
     border: 1px solid rgba(139, 164, 220, 0.2);
     border-radius: 13px;
@@ -5622,7 +5622,7 @@ body[data-page="leaguehub"] .leaguehub-trade-stat-chip strong {
 
   body[data-page="leaguehub"] .leaguehub-trades-toolbar,
   body[data-page="leaguehub"] .leaguehub-trades-module {
-    padding: 0.56rem 0rem;
+    padding: 0.56rem 0rem 0rem;
   }
 
   body[data-page="leaguehub"] .leaguehub-trades-table th,
