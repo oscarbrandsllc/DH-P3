@@ -95,12 +95,28 @@ body[data-page="datahub"] .dh-compare-heading {
   min-width: 0;
 }
 
+/* Compare heading: keep the slightly larger beta label beside the eyebrow at every width. */
+body[data-page="datahub"] .dh-compare-eyebrow-row {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
 body[data-page="datahub"] .dh-compare-eyebrow {
   color: rgba(142, 228, 255, 0.75);
   font-size: 0.62rem;
   font-weight: 850;
   letter-spacing: 0.17em;
   text-transform: uppercase;
+}
+
+body[data-page="datahub"] .dh-compare-beta {
+  flex: 0 0 auto;
+  color: #00bfff;
+  font-size: 0.74rem;
+  font-style: italic;
+  font-weight: 850;
+  letter-spacing: 0.04em;
 }
 
 body[data-page="datahub"] .dh-compare-heading h2 {
@@ -561,9 +577,12 @@ body[data-page="datahub"] .dh-compare-clear-all {
   white-space: nowrap;
 }
 
-body[data-page="datahub"] .dh-compare-position-filter {
-  min-width: 55px;
-  padding: 0 5px;
+/* Compare position filters: desktop sizing is separate from the existing mobile controls. */
+@media (min-width: 720px) {
+  body[data-page="datahub"] .dh-compare-position-filter {
+    min-width: 55px;
+    padding: 0 5px;
+  }
 }
 
 body[data-page="datahub"] .dh-compare-clear-all {
@@ -1376,6 +1395,10 @@ body[data-page="datahub"] .dh-compare-search-option:focus-visible {
     letter-spacing: 0.13em;
   }
 
+  body[data-page="datahub"] .dh-compare-beta {
+    font-size: 0.68rem;
+  }
+
   body[data-page="datahub"] .dh-compare-header__actions {
     gap: 6px;
   }
@@ -1488,6 +1511,11 @@ body[data-page="datahub"] .dh-compare-search-option:focus-visible {
     letter-spacing: 0.03em;
     cursor: pointer;
     min-width: 35px;
+  }
+
+  /* Preserve the mobile filter padding independently of the desktop-only rule. */
+  body[data-page="datahub"] .dh-compare-position-filter {
+    padding: 0 5px;
   }
 
   body[data-page="datahub"] .dh-compare-search-option {

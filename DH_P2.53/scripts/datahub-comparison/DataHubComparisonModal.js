@@ -969,6 +969,7 @@ export function createDataHubComparisonModal(React) {
     );
 
     if (!selectedPlayers.length) {
+      // Compare chart empty state: guide the first selection and explain the two-player requirement.
       return h(
         "section",
         { className: cx("dh-compare-chart-shell", mode === "season" && "dh-compare-chart-shell--season") },
@@ -979,8 +980,8 @@ export function createDataHubComparisonModal(React) {
             "div",
             { className: "dh-compare-empty__panel" },
             h(EmptyCompareIcon, { className: "dh-compare-empty__icon" }),
-            h("strong", null, "No active comparison"),
-            h("span", null, "Awaiting players"),
+            h("strong", null, "Select a player to get started"),
+            h("span", null, "Select 2 players to compare"),
           ),
         ),
       );
@@ -1204,7 +1205,12 @@ export function createDataHubComparisonModal(React) {
           h(
             "div",
             { className: "dh-compare-heading" },
-            h("span", { className: "dh-compare-eyebrow" }, "PLAYER COMPARISON"),
+            h(
+              "div",
+              { className: "dh-compare-eyebrow-row" },
+              h("span", { className: "dh-compare-eyebrow" }, "PLAYER COMPARISON"),
+              h("span", { className: "dh-compare-beta" }, "BETA"),
+            ),
             h("h2", { id: "dh-compare-title" }, mode === "season" ? "Season Radar" : "Weekly Single-Stat"),
           ),
           h(

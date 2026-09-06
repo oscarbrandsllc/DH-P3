@@ -24,8 +24,8 @@
 // ============================================================================
 // CACHE VERSION — CHANGE THIS TO FORCE A FULL CACHE RESET
 // ============================================================================
-// Refresh LeagueHub's Trade Activity kicker and League Insights heading.
-const CACHE_NAME = 'DH3.45c';
+// Refresh DataHub comparison beta labeling, empty-state copy, and desktop filter sizing.
+const CACHE_NAME = 'DH3.45d';
 
 // ============================================================================
 // CORE ASSETS — Pre-cached during install
