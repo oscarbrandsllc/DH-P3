@@ -1821,7 +1821,8 @@
 
       elements.tradesSummaryCards?.classList.add('hidden');
       if (elements.tradesSummaryCards) elements.tradesSummaryCards.innerHTML = '';
-      if (elements.tradesAnalysisHeading) elements.tradesAnalysisHeading.textContent = 'Trade activity';
+      // Match the static archive heading after league-wide table refreshes.
+      if (elements.tradesAnalysisHeading) elements.tradesAnalysisHeading.textContent = 'League Insights';
       if (elements.tradesAnalysisSubheading) {
         elements.tradesAnalysisSubheading.textContent = `${visibleTrades.length} trade${visibleTrades.length === 1 ? '' : 's'} match the current filters.`;
       }
