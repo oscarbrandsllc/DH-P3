@@ -176,7 +176,7 @@ const SEASON_RADAR_LAYOUT = Object.freeze({
   centerX: 230,
   centerY: 172,
   radius: 112,
-  labelRadius: 139,
+  labelRadius: 135,
 });
 const SEASON_RADAR_RING_LEVELS = Object.freeze([
   Object.freeze({ ratio: 0.95, fill: "rgba(44, 51, 79, 0.42)", stroke: "rgba(127, 146, 189, 0.19)" }),
@@ -185,8 +185,6 @@ const SEASON_RADAR_RING_LEVELS = Object.freeze([
   Object.freeze({ ratio: 0.35, fill: "rgba(48, 55, 84, 0.34)", stroke: "rgba(127, 146, 189, 0.14)" }),
   Object.freeze({ ratio: 0.18, fill: "rgba(49, 56, 85, 0.42)", stroke: "rgba(127, 146, 189, 0.18)" }),
 ]);
-const SEASON_RADAR_AXIS_LABEL_OFFSETS = Object.freeze([16, 9, 8, 4, 8, 4, 8, 9]);
-const SEASON_RADAR_RANK_OFFSETS = Object.freeze([14.5, 14.5, 16, 16, 16, 20, 23, 19.5]);
 
 function getSeasonRadarPoint(index, total, radius) {
   const angle = (-Math.PI / 2) + ((Math.PI * 2 * index) / Math.max(1, total));
@@ -219,13 +217,14 @@ function getSeasonRadarId(playerId, suffix) {
 
 function formatSeasonRadarValue(statKey, value) {
   // Season radar display values:
-  // match the Game Logs Performance radar's labels so moving between the two
-  // modal surfaces never changes units, precision, or missing-data language.
+  // keep values and units explicit in the outside label group. The Game Logs
+  // radar is a presentation reference only, not the comparison stat contract.
   const numericValue = toFiniteNumber(value);
   if (numericValue === null) return "N/A";
-  if (["cmp_pct", "snp_pct", "ts_per_rr", "prs_pct"].includes(statKey)) {
+  if (["cmp_pct", "snp_pct", "ts_per_rr", "prs_pct", "csty_pct"].includes(statKey)) {
     return `${numericValue.toFixed(1)}%`;
   }
+  if (statKey === "expl_ru_pct") return `${numericValue.toFixed(2)}%`;
   if (statKey === "cpoe") {
     const formatted = `${numericValue.toFixed(1)}%`;
     return numericValue > 0 ? `+${formatted}` : formatted;
@@ -235,8 +234,8 @@ function formatSeasonRadarValue(statKey, value) {
     return numericValue > 0 ? `+${formatted}` : formatted;
   }
   if (statKey === "first_down_rec_rate") return numericValue.toFixed(2);
-  if (["fpts", "ppg", "pass_rtg", "rec_ypg"].includes(statKey)) return numericValue.toFixed(1);
-  if (["rec", "rec_tgt", "yds_total"].includes(statKey)) return String(Math.round(numericValue));
+  if (["fpts", "ppg", "pass_rtg", "rec_ypg", "ceiling"].includes(statKey)) return numericValue.toFixed(1);
+  if (["rec", "rec_tgt", "yds_total", "imp", "rush_att", "rush_yd", "rush_td", "rec_yar"].includes(statKey)) return String(Math.round(numericValue));
   if (["ttt", "imp_per_g"].includes(statKey)) return numericValue.toFixed(2);
   return numericValue.toFixed(2);
 }
@@ -676,8 +675,7 @@ export function createDataHubComparisonModal(React) {
     );
   }
 
-  function SeasonRadarChart({ player, colorIndex }) {
-    const statKeys = getSeasonStatKeys([player]);
+  function SeasonRadarChart({ player, colorIndex, statKeys }) {
     if (!statKeys.length) {
       return h(ChartFallback, {
         mode: "season",
@@ -689,7 +687,6 @@ export function createDataHubComparisonModal(React) {
 
     const palette = getPlayerPalette(player, colorIndex);
     const gradientId = getSeasonRadarId(player.id, `fill-${colorIndex}`);
-    const glowId = getSeasonRadarId(player.id, `glow-${colorIndex}`);
     const totalAxes = statKeys.length;
     const dataPoints = statKeys.map((statKey, index) => {
       const rawValue = player?.seasonStats?.[statKey];
@@ -697,9 +694,16 @@ export function createDataHubComparisonModal(React) {
       const score = getRadarRankValue(rank, player.pos);
       const pointRadius = SEASON_RADAR_LAYOUT.radius * (score / 100);
       const point = getSeasonRadarPoint(index, totalAxes, pointRadius);
-      const rankOffset = SEASON_RADAR_RANK_OFFSETS[index] || 16;
-      const rankPoint = getSeasonRadarPoint(index, totalAxes, Math.max(34, pointRadius + rankOffset));
-      const labelRadius = SEASON_RADAR_LAYOUT.labelRadius + (SEASON_RADAR_AXIS_LABEL_OFFSETS[index] || 0);
+      // Twelve-axis season layout: place ranks relative to their points, and
+      // tighten the outside copy by angle rather than eight-axis index offsets.
+      // Vertical groups move inward most; the bottom also accounts for the
+      // value's second line so it does not sit farther away than the top group.
+      // Upper and lower-diagonal ranks tuck in to clear the second label line,
+      // including the signed QB values at the narrowest phone width.
+      const rankOffset = point.sin < -0.3 ? 8 : (point.sin > 0.3 && Math.abs(point.cos) > 0.3 ? 13 : 15);
+      const rankPoint = getSeasonRadarPoint(index, totalAxes, Math.max(44, pointRadius + rankOffset));
+      const verticalWeight = Math.pow(Math.abs(point.sin), 4);
+      const labelRadius = SEASON_RADAR_LAYOUT.labelRadius + ((point.sin < 0 ? 2 : -3) * verticalWeight);
       const labelPoint = getSeasonRadarPoint(index, totalAxes, labelRadius);
       const rankNumber = rank === null ? null : Math.round(rank);
       return {
@@ -745,38 +749,24 @@ export function createDataHubComparisonModal(React) {
           "defs",
           null,
           h(
-            "linearGradient",
-            { id: gradientId, x1: "0%", y1: "100%", x2: "100%", y2: "0%" },
-            h("stop", { offset: "0%", stopColor: palette.low, stopOpacity: "0.42" }),
-            h("stop", { offset: "52%", stopColor: palette.highMid, stopOpacity: "0.56" }),
-            h("stop", { offset: "100%", stopColor: palette.high, stopOpacity: "0.68" }),
-          ),
-          h(
+            // Anchor the faint fill to the rank scale, not the shape's bounding
+            // box: weaker ranks stay near the low-color center and stronger
+            // ranks reach the high-color outer bands. No duplicated glow fill.
             "radialGradient",
-            { id: getSeasonRadarId(player.id, `core-${colorIndex}`), cx: "50%", cy: "50%", r: "50%" },
-            h("stop", { offset: "0%", stopColor: palette.highMid, stopOpacity: "0.14" }),
-            h("stop", { offset: "68%", stopColor: palette.lowMid, stopOpacity: "0.055" }),
-            h("stop", { offset: "100%", stopColor: palette.low, stopOpacity: "0" }),
-          ),
-          h(
-            "filter",
-            { id: glowId, x: "-50%", y: "-50%", width: "200%", height: "200%" },
-            h("feGaussianBlur", { stdDeviation: "2.8", result: "blur" }),
-            h(
-              "feMerge",
-              null,
-              h("feMergeNode", { in: "blur" }),
-              h("feMergeNode", { in: "SourceGraphic" }),
-            ),
+            {
+              id: gradientId,
+              gradientUnits: "userSpaceOnUse",
+              cx: SEASON_RADAR_LAYOUT.centerX,
+              cy: SEASON_RADAR_LAYOUT.centerY,
+              r: SEASON_RADAR_LAYOUT.radius,
+            },
+            h("stop", { offset: "0%", stopColor: palette.low, stopOpacity: "0.02" }),
+            h("stop", { offset: "35%", stopColor: palette.lowMid, stopOpacity: "0.045" }),
+            h("stop", { offset: "65%", stopColor: palette.highMid, stopOpacity: "0.085" }),
+            h("stop", { offset: "85%", stopColor: palette.high, stopOpacity: "0.14" }),
+            h("stop", { offset: "100%", stopColor: palette.high, stopOpacity: "0.14" }),
           ),
         ),
-        h("circle", {
-          className: "dh-compare-season-radar__core",
-          cx: SEASON_RADAR_LAYOUT.centerX,
-          cy: SEASON_RADAR_LAYOUT.centerY,
-          r: SEASON_RADAR_LAYOUT.radius * 1.12,
-          fill: `url(#${getSeasonRadarId(player.id, `core-${colorIndex}`)})`,
-        }),
         ...SEASON_RADAR_RING_LEVELS.map((level, index) => h("polygon", {
           key: `ring-${index}`,
           className: "dh-compare-season-radar__ring",
@@ -800,7 +790,6 @@ export function createDataHubComparisonModal(React) {
           points: polygonPoints,
           fill: `url(#${gradientId})`,
           stroke: palette.high,
-          filter: `url(#${glowId})`,
         }),
         ...dataPoints.map((item) => h(
           "g",
@@ -872,7 +861,7 @@ export function createDataHubComparisonModal(React) {
     );
   }
 
-  function PlayerChart({ mode, player, playerIndex, selectedPlayers, weeklyStatKey, weeks, thresholds, isCompact, showXAxis, weeklyEdge }) {
+  function PlayerChart({ mode, player, playerIndex, selectedPlayers, seasonStatKeys, weeklyStatKey, weeks, thresholds, isCompact, showXAxis, weeklyEdge }) {
     const chartRef = useRef(null);
     const chartInstanceRef = useRef(null);
     const [hasEcharts, setHasEcharts] = useState(() => Boolean(window.echarts));
@@ -949,7 +938,7 @@ export function createDataHubComparisonModal(React) {
       },
       h(PlayerChartHeader, { mode, player, weeklyStatKey, weeklyEdge }),
       mode === "season"
-        ? h(SeasonRadarChart, { player, colorIndex: paletteIndex })
+        ? h(SeasonRadarChart, { player, colorIndex: paletteIndex, statKeys: seasonStatKeys })
         : hasEcharts && chartOption
         ? h("div", {
           className: "dh-compare-chart",
@@ -963,6 +952,9 @@ export function createDataHubComparisonModal(React) {
 
   function ComparisonChart({ mode, selectedPlayers, weeklyStatKey, weeks, thresholds }) {
     const [isStackedLayout, setIsStackedLayout] = useState(() => window.matchMedia("(max-width: 719px)").matches);
+    // Season matchups share a bundle on both cards; individual player positions
+    // still determine their rank scale, rank colors, and displayed CSV values.
+    const seasonStatKeys = useMemo(() => getSeasonStatKeys(selectedPlayers), [selectedPlayers]);
 
     useEffect(() => {
       // Responsive chart treatment:
@@ -1033,6 +1025,7 @@ export function createDataHubComparisonModal(React) {
           player,
           playerIndex,
           selectedPlayers,
+          seasonStatKeys,
           weeklyStatKey,
           weeks,
           thresholds,
@@ -1318,7 +1311,7 @@ export function createDataHubComparisonModal(React) {
                   { className: "dh-compare-season-context" },
                   selectedPosition
                     ? `${selectedPosition} radar`
-                    : (selectedPlayers.length ? "Per-position" : "Select players"),
+                    : (selectedPlayers.length ? "Shared stats" : "Select players"),
               ),
               h(
                 "div",

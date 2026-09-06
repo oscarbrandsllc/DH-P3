@@ -24,8 +24,8 @@
 // ============================================================================
 // CACHE VERSION — CHANGE THIS TO FORCE A FULL CACHE RESET
 // ============================================================================
-// Refresh DataHub comparison beta labeling, empty-state copy, and desktop filter sizing.
-const CACHE_NAME = 'DH3.45d';
+// Refresh season comparison stat bundles, tighter radar labels, and faint radial fills.
+const CACHE_NAME = 'DH3.45e';
 
 // ============================================================================
 // CORE ASSETS — Pre-cached during install

@@ -1867,7 +1867,7 @@ body[data-page="datahub"] .dh-compare-search-option:focus-visible {
   }
 
   /* Mobile season radars:
-     reserve enough vertical drawing room for eight external data labels per
+     reserve enough vertical drawing room for twelve external data labels per
      player and scroll only the chart surface on shorter phones. */
   body[data-page="datahub"] .dh-compare-chart-shell--season {
     overflow-y: auto;
