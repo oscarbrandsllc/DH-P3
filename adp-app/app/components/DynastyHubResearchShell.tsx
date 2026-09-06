@@ -42,7 +42,9 @@ type ActiveResearchTab = "rookie-adp" | "nfl-draft";
 const researchTabs = [
   {
     id: "syop",
-    label: "Career Length Analytics",
+    label: (
+      <span className="adp-career-tab-label">Career Length<span> Analytics</span></span>
+    ),
     href: "/research/research.html?tab=syop",
   },
   {

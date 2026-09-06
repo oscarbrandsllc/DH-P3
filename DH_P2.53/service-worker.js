@@ -24,8 +24,8 @@
 // ============================================================================
 // CACHE VERSION — CHANGE THIS TO FORCE A FULL CACHE RESET
 // ============================================================================
-// Refresh Research release navigation and both isolated hit-rate tab bars.
-const CACHE_NAME = 'DH3.45e';
+// Refresh the mobile Career Length tab label across all Research views.
+const CACHE_NAME = 'DH3.45f';
 
 // ============================================================================
 // CORE ASSETS — Pre-cached during install
