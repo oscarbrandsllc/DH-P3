@@ -504,7 +504,7 @@ body[data-page="leaguehub"] .leaguehub-trades-module-header h3,
 body[data-page="leaguehub"] .leaguehub-trades-feed-head h3 {
   margin: 0;
   color: #fbfdff;
-  font-size: 1.05rem;
+  font-size: 1.25rem;
   line-height: 1.1;
   font-family: 'Bruno Ace SC';
   text-transform: uppercase;
@@ -3049,12 +3049,12 @@ body[data-page="leaguehub"] .app-header {
     width: 100%;
     max-width: 1200px;
     margin: 0 auto;
+    padding: 0.1rem 0rem 0.8rem 0rem;
     background: linear-gradient(180deg, rgba(11, 11, 18, 0.05) 10%, transparent 100%);
     border-radius: 22px;
     position: sticky;
     top: 0;
     z-index: 1000;
-    padding: 0.1rem 0 0.82rem !important;
   }
   body[data-page="leaguehub"] #header-container .app-header {
     flex: 0 0 58%;
@@ -3335,7 +3335,7 @@ body[data-page="leaguehub"] #header-container {
   display: block;
   width: min(100%, 1200px);
   margin: 0 auto;
-  padding: 0.1rem 0 0.42rem;
+  padding: 0.1rem 0 0.82rem;
   border-radius: 0;
   background: none;
 }
@@ -3345,7 +3345,7 @@ body[data-page="leaguehub"] #header-container {
    panels here; the desktop breakpoint reunites them inside one continuous frame. */
 body[data-page="leaguehub"] .leaguehub-command-frame {
   display: grid;
-  gap: 0.42rem;
+  gap: 0.62rem;
   width: 100%;
   overflow: visible;
   border: 0;
@@ -4848,7 +4848,7 @@ body[data-page="leaguehub"] .leaguehub-trade-stat-chip strong {
     justify-content: stretch;
     width: 100%;
     margin: 0;
-    padding: 0.46rem 0.94rem 0.46rem;
+    padding: 0.46rem 0.94rem 0.82rem;
     border: 0;
     border-radius: 0;
     background: none;
@@ -5239,7 +5239,7 @@ body[data-page="leaguehub"] .leaguehub-trade-stat-chip strong {
     grid-template-areas:
       "tabs"
       "identity";
-    gap: 0.4rem;
+    gap: 0.3rem;
     padding-top: 0.38rem;
   }
 
@@ -5560,7 +5560,7 @@ body[data-page="leaguehub"] .leaguehub-trade-stat-chip strong {
 @media (max-width: 480px) {
   body[data-page="leaguehub"] .analyzer-hero {
     gap: 0.38rem;
-    padding: 0.5rem 0.3rem 0.3rem;
+    padding: 0.5rem 0.3rem;
     border-radius: 18px;
   }
 
