@@ -245,6 +245,7 @@ export function createDataHubComparisonModal(React) {
   const {
     createElement: h,
     useEffect,
+    useLayoutEffect,
     useMemo,
     useRef,
     useState,
@@ -317,33 +318,48 @@ export function createDataHubComparisonModal(React) {
     );
   }
 
-  function EmptyCompareIcon({ className }) {
+  // Empty comparison artwork: static, unfilled radar outlines suggest two
+  // comparison slots without invented player data, jerseys, or animation.
+  function EmptyCompareArtwork() {
     return h(
       "svg",
       {
-        className,
-        viewBox: "0 0 48 48",
+        className: "dh-compare-empty__artwork",
+        viewBox: "0 0 760 360",
         fill: "none",
         "aria-hidden": "true",
         focusable: "false",
       },
-      h("path", {
-        d: "M8 31.5 17.5 22l7 7L40 13.5",
-        stroke: "currentColor",
-        strokeWidth: "3",
-        strokeLinecap: "round",
-        strokeLinejoin: "round",
-      }),
-      h("path", {
-        d: "M9 38h30M9 10v28",
-        stroke: "currentColor",
-        strokeWidth: "2",
-        strokeLinecap: "round",
-        opacity: "0.45",
-      }),
-      h("circle", { cx: "17.5", cy: "22", r: "3.2", fill: "currentColor", opacity: "0.88" }),
-      h("circle", { cx: "24.5", cy: "29", r: "3.2", fill: "currentColor", opacity: "0.68" }),
-      h("circle", { cx: "40", cy: "13.5", r: "3.2", fill: "currentColor", opacity: "0.88" }),
+      h("g", { className: "dh-compare-empty__orbits" },
+        h("circle", { cx: 380, cy: 180, r: 158 }),
+        h("circle", { cx: 380, cy: 180, r: 126, strokeDasharray: "2 10" }),
+        h("path", { d: "M222 180a158 158 0 0 1 158-158M538 180a158 158 0 0 1-158 158", className: "dh-compare-empty__orbit-arc" }),
+      ),
+      h("path", { className: "dh-compare-empty__connector", d: "M68 180H692M380 12V348", strokeDasharray: "3 8" }),
+      [
+        { x: 214, label: "PLAYER ONE", side: "one" },
+        { x: 546, label: "PLAYER TWO", side: "two" },
+      ].map(({ x, label, side }) => h(
+        "g",
+        { key: side, className: `dh-compare-empty__contender dh-compare-empty__contender--${side}`, transform: `translate(${x} 180)` },
+        h("circle", { className: "dh-compare-empty__radar-halo", r: 120 }),
+        [1, 0.72, 0.44].map((scale) => h("path", {
+          key: scale,
+          className: "dh-compare-empty__radar-ring",
+          d: "M0-105 91-52.5 91 52.5 0 105-91 52.5-91-52.5Z",
+          transform: `scale(${scale})`,
+        })),
+        h("path", { className: "dh-compare-empty__radar-axis", d: "M0-105V105M-91-52.5 91 52.5M-91 52.5 91-52.5" }),
+        h("path", { className: "dh-compare-empty__radar-edge", d: "M0-105 91-52.5V52.5" }),
+        h("circle", { className: "dh-compare-empty__radar-node", cy: -105, r: 4 }),
+        h("circle", { className: "dh-compare-empty__radar-node", cx: 91, cy: 52.5, r: 4 }),
+        h("circle", { className: "dh-compare-empty__slot-core", r: 25 }),
+        h("path", { className: "dh-compare-empty__plus", d: "M-9 0H9M0-9V9" }),
+        h("text", { className: "dh-compare-empty__player-label", x: 0, y: 146, textAnchor: "middle" }, label),
+      )),
+      h("circle", { className: "dh-compare-empty__versus-ring", cx: 380, cy: 180, r: 48 }),
+      h("circle", { className: "dh-compare-empty__versus-core", cx: 380, cy: 180, r: 37 }),
+      h("text", { className: "dh-compare-empty__versus", x: 380, y: 189, textAnchor: "middle" }, "VS"),
     );
   }
 
@@ -972,16 +988,28 @@ export function createDataHubComparisonModal(React) {
       // Compare chart empty state: guide the first selection and explain the two-player requirement.
       return h(
         "section",
-        { className: cx("dh-compare-chart-shell", mode === "season" && "dh-compare-chart-shell--season") },
+        { className: "dh-compare-chart-shell dh-compare-chart-shell--empty" },
         h(
           "div",
           { className: "dh-compare-empty" },
           h(
             "div",
             { className: "dh-compare-empty__panel" },
-            h(EmptyCompareIcon, { className: "dh-compare-empty__icon" }),
-            h("strong", null, "Select a player to get started"),
-            h("span", null, "Select 2 players to compare"),
+            h("div", { className: "dh-compare-empty__stage", "aria-hidden": "true" },
+              h("div", { className: "dh-compare-empty__stage-label" },
+                h("span", { className: "dh-compare-empty__signal" }),
+                "BUILD YOUR MATCHUP",
+              ),
+              h(EmptyCompareArtwork),
+              h("div", { className: "dh-compare-empty__stage-caption" }, "TWO PLAYERS. EVERY ANGLE."),
+            ),
+            h("div", { className: "dh-compare-empty__copy" },
+              h("strong", { className: "dh-compare-empty__title" }, "Select a player to get started"),
+              h("span", { className: "dh-compare-empty__subtitle" },
+                h("span", { className: "dh-compare-empty__signal", "aria-hidden": "true" }),
+                "Select 2 players to compare",
+              ),
+            ),
           ),
         ),
       );
@@ -1046,6 +1074,33 @@ export function createDataHubComparisonModal(React) {
     const focusDialogWithoutKeyboard = () => {
       requestAnimationFrame(() => dialogRef.current?.focus?.({ preventScroll: true }));
     };
+
+    useLayoutEffect(() => {
+      // Empty-state visibility: cap only the empty comparison's player menu
+      // above the actual instruction block. Measure after layout and on resize
+      // so both prompts remain uncovered across fonts, modes, and phone heights.
+      const dialog = dialogRef.current;
+      const search = searchShellRef.current;
+      const copy = dialog?.querySelector(".dh-compare-empty__copy");
+      if (selectedPlayers.length || !isSearchOpen || !dialog || !search || !copy) {
+        dialog?.style.removeProperty("--compare-empty-menu-space");
+        return;
+      }
+      const updateMenuSpace = () => {
+        const menuTop = search.getBoundingClientRect().bottom + 8;
+        const available = Math.max(0, Math.floor(copy.getBoundingClientRect().top - menuTop - 16));
+        dialog.style.setProperty("--compare-empty-menu-space", `${available}px`);
+      };
+      updateMenuSpace();
+      const observer = new ResizeObserver(updateMenuSpace);
+      [dialog, search, copy].forEach((element) => observer.observe(element));
+      window.addEventListener("resize", updateMenuSpace);
+      return () => {
+        observer.disconnect();
+        window.removeEventListener("resize", updateMenuSpace);
+        dialog.style.removeProperty("--compare-empty-menu-space");
+      };
+    }, [selectedPlayers.length, isSearchOpen, mode]);
 
     useEffect(() => {
       setSelectedIds(getInitialSelectedIds(payload));
@@ -1191,7 +1246,7 @@ export function createDataHubComparisonModal(React) {
       h(
         "section",
         {
-          className: "dh-compare-modal__dialog",
+          className: cx("dh-compare-modal__dialog", !selectedPlayers.length && "dh-compare-modal__dialog--empty"),
           ref: dialogRef,
           role: "dialog",
           "aria-modal": "true",
