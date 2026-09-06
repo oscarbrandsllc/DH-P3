@@ -527,16 +527,17 @@ body[data-page="datahub"] .dh-compare-search-tools {
 body[data-page="datahub"] .dh-compare-search-close {
   display: inline-grid;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  width: 23px;
+  height: 22px;
   border: 1px solid rgba(164, 207, 255, 0.16);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.06);
   color: rgba(232, 242, 255, 0.82);
-  font-size: 1rem;
+  font-size: 0.8rem;
   font-weight: 900;
   line-height: 1;
   cursor: pointer;
+  transform: translate(3px, -4px);
 }
 
 body[data-page="datahub"] .dh-compare-position-filters {
@@ -561,13 +562,15 @@ body[data-page="datahub"] .dh-compare-clear-all {
 }
 
 body[data-page="datahub"] .dh-compare-position-filter {
-  min-width: 40px;
+  min-width: 55px;
   padding: 0 5px;
 }
 
 body[data-page="datahub"] .dh-compare-clear-all {
   grid-column: 1 / -1;
   padding: 0 10px;
+  color: #5cf;
+  border: 1px solid #5cf5 !important;
 }
 
 body[data-page="datahub"] .dh-compare-position-filter.is-active {
@@ -1167,7 +1170,7 @@ body[data-page="datahub"] .dh-compare-empty {
 body[data-page="datahub"] .dh-compare-empty__panel {
   display: grid;
   justify-items: center;
-  gap: 8px;
+  gap: 28px;
   min-width: min(260px, 82vw);
   padding: 24px 26px;
   border: 1px solid rgba(142, 228, 255, 0.14);
@@ -1178,11 +1181,12 @@ body[data-page="datahub"] .dh-compare-empty__panel {
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.075),
     0 22px 46px rgba(0, 0, 0, 0.25);
+  transform: translate(0px, 30px);
 }
 
 body[data-page="datahub"] .dh-compare-empty__icon {
-  width: 48px;
-  height: 48px;
+  width: 88px;
+  height: 88px;
   color: rgba(115, 244, 255, 0.82);
   filter: drop-shadow(0 0 13px rgba(115, 244, 255, 0.2));
 }
@@ -1192,6 +1196,7 @@ body[data-page="datahub"] .dh-compare-empty strong {
   font-size: 0.98rem;
   font-weight: 950;
   letter-spacing: 0;
+  margin-top: 10px;
 }
 
 body[data-page="datahub"] .dh-compare-empty span {
@@ -1482,7 +1487,7 @@ body[data-page="datahub"] .dh-compare-search-option:focus-visible {
     font-weight: 900;
     letter-spacing: 0.03em;
     cursor: pointer;
-    min-width: 31px;
+    min-width: 35px;
   }
 
   body[data-page="datahub"] .dh-compare-search-option {
