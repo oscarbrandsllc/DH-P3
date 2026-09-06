@@ -24,8 +24,8 @@
 // ============================================================================
 // CACHE VERSION — CHANGE THIS TO FORCE A FULL CACHE RESET
 // ============================================================================
-// Refresh LeagueHub's wider share bars, percent header accent, and mobile width.
-const CACHE_NAME = 'DH3.44b';
+// Refresh LeagueHub's trade dividers, selected-team labels, and mobile share bars.
+const CACHE_NAME = 'DH3.45';
 
 // ============================================================================
 // CORE ASSETS — Pre-cached during install

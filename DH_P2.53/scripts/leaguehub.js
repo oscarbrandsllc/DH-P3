@@ -2163,7 +2163,7 @@
             </span>
           </header>
           ${seasonBundle.trades.length
-            ? seasonBundle.trades.map((trade, index) => renderTradeCard(trade, index)).join('')
+            ? seasonBundle.trades.map((trade) => renderTradeCard(trade)).join('')
             : `<p class="leaguehub-trade-empty-note">No completed trades${selectedMember ? ` involving ${escapeHtml(selectedMember.teamName)}` : ''} in ${escapeHtml(seasonBundle.season)}.</p>`}
         </section>`;
     }
@@ -2209,16 +2209,13 @@
       return 185 + (yearOffset * 7);
     }
 
-    function renderTradeCard(trade, index = 0) {
+    function renderTradeCard(trade) {
       const renderSides = getTradeRenderSides(trade);
       const isMultiRoster = renderSides.length > 2;
       const greaterReceivedSide = getGreaterReceivedTradeSide(trade);
-      // Trade card separator:
-      // adds a visible divider before later cards in a season without changing
-      // the transaction content or analysis-side DOM.
-      const divider = index > 0
-        ? '<div class="leaguehub-trade-entry-divider" aria-hidden="true"><span></span></div>'
-        : '';
+      // Every archive card owns its separator, including the first trade in
+      // each season; filtering or regrouping must not suppress that divider.
+      const divider = '<div class="leaguehub-trade-entry-divider" aria-hidden="true"><span></span></div>';
       return `
         <article class="leaguehub-trade-entry">
           ${divider}
@@ -2273,7 +2270,6 @@
       const productionSeason = getTradeProductionSeason(trade?.season);
       const sideClass = [
         index % 2 === 0 ? 'is-primary' : 'is-secondary',
-        isSelected ? 'is-selected-member' : '',
         hasGreaterReceivedValue ? 'has-greater-received-value' : '',
       ].filter(Boolean).join(' ');
       const meta = [
@@ -2281,23 +2277,29 @@
         side.receivedPicks ? `${side.receivedPicks} pick${side.receivedPicks === 1 ? '' : 's'}` : '',
         side.receivedFaab ? `${side.receivedFaab} FAAB` : '',
       ].filter(Boolean).join(' | ') || 'No visible receives';
+      // Keep missing production compact inside the total chip only; player
+      // subtitles retain their season context and KTC values stay unchanged.
       const productionSummary = Number.isFinite(avgPpg)
         ? `${formatOptionalNumber(avgPpg, 1)} PPG · ${productionSeason}`
-        : `${productionSeason} stats unavailable`;
+        : '—';
       const packageTotal = `
             <span class="leaguehub-trade-package-total-label">Received KTC</span>
             <span class="leaguehub-trade-package-total-value" style="color:${getTradeKtcColor(totalKtc)}">${formatNumber(totalKtc)}</span>
             <span class="leaguehub-trade-package-total-sub">${escapeHtml(productionSummary)}</span>`;
 
+      // Partner selection marks the username, not the package or its total.
+      // The independent greater-received-KTC treatment remains on the package.
       return `
         <section class="leaguehub-trade-package ${sideClass}">
           <header class="leaguehub-trade-package-head">
             <div class="leaguehub-trade-package-title">
-              <strong>${escapeHtml(side.teamName)}</strong>
+              <div class="leaguehub-trade-package-name-row">
+                <strong${isSelected ? ' class="is-selected-member"' : ''}>${escapeHtml(side.teamName)}</strong>
+                ${isSelected ? '<span class="leaguehub-trade-selected-pill">Selected Team</span>' : ''}
+              </div>
               <span>${escapeHtml(meta)}</span>
             </div>
             <div class="leaguehub-trade-package-total">
-              ${isSelected ? '<span class="leaguehub-trade-selected-pill">Selected Team</span>' : ''}
               ${packageTotal}
             </div>
           </header>

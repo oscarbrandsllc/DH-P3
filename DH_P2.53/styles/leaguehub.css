@@ -989,24 +989,28 @@ body[data-page="leaguehub"] .leaguehub-trade-entry {
   padding: 0.66rem;
 }
 
-/* Trade card separator:
-   gives consecutive trades inside the same season a deliberate divider so
-   scanned transaction boundaries are clearer while scrolling. */
+/* Every archive card has this separator, including season-opening trades.
+   Explicit, two-pixel lines stay visible when the cards' 90% zoom produces
+   fractional pixel positions; the gradient never fades fully transparent. */
 body[data-page="leaguehub"] .leaguehub-trade-entry-divider {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
+  width: 100%;
+  min-width: 0;
   gap: 0.5rem;
-  margin: -0.1rem 0 0.58rem;
-  opacity: 0.86;
+  margin: 0 0 0.58rem;
 }
 
 body[data-page="leaguehub"] .leaguehub-trade-entry-divider::before,
 body[data-page="leaguehub"] .leaguehub-trade-entry-divider::after {
   content: '';
-  height: 1px;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  height: 2px;
   border-radius: 999px;
-  background: linear-gradient(90deg, transparent, rgba(141, 202, 255, 0.38), rgba(111, 245, 209, 0.5), transparent);
+  background: linear-gradient(90deg, rgba(141, 202, 255, 0.2), rgba(141, 202, 255, 0.48), rgba(111, 245, 209, 0.58), rgba(111, 245, 209, 0.2));
 }
 
 body[data-page="leaguehub"] .leaguehub-trade-entry-divider span {
@@ -1072,22 +1076,8 @@ body[data-page="leaguehub"] .leaguehub-trade-package.is-secondary {
   background: linear-gradient(180deg, rgba(255, 119, 184, 0.055), transparent 40%), rgba(255, 255, 255, 0.026);
 }
 
-body[data-page="leaguehub"] .leaguehub-trade-package.is-selected-member {
-  border-color: rgba(111, 245, 209, 0.44);
-  background:
-    radial-gradient(circle at top right, rgba(111, 245, 209, 0.13), transparent 42%),
-    linear-gradient(180deg, rgba(111, 245, 209, 0.07), rgba(141, 202, 255, 0.025)),
-    rgba(255, 255, 255, 0.032);
-  box-shadow: inset 0 0 0 1px rgba(111, 245, 209, 0.08), 0 10px 22px rgba(2, 9, 20, 0.24);
-}
-
-body[data-page="leaguehub"] .leaguehub-trade-package.is-selected-member::before {
-  background: var(--lh-trade-teal);
-  box-shadow: 0 0 16px rgba(111, 245, 209, 0.42);
-}
-
 /* Greater received-value side:
-   highlights only the unique KTC/PPG leader selected by the archive renderer;
+   highlights only the unique KTC leader selected by the archive renderer;
    ties keep the neutral package treatment on every side. */
 body[data-page="leaguehub"] .leaguehub-trade-package.has-greater-received-value::before {
   background: rgb(29 252 197 / 86%);
@@ -1110,8 +1100,18 @@ body[data-page="leaguehub"] .leaguehub-trade-package-title {
   margin-left: 5px;
 }
 
+/* Keep the selected-team pill immediately to the right of its username.
+   Names may truncate on narrow screens; the pill retains its own width. */
+body[data-page="leaguehub"] .leaguehub-trade-package-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.34rem;
+  min-width: 0;
+}
+
 body[data-page="leaguehub"] .leaguehub-trade-package-title strong {
   display: block;
+  min-width: 0;
   overflow: hidden;
   color: #fff;
   font-size: 0.82rem;
@@ -1121,7 +1121,13 @@ body[data-page="leaguehub"] .leaguehub-trade-package-title strong {
   white-space: nowrap;
 }
 
-body[data-page="leaguehub"] .leaguehub-trade-package-title span {
+/* Selection only adds a light name glow; package-wide styling is reserved
+   for the independent received-value comparison. */
+body[data-page="leaguehub"] .leaguehub-trade-package-title strong.is-selected-member {
+  text-shadow: 0 0 8px rgba(111, 245, 209, 0.42);
+}
+
+body[data-page="leaguehub"] .leaguehub-trade-package-title > span {
   display: block;
   margin-top: 0.1rem;
   overflow: hidden;
@@ -1145,6 +1151,9 @@ body[data-page="leaguehub"] .leaguehub-trade-package-total {
 }
 
 body[data-page="leaguehub"] .leaguehub-trade-selected-pill {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
   padding: 0.14rem 0.36rem;
   border-radius: 999px;
   border: 1px solid rgba(111, 245, 209, 0.34);
@@ -1155,6 +1164,7 @@ body[data-page="leaguehub"] .leaguehub-trade-selected-pill {
   letter-spacing: 0.08em;
   line-height: 1;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 body[data-page="leaguehub"] .leaguehub-trade-package-total-label,
@@ -4667,7 +4677,7 @@ body[data-page="leaguehub"] .leaguehub-trade-package-title strong {
   font-size: 0.86rem;
 }
 
-body[data-page="leaguehub"] .leaguehub-trade-package-title span {
+body[data-page="leaguehub"] .leaguehub-trade-package-title > span {
   margin-top: 0.06rem;
   font-size: 0.65rem;
 }
@@ -5312,6 +5322,11 @@ body[data-page="leaguehub"] .leaguehub-trade-stat-chip strong {
      header over the frozen RK / Team or Partner columns. */
   body[data-page="leaguehub"] .leaguehub-trades-table-wrap--desktop {
     display: none;
+  }
+
+  /* The compact share track is mobile-only; desktop keeps its 5.5rem width. */
+  body[data-page="leaguehub"] .leaguehub-trades-share-track {
+    width: 2.9rem;
   }
 
   body[data-page="leaguehub"] .leaguehub-trades-mobile-table {
