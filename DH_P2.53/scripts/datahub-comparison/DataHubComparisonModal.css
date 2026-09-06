@@ -890,8 +890,7 @@ body[data-page="datahub"] .dh-compare-body {
   padding: 0 20px 20px;
 }
 
-body[data-page="datahub"] .dh-compare-chart-shell,
-body[data-page="datahub"] .dh-compare-empty {
+body[data-page="datahub"] .dh-compare-chart-shell {
   width: 100%;
   height: 100%;
   min-height: 370px;
@@ -1179,51 +1178,244 @@ body[data-page="datahub"] .dh-compare-weekly-edge.is-even {
   color: rgba(255, 222, 150, 0.86);
 }
 
+/* Empty comparison stage: fill the available chart area with a decorative
+   matchup illustration and a separate, always-readable instruction deck. */
+body[data-page="datahub"] .dh-compare-chart-shell--empty {
+  min-height: 0;
+  border: 0;
+  border-radius: 18px;
+  background: none;
+  box-shadow: none;
+}
+
 body[data-page="datahub"] .dh-compare-empty {
   display: grid;
-  place-items: center;
-  padding: 22px;
-  color: rgba(218, 232, 252, 0.86);
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
 }
 
 body[data-page="datahub"] .dh-compare-empty__panel {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid rgba(142, 228, 255, 0.23);
+  border-radius: 18px;
+  background:
+    radial-gradient(ellipse at 18% 38%, rgba(0, 203, 255, 0.14), transparent 52%),
+    radial-gradient(ellipse at 85% 42%, rgba(160, 103, 255, 0.16), transparent 52%),
+    linear-gradient(145deg, #0d1b2b, #080e1c 60%, #121327);
+  box-shadow: inset 0 1px 0 rgba(208, 244, 255, 0.14), inset 0 0 80px rgba(0, 0, 0, 0.28);
+}
+
+body[data-page="datahub"] .dh-compare-empty__panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(153, 214, 255, 0.19) 0.7px, transparent 0.8px);
+  background-size: 18px 18px;
+  mask-image: linear-gradient(180deg, transparent, #000 26%, #000 64%, transparent);
+}
+
+body[data-page="datahub"] .dh-compare-empty__stage {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  justify-items: center;
+  min-height: 0;
+  overflow: hidden;
+  padding: clamp(16px, 3vh, 28px) 20px 18px;
+}
+
+body[data-page="datahub"] .dh-compare-empty__stage-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #8cadc5;
+  font-size: 0.61rem;
+  font-weight: 800;
+  letter-spacing: 0.23em;
+}
+
+body[data-page="datahub"] .dh-compare-empty__signal {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #76edff;
+  box-shadow: 0 0 0 4px rgba(118, 237, 255, 0.07), 0 0 14px rgba(118, 237, 255, 0.75);
+}
+
+body[data-page="datahub"] .dh-compare-empty__artwork {
+  display: block;
+  align-self: center;
+  width: min(100%, 880px);
+  height: 100%;
+  min-height: 0;
+  max-height: 440px;
+  overflow: visible;
+}
+
+body[data-page="datahub"] .dh-compare-empty__orbits {
+  stroke: rgba(135, 197, 255, 0.16);
+  stroke-width: 1;
+}
+
+body[data-page="datahub"] .dh-compare-empty__orbit-arc {
+  stroke: rgba(137, 217, 255, 0.5);
+  stroke-width: 2;
+}
+
+body[data-page="datahub"] .dh-compare-empty__connector {
+  stroke: rgba(153, 198, 255, 0.2);
+}
+
+body[data-page="datahub"] .dh-compare-empty__contender--one {
+  color: #6feaff;
+}
+
+body[data-page="datahub"] .dh-compare-empty__contender--two {
+  color: #b39aff;
+}
+
+body[data-page="datahub"] .dh-compare-empty__radar-halo {
+  fill: currentColor;
+  fill-opacity: 0.035;
+  stroke: currentColor;
+  stroke-opacity: 0.1;
+}
+
+body[data-page="datahub"] .dh-compare-empty__plus {
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+body[data-page="datahub"] .dh-compare-empty__radar-ring {
+  fill: currentColor;
+  fill-opacity: 0.025;
+  stroke: currentColor;
+  stroke-opacity: 0.32;
+}
+
+body[data-page="datahub"] .dh-compare-empty__radar-axis {
+  stroke: currentColor;
+  stroke-opacity: 0.17;
+}
+
+body[data-page="datahub"] .dh-compare-empty__radar-edge {
+  stroke: currentColor;
+  stroke-width: 2;
+  filter: drop-shadow(0 0 6px currentColor);
+}
+
+body[data-page="datahub"] .dh-compare-empty__radar-node {
+  fill: currentColor;
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+body[data-page="datahub"] .dh-compare-empty__slot-core {
+  fill: #102238;
+  stroke: currentColor;
+  stroke-opacity: 0.55;
+}
+
+body[data-page="datahub"] .dh-compare-empty__player-label {
+  fill: currentColor;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+body[data-page="datahub"] .dh-compare-empty__versus-ring {
+  stroke: rgba(159, 206, 255, 0.35);
+  stroke-dasharray: 1 5;
+}
+
+body[data-page="datahub"] .dh-compare-empty__versus-core {
+  fill: #101c30;
+  stroke: #8bdcff;
+  stroke-opacity: 0.35;
+  filter: drop-shadow(0 0 20px rgba(112, 170, 255, 0.25));
+}
+
+body[data-page="datahub"] .dh-compare-empty__versus {
+  fill: #e4f5ff;
+  font-size: 25px;
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: -1px;
+}
+
+body[data-page="datahub"] .dh-compare-empty__stage-caption {
+  color: rgba(163, 193, 221, 0.55);
+  font-size: 0.58rem;
+  font-weight: 750;
+  letter-spacing: 0.26em;
+}
+
+body[data-page="datahub"] .dh-compare-empty__copy {
+  position: relative;
   display: grid;
   justify-items: center;
-  gap: 28px;
-  min-width: min(260px, 82vw);
-  padding: 24px 26px;
-  border: 1px solid rgba(142, 228, 255, 0.14);
-  border-radius: 8px;
+  align-content: center;
+  gap: 16px;
+  min-width: 0;
+  padding: 28px 20px 32px;
+  text-align: center;
   background:
-    linear-gradient(180deg, rgba(115, 244, 255, 0.085), rgba(255, 107, 180, 0.035)),
-    rgba(5, 10, 19, 0.72);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.075),
-    0 22px 46px rgba(0, 0, 0, 0.25);
-  transform: translate(0px, 50px);
+    radial-gradient(ellipse at 50% 120%, rgba(82, 141, 239, 0.18), transparent 68%),
+    linear-gradient(180deg, rgba(8, 18, 33, 0.88), #090f1e);
 }
 
-body[data-page="datahub"] .dh-compare-empty__icon {
-  width: 88px;
-  height: 88px;
-  color: rgba(115, 244, 255, 0.82);
-  filter: drop-shadow(0 0 13px rgba(115, 244, 255, 0.2));
+body[data-page="datahub"] .dh-compare-empty__copy::before {
+  content: "";
+  position: absolute;
+  inset: 0 8% auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #58d3f9 25%, #b49cff 75%, transparent);
+  box-shadow: 0 0 18px rgba(103, 200, 255, 0.25);
 }
 
-body[data-page="datahub"] .dh-compare-empty strong {
-  color: rgba(249, 252, 255, 0.96);
-  font-size: 0.98rem;
-  font-weight: 950;
-  letter-spacing: 0;
-  margin-top: 10px;
-}
-
-body[data-page="datahub"] .dh-compare-empty span {
-  color: rgba(183, 204, 232, 0.68);
-  font-size: 0.72rem;
+body[data-page="datahub"] .dh-compare-empty__title {
+  max-width: 100%;
+  color: #edf7ff;
+  font-size: clamp(1.3rem, 2.5vw, 2rem);
   font-weight: 850;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+body[data-page="datahub"] .dh-compare-empty__subtitle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  max-width: 100%;
+  padding: 9px 15px;
+  border: 1px solid rgba(126, 207, 255, 0.2);
+  border-radius: 999px;
+  color: #bbd8ec;
+  background: rgba(97, 176, 234, 0.055);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.045em;
+}
+
+/* The measured space protects both prompts only while the comparison is empty.
+   Populated player selectors keep their original height and scrolling rules. */
+body[data-page="datahub"] .dh-compare-modal__dialog--empty .dh-compare-search__menu {
+  max-height: min(420px, 50vh, var(--compare-empty-menu-space, 50vh));
 }
 
 body[data-page="datahub"] .dh-compare-fallback {
@@ -1611,6 +1803,52 @@ body[data-page="datahub"] .dh-compare-search-option:focus-visible {
   body[data-page="datahub"] .dh-compare-empty {
     min-height: 0;
     max-height: none;
+  }
+
+  /* Mobile empty stage: use nearly the entire body width and reserve a compact
+     instruction deck beneath the dropdown, including on short phone screens. */
+  body[data-page="datahub"] .dh-compare-empty__panel {
+    border-radius: 13px;
+  }
+
+  body[data-page="datahub"] .dh-compare-empty__stage {
+    padding: 20px 4px;
+  }
+
+  body[data-page="datahub"] .dh-compare-empty__artwork {
+    width: 118%;
+    max-width: none;
+  }
+
+  body[data-page="datahub"] .dh-compare-empty__stage-label {
+    font-size: 0.54rem;
+    letter-spacing: 0.17em;
+  }
+
+  body[data-page="datahub"] .dh-compare-empty__stage-caption {
+    font-size: 0.49rem;
+    letter-spacing: 0.19em;
+  }
+
+  body[data-page="datahub"] .dh-compare-empty__copy {
+    gap: 13px;
+    padding: 24px 16px;
+  }
+
+  body[data-page="datahub"] .dh-compare-empty__title {
+    max-width: 310px;
+    font-size: clamp(1.25rem, 4.8vw, 1.65rem);
+  }
+
+  body[data-page="datahub"] .dh-compare-empty__subtitle {
+    gap: 8px;
+    padding: 8px 12px;
+    font-size: 0.65rem;
+    letter-spacing: 0.02em;
+  }
+
+  body[data-page="datahub"] .dh-compare-modal__dialog--empty .dh-compare-search__menu {
+    max-height: min(350px, 46vh, var(--compare-empty-menu-space, 46vh));
   }
 
   /* Mobile head-to-head chart layout:

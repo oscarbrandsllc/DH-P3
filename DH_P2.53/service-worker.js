@@ -24,8 +24,8 @@
 // ============================================================================
 // CACHE VERSION — CHANGE THIS TO FORCE A FULL CACHE RESET
 // ============================================================================
-// Refresh the mobile Career Length tab label across all Research views.
-const CACHE_NAME = 'DH3.45f';
+// Refresh the DataHub empty comparison stage and its dropdown-safe instructions.
+const CACHE_NAME = 'DH3.45g';
 
 // ============================================================================
 // CORE ASSETS — Pre-cached during install
