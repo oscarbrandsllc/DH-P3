@@ -245,8 +245,9 @@ body::before {
 }
 
 .adp-research-tabs {
+  /* Match the three available Research tabs on both isolated hit-rate routes. */
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   width: min(100%, 1150px);
   margin: 0 auto;
   gap: .3rem;

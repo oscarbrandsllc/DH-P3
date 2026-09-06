@@ -25,7 +25,7 @@ rel="stylesheet">
 <meta content="#0D0E1B" name="theme-color"/>
 <link href="../styles/styles.css?v=20250827002411?v=20250826235225" rel="stylesheet"/>
 <!-- Research/SYOP page-specific styles (extracted from styles.css) -->
-<link rel="stylesheet" href="../styles/research.css?v=DH3.35-expanded-page-backgrounds" />
+<link rel="stylesheet" href="../styles/research.css?v=DH3.45e-release-research" />
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="icon" type="image/png" sizes="32x32" href="../assets/icons/favicon-32.png?v=20250926r5c" />
 <link rel="icon" type="image/png" sizes="16x16" href="../assets/icons/favicon-16.png?v=20250926r5c" />
@@ -119,18 +119,15 @@ rel="stylesheet">
   </div>
   <main class="container mx-auto syop-main" id="content">
     <div class="syop-tabs" role="tablist" aria-label="Research dashboards">
-      <!-- Four-dashboard Research order: Positional remains the local default,
-           while both hit-rate studies navigate to their isolated Next.js routes. -->
-      <!-- Responsive Research labels: explicit word spans and a mobile-only break
-           keep the same four-tab wording while letting desktop remain single-line. -->
-      <button class="syop-tab active" id="positional-analysis-tab-button" type="button" role="tab" aria-selected="true" tabindex="0" data-target="positional-analysis-tab-panel"><span class="research-tab-label-part">Positional</span> <span class="research-tab-label-part">Analysis</span></button>
-      <button class="syop-tab" id="syop-tab-button" type="button" role="tab" aria-selected="false" tabindex="-1" data-target="syop-tab-panel">Career Length Analytics</button>
+      <!-- Release navigation: Positional Analysis is unavailable; Career Length
+           Analytics is the default and both hit-rate studies retain their routes. -->
+      <button class="syop-tab active" id="syop-tab-button" type="button" role="tab" aria-selected="true" tabindex="0" data-target="syop-tab-panel">Career Length Analytics</button>
       <a class="syop-tab syop-tab-link" id="rookie-adp-tab-link" role="tab" aria-selected="false" href="../adp/">ROOKIE DRAFT ADP &mdash;  PLAYER HIT %</a>
       <a class="syop-tab syop-tab-link" id="nfl-draft-tab-link" role="tab" aria-selected="false" tabindex="-1" href="../adp/nfl-draft/"><span>NFL Draft</span><span> &mdash;  Player Hit %</span></a>
     </div>
 
     <div class="syop-tab-panels">
-      <section class="syop-section syop-tab-panel" id="syop-tab-panel" role="tabpanel" aria-labelledby="syop-tab-button" hidden>
+      <section class="syop-section syop-tab-panel active" id="syop-tab-panel" role="tabpanel" aria-labelledby="syop-tab-button">
         <section class="syop-hero">
           <div class="syop-hero-intro">
             <div class="syop-pill">Dynasty Hub Research • SYOP</div>
@@ -205,7 +202,8 @@ rel="stylesheet">
         <p class="syop-footnote">Data sourced from Dynasty Hub SYOP research feeds. Visualization rebuilt for the League HQ experience.</p>
       </section>
 
-      <section class="syop-section syop-tab-panel pos-analysis-panel active" id="positional-analysis-tab-panel" role="tabpanel" aria-labelledby="positional-analysis-tab-button">
+      <!-- Retain the unfinished dashboard for later work, hidden and inert for release. -->
+      <section class="syop-section syop-tab-panel pos-analysis-panel" id="positional-analysis-tab-panel" role="tabpanel" aria-label="Positional Analysis" hidden inert>
         <!-- Positional Analysis tab shell: all child ids/classes are unique to Research
              so the imported PosDist experience cannot affect other pages. -->
         <div class="pos-analysis-root" id="pos-analysis-root">
@@ -613,6 +611,6 @@ rel="stylesheet">
   </main>
 </div>
 <script defer src="../scripts/app.js?v=20260116"></script>
-<script defer src="../scripts/syop.js?v=DH3.15-hit-rates-routing"></script>
+<script defer src="../scripts/syop.js?v=DH3.45e-release-research"></script>
 </body>
 </html>

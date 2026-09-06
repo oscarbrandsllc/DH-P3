@@ -596,10 +596,9 @@ body[data-page="research"] .research-meta-separator {
 }
 
 .syop-tabs {
-  /* Research four-tab bar: equal columns keep all dashboards visible without
-     allowing the added isolated ADP route to create horizontal overflow. */
+  /* Release Research bar: the three available dashboards fill the full row. */
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   align-self: stretch;
   gap: 0.3rem;
   padding: 0.18rem;
