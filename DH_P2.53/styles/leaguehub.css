@@ -1107,6 +1107,7 @@ body[data-page="leaguehub"] .leaguehub-trade-package-head {
 
 body[data-page="leaguehub"] .leaguehub-trade-package-title {
   min-width: 0;
+  margin-left: 5px;
 }
 
 body[data-page="leaguehub"] .leaguehub-trade-package-title strong {
@@ -4644,6 +4645,7 @@ body[data-page="leaguehub"] .leaguehub-trade-entry-title {
   font-size: 0.94rem;
   text-overflow: ellipsis;
   white-space: nowrap;
+  margin-left: 5px;
 }
 
 body[data-page="leaguehub"] .leaguehub-trade-entry-body {
@@ -4939,6 +4941,8 @@ body[data-page="leaguehub"] .leaguehub-trade-stat-chip strong {
     transform: none;
     font-weight: 500;
     justify-self: center;
+    font-family: 'Bruno Ace SC';
+    text-transform: lowercase;
   }
 
   body[data-page="leaguehub"] .leaguehub-context-row {
@@ -5516,11 +5520,11 @@ body[data-page="leaguehub"] .leaguehub-trade-stat-chip strong {
   }
 
   body[data-page="leaguehub"] .leaguehub-trade-asset-identity {
-    gap: 0.28rem;
+    gap: 0.58rem;
   }
 
   body[data-page="leaguehub"] .leaguehub-trade-asset-name {
-    font-size: 0.66rem;
+    font-size: 0.7rem;
   }
 
   body[data-page="leaguehub"] .leaguehub-trade-asset-subtitle {
