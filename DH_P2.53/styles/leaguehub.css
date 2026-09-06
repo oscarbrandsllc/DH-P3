@@ -4642,7 +4642,7 @@ body[data-page="leaguehub"] .leaguehub-trade-entry-title {
   order: 1;
   min-width: 0;
   overflow: hidden;
-  font-size: 0.94rem;
+  font-size: 0.8rem;
   text-overflow: ellipsis;
   white-space: nowrap;
   margin-left: 5px;
@@ -5139,7 +5139,7 @@ body[data-page="leaguehub"] .leaguehub-trade-stat-chip strong {
     padding: 0.5rem 0.52rem;
     border: 1px solid hsl(var(--lh-season-hue, 215) 52% 70% / 0.14);
     border-radius: 107px;
-    background: linear-gradient( to bottom right, #ccd2, #5563, #aab3 39%, #5563 50%, #bbc2 61%, #5563, #dde2);
+    background: linear-gradient(to bottom right, #e0e0ff29, #b3b3d617 70%, #e0e0ff17);
     color: hsl(var(--lh-season-hue, 215) 70% 86% / 0.72);
   }
 
