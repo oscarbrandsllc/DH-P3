@@ -568,9 +568,9 @@ body[data-page="ownership"] .ownership-shell {
   border: 1px solid rgb(13 14 14 / 36%);
   background: linear-gradient(
 115deg, #1f1f1f85, #40404092, #45454690);
-  backdrop-filter: blur(3px) saturate(120%);
-  -webkit-backdrop-filter: blur(7px) saturate(120%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 16px 16px rgba(0, 0, 0, 0.26);
+  backdrop-filter: blur(2px) saturate(120%);
+  -webkit-backdrop-filter: blur(2px) saturate(120%);
+  box-shadow: none;
   padding: 0.7rem 0.45rem;
   font-family: var(--font-sans);
   align-self: center;
@@ -1764,7 +1764,7 @@ body[data-page="ownership"] .ownership-list-row {
   border: 0px solid rgba(128, 138, 189, 0.17);
   background: radial-gradient(120% 100% at 92% 6%, rgb(25 45 55 / 8%) 0%, rgba(35, 45, 55, 0.05) 22%, rgba(35, 45, 55, 0.015) 58%, transparent 68%) border-box, radial-gradient(110% 105% at 8% 94%, rgba(25, 35, 55, 0.12) 0%, rgba(35, 45, 55, 0.005) 70%, transparent 102%) border-box, radial-gradient(120% 100% at 53% 112%, rgba(35, 45, 55, 0) 0%, rgba(35, 45, 55, 0.05) 55%, rgba(135, 145, 165, 0.15) 100%) border-box, conic-gradient(from -40deg, #FFFFFF1d 0deg, #FFFFFF30 20deg, #FFFFFF50 104deg, #FFF6FF2a 112deg, #FFFFFF10 133deg, #FFFFFF10 153deg, #FFFFFF20 230deg, #FFFFFF2f 265deg, #FFFFFF3a 280deg, #FFFFFF18 300deg, #FFFFFF18 368deg) border-area;
   padding: 0.34rem 0.5rem;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16),    inset 0 -1px 0 rgba(0, 0, 0, 0.42),    0 2px 5px rgba(0, 0, 0, 0.32);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16),    inset 0 -1px 0 rgba(0, 0, 0, 0.42),    0 2px 5px rgba(0, 0, 0, 0.52);
   min-height: 51px;
   max-height: 51px;
 }
@@ -2925,7 +2925,7 @@ body[data-page="ownership"] .ownership-shell--percent .ownership-list-header {
   border-radius: 999px;
   color: rgba(224, 227, 237, 0.76);
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.72);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16),    inset 0 -1px 0 rgba(0, 0, 0, 0.42),    0 2px 5px rgba(0, 0, 0, 0.32);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16),    inset 0 -1px 0 rgba(0, 0, 0, 0.42),    0 2px 5px rgba(0, 0, 0, 0.48);
   filter: none;
 }
 
@@ -3029,7 +3029,7 @@ body[data-page="ownership"] .ownership-team-logo {
   margin: 0 !important;
   object-fit: contain !important;
   vertical-align: middle;
-  --glow-r3: 1px !important;
+  --glow-r3: none !;
 }
 
 body[data-page="ownership"] .ownership-list-team-logo {
