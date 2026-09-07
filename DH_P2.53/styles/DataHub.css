@@ -242,17 +242,19 @@ body::after {
   gap: 0.58rem;
   min-width: 0;
   white-space: nowrap;
+  font-family: "MuseoModerno", "Google Sans", var(--font-sans);
 }
 
 .brand-lockup__name,
 .brand-lockup__accent {
   font-size: 2.15rem;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.07em;
+  filter: drop-shadow(2px 2px 1px #0004);
 }
 
 .brand-lockup__name {
   color: #c0d0ff;
-  font-weight: 800;
+  font-weight: 500;
 }
 
 .brand-lockup__accent {
@@ -3171,6 +3173,7 @@ body[data-page="datahub"] .hero-controls .trade-entity-toggle--entity.is-active 
   min-height: var(--table-panel-height);
   height: var(--table-panel-height);
   background: transparent;
+  zoom: 0.9;
 }
 
 /* DataHub page loading overlay:
@@ -7525,7 +7528,7 @@ body[data-page="datahub"] .trade-value-metric__diff-suffix[data-diff-winner="ktc
 
   .brand-lockup__name,
   .brand-lockup__accent {
-    font-size: clamp(1.05rem, 0.8rem + 2vw, 2.4rem);
+    font-size: clamp(1.05rem, 0.8rem + 2vw, 2.5rem);
   }
 
   .brand-lockup__wordmark {
@@ -7534,6 +7537,7 @@ body[data-page="datahub"] .trade-value-metric__diff-suffix[data-diff-winner="ktc
 
   .brand-lockup__title {
     gap: clamp(0.18rem, 0.3vw, 0.34rem);
+    font-family: 'museomoderno';
   }
 
   .brand-lockup__footer {
