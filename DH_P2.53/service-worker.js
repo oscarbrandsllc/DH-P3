@@ -24,8 +24,8 @@
 // ============================================================================
 // CACHE VERSION — CHANGE THIS TO FORCE A FULL CACHE RESET
 // ============================================================================
-// Refresh desktop-only season radar scale and label typography.
-const CACHE_NAME = 'DH3.45h';
+// Refresh the Ownership player list with its SFLX KTC descending tie-break order.
+const CACHE_NAME = 'DH3.45i';
 
 // ============================================================================
 // CORE ASSETS — Pre-cached during install

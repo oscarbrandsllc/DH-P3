@@ -9175,6 +9175,7 @@ function buildOwnershipRowsFromContext() {
         const rookieYear = deriveRookieYear(player);
         const percentage = totalLeagues > 0 ? Math.round((entry.count / totalLeagues) * 100) : 0;
         const leagueAbbrs = Array.from(entry.leagueAbbrs).sort();
+        const sflxKtc = state.sflxData?.[entry.pid]?.ktc;
         return {
             pid: entry.pid,
             pos,
@@ -9187,14 +9188,27 @@ function buildOwnershipRowsFromContext() {
             rookieYear,
             count: entry.count,
             percentage,
+            sflxKtc: Number.isFinite(sflxKtc) ? sflxKtc : null,
             leagueAbbrs,
             search: `${first} ${last} ${fullName} ${displayName}`.trim().toLowerCase()
         };
     }).filter(Boolean);
 
+    // Ownership list ordering:
+    // - keeps owned-league count as the primary descending exposure sort
+    // - breaks equal-ownership ties by SFLX KTC value descending, with missing values last
+    // - uses player name only as the final deterministic tie-break
     rows.sort((a, b) => {
         const countDiff = b.count - a.count;
         if (countDiff !== 0) return countDiff;
+
+        const aHasSflxKtc = Number.isFinite(a.sflxKtc);
+        const bHasSflxKtc = Number.isFinite(b.sflxKtc);
+        if (aHasSflxKtc !== bHasSflxKtc) return aHasSflxKtc ? -1 : 1;
+        if (aHasSflxKtc && bHasSflxKtc && a.sflxKtc !== b.sflxKtc) {
+            return b.sflxKtc - a.sflxKtc;
+        }
+
         return a.fullName.localeCompare(b.fullName);
     });
 
