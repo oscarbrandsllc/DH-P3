@@ -3144,8 +3144,8 @@ body[data-page="ownership"] .ownership-value-table .ownership-player-trigger--va
     max-width: 96%;
     align-self: center;
     min-width: 94%;
-    min-height: 42px;
-    max-height: 44px;
+    min-height: 41px;
+    max-height: 41px;
   }
 
   body[data-page="ownership"] .ownership-list-exposure {
@@ -3177,7 +3177,7 @@ body[data-page="ownership"] .ownership-value-table .ownership-player-trigger--va
     grid-template-columns: minmax(0, 1.2fr) minmax(78px, 0.76fr) minmax(0, 1fr) !important;
     gap: 0.34rem !important;
     padding-top: 0.1rem !important;
-    padding-bottom: 0.25rem !important;
+    padding-bottom: 0.2rem !important;
   }
 
   body[data-page="ownership"] .ownership-list-player-wrap {
