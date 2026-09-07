@@ -991,7 +991,7 @@ body[data-page="datahub"] .dh-compare-season-radar__rank-suffix {
   font-size: 11px;
   font-weight: 400;
   baseline-shift: 0px;
-  alignment-baseline: mathematical;
+  alignment-baseline: baseline;
 }
 
 body[data-page="datahub"] .dh-compare-season-radar__axis-stat {
