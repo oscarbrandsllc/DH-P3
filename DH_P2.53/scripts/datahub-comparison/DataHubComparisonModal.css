@@ -952,7 +952,7 @@ body[data-page="datahub"] .dh-compare-season-radar__axis {
 }
 
 body[data-page="datahub"] .dh-compare-season-radar__edge {
-  stroke-width: 1.2px;
+  stroke-width: 2px;
   stroke-linecap: round;
 }
 
