@@ -3173,7 +3173,6 @@ body[data-page="datahub"] .hero-controls .trade-entity-toggle--entity.is-active 
   min-height: var(--table-panel-height);
   height: var(--table-panel-height);
   background: transparent;
-  zoom: 0.9;
 }
 
 /* DataHub page loading overlay:
@@ -5373,6 +5372,7 @@ body[data-page="datahub"] .trade-value-metric__diff-suffix[data-diff-winner="ktc
 
   .grid-stage {
     --table-panel-height: var(--table-panel-height-mobile);
+    zoom: 0.92;
   }
 
   .hero-shell {
