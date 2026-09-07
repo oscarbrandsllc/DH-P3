@@ -568,7 +568,7 @@ body[data-page="datahub"] .dh-compare-clear-all {
   min-height: 28px;
   border: 1px solid rgba(164, 207, 255, 0.12);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
+  background: linear-gradient(to bottom right, #464f5d69, #666f8a6b);
   color: rgba(190, 209, 235, 0.74);
   font-size: 0.72rem;
   font-weight: 900;
@@ -1713,6 +1713,7 @@ body[data-page="datahub"] .dh-compare-search-option:focus-visible {
   /* Preserve the mobile filter padding independently of the desktop-only rule. */
   body[data-page="datahub"] .dh-compare-position-filter {
     padding: 0 5px;
+    background: linear-gradient(to bottom right, #464f5d42, #666f8a42);
   }
 
   body[data-page="datahub"] .dh-compare-search-option {
