@@ -722,6 +722,11 @@ export function createDataHubComparisonModal(React) {
     const polygonPoints = dataPoints
       .map(({ point }) => `${point.x.toFixed(2)},${point.y.toFixed(2)}`)
       .join(" ");
+    const outlineSegments = dataPoints.map((item, index) => ({
+      item,
+      nextItem: dataPoints[(index + 1) % dataPoints.length],
+      gradientId: getSeasonRadarId(player.id, `edge-${colorIndex}-${index}`),
+    }));
     const accessibleDetails = dataPoints
       .map((item) => `${getStatLabel(item.statKey)} ${item.formattedValue}, ${player.pos} rank ${item.rankNumber ?? "not available"}`)
       .join("; ");
@@ -766,6 +771,23 @@ export function createDataHubComparisonModal(React) {
             h("stop", { offset: "85%", stopColor: palette.high, stopOpacity: "0.14" }),
             h("stop", { offset: "100%", stopColor: palette.high, stopOpacity: "0.14" }),
           ),
+          // Conditional radar outline: each edge blends between the rank-band
+          // colors of its two stats, mirroring the weekly chart's conditional
+          // line treatment while using positional rank as the shared scale.
+          ...outlineSegments.map(({ item, nextItem, gradientId: edgeGradientId }) => h(
+            "linearGradient",
+            {
+              key: edgeGradientId,
+              id: edgeGradientId,
+              gradientUnits: "userSpaceOnUse",
+              x1: item.point.x,
+              y1: item.point.y,
+              x2: nextItem.point.x,
+              y2: nextItem.point.y,
+            },
+            h("stop", { offset: "0%", stopColor: item.rankColor }),
+            h("stop", { offset: "100%", stopColor: nextItem.rankColor }),
+          )),
         ),
         ...SEASON_RADAR_RING_LEVELS.map((level, index) => h("polygon", {
           key: `ring-${index}`,
@@ -789,8 +811,17 @@ export function createDataHubComparisonModal(React) {
           className: "dh-compare-season-radar__shape",
           points: polygonPoints,
           fill: `url(#${gradientId})`,
-          stroke: palette.high,
+          stroke: "none",
         }),
+        ...outlineSegments.map(({ item, nextItem, gradientId: edgeGradientId }, index) => h("line", {
+          key: `edge-${item.statKey}-${nextItem.statKey}-${index}`,
+          className: "dh-compare-season-radar__edge",
+          x1: item.point.x,
+          y1: item.point.y,
+          x2: nextItem.point.x,
+          y2: nextItem.point.y,
+          stroke: `url(#${edgeGradientId})`,
+        })),
         ...dataPoints.map((item) => h(
           "g",
           { key: `point-${item.statKey}`, className: "dh-compare-season-radar__point-group" },

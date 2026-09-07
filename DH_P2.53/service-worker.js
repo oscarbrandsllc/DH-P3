@@ -24,8 +24,8 @@
 // ============================================================================
 // CACHE VERSION — CHANGE THIS TO FORCE A FULL CACHE RESET
 // ============================================================================
-// Refresh compare picker scroll continuity and compact mobile season radar spacing.
-const CACHE_NAME = 'DH3.45f';
+// Refresh season radar outlines with conditional rank-color gradients.
+const CACHE_NAME = 'DH3.45g';
 
 // ============================================================================
 // CORE ASSETS — Pre-cached during install

@@ -937,7 +937,8 @@ body[data-page="datahub"] .dh-compare-season-radar {
 
 body[data-page="datahub"] .dh-compare-season-radar__ring,
 body[data-page="datahub"] .dh-compare-season-radar__axis,
-body[data-page="datahub"] .dh-compare-season-radar__shape {
+body[data-page="datahub"] .dh-compare-season-radar__shape,
+body[data-page="datahub"] .dh-compare-season-radar__edge {
   vector-effect: non-scaling-stroke;
 }
 
@@ -950,9 +951,9 @@ body[data-page="datahub"] .dh-compare-season-radar__axis {
   stroke-width: 1;
 }
 
-body[data-page="datahub"] .dh-compare-season-radar__shape {
+body[data-page="datahub"] .dh-compare-season-radar__edge {
   stroke-width: 2.2;
-  stroke-linejoin: round;
+  stroke-linecap: round;
 }
 
 body[data-page="datahub"] .dh-compare-season-radar__point-halo {
