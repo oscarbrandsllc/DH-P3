@@ -504,6 +504,7 @@ body[data-page="datahub"] .dh-compare-season-context {
   text-overflow: ellipsis;
   text-transform: uppercase;
   white-space: nowrap;
+  justify-content: center;
 }
 
 body[data-page="datahub"] .dh-compare-search__menu {
@@ -1780,6 +1781,7 @@ body[data-page="datahub"] .dh-compare-search-option:focus-visible {
     justify-content: space-between;
     gap: 8px;
     min-width: 0;
+    margin: 0 4px;
   }
 
   /* Mobile summary-card detail row:
