@@ -990,8 +990,8 @@ body[data-page="datahub"] .dh-compare-season-radar__rank.is-unavailable {
 body[data-page="datahub"] .dh-compare-season-radar__rank-suffix {
   font-size: 11px;
   font-weight: 400;
-  baseline-shift: 0px;
-  alignment-baseline: hanging;
+  baseline-shift: -2px;
+  alignment-baseline: baseline;
 }
 
 body[data-page="datahub"] .dh-compare-season-radar__axis-stat {
