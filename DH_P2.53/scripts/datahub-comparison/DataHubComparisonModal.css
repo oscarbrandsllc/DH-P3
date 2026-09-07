@@ -518,7 +518,7 @@ body[data-page="datahub"] .dh-compare-search__menu {
   overflow: auto;
   padding: 0px 11px 7px;
   border: 1px solid rgba(148, 210, 255, 0.19);
-  border-radius: 12px;
+  border-radius: 18px;
   background:
     linear-gradient(180deg, rgba(22, 33, 53, 0.99), rgba(6, 11, 21, 0.99)),
     rgba(6, 10, 18, 0.99);
@@ -582,6 +582,7 @@ body[data-page="datahub"] .dh-compare-clear-all {
   body[data-page="datahub"] .dh-compare-position-filter {
     min-width: 55px;
     padding: 0 5px;
+    background: linear-gradient(to bottom right, #464f5d42, #666f8a42);
   }
 }
 
@@ -990,7 +991,7 @@ body[data-page="datahub"] .dh-compare-season-radar__rank.is-unavailable {
 body[data-page="datahub"] .dh-compare-season-radar__rank-suffix {
   font-size: 11px;
   font-weight: 400;
-  baseline-shift: -2px;
+  baseline-shift: -3px;
   alignment-baseline: baseline;
 }
 
@@ -1690,7 +1691,7 @@ body[data-page="datahub"] .dh-compare-search-option:focus-visible {
     left: -3px;
     width: calc(100% + 5px);
     max-height: min(350px, 46vh);
-    border-radius: 12px;
+    border-radius: 14px;
     padding: 0 7px 7px;
   }
 
