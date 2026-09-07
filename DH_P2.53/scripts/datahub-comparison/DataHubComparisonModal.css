@@ -1867,21 +1867,31 @@ body[data-page="datahub"] .dh-compare-search-option:focus-visible {
   }
 
   /* Mobile season radars:
-     reserve enough vertical drawing room for twelve external data labels per
-     player and scroll only the chart surface on shorter phones. */
+     the cropped mobile viewBox removes unused top/bottom canvas. Allow these
+     cards to pack to their content, with a smaller readable minimum, instead
+     of stretching empty space around the radars. Weekly/desktop stay separate. */
+  body[data-page="datahub"] .dh-compare-modal__dialog--season:not(.dh-compare-modal__dialog--error) {
+    /* With the picker closed, hug the compact cards on taller phones; retain
+       the viewport cap and inner chart scrolling on shorter screens. */
+    height: auto;
+    max-height: calc(100svh - 16px);
+  }
+
   body[data-page="datahub"] .dh-compare-chart-shell--season {
+    height: auto;
+    max-height: 100%;
     overflow-y: auto;
     overscroll-behavior: contain;
   }
 
   body[data-page="datahub"] .dh-compare-chart-grid--season {
-    grid-template-rows: repeat(2, minmax(255px, 1fr));
-    min-height: 510px;
+    grid-template-rows: repeat(2, minmax(218px, max-content));
+    min-height: 436px;
   }
 
   body[data-page="datahub"] .dh-compare-chart-grid--season.dh-compare-chart-grid--single {
-    grid-template-rows: minmax(255px, 1fr);
-    min-height: 255px;
+    grid-template-rows: minmax(218px, max-content);
+    min-height: 218px;
   }
 
   body[data-page="datahub"] .dh-compare-player-chart {

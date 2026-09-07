@@ -64,12 +64,9 @@ function playerMatchesPositionFilter(player, positionFilter) {
   return pos === positionFilter;
 }
 
-function sortSearchResults(left, right, selectedIds) {
-  const leftSelected = selectedIds.includes(left.id);
-  const rightSelected = selectedIds.includes(right.id);
-  if (leftSelected !== rightSelected) {
-    return leftSelected ? -1 : 1;
-  }
+function sortSearchResults(left, right) {
+  // Compare picker browsing: keep the FPTS/name order stable when a player is
+  // selected, instead of moving the focused option to the top of the list.
   const leftFpts = toFiniteNumber(left.fpts) ?? -Infinity;
   const rightFpts = toFiniteNumber(right.fpts) ?? -Infinity;
   if (leftFpts !== rightFpts) {
@@ -78,12 +75,12 @@ function sortSearchResults(left, right, selectedIds) {
   return getPlayerName(left).localeCompare(getPlayerName(right));
 }
 
-function getSearchResults(players, query, selectedIds, positionFilter) {
+function getSearchResults(players, query, positionFilter) {
   const normalizedQuery = query.trim().toLowerCase();
   return players
     .filter((player) => playerMatchesPositionFilter(player, positionFilter))
     .filter((player) => playerMatchesQuery(player, normalizedQuery))
-    .sort((left, right) => sortSearchResults(left, right, selectedIds));
+    .sort(sortSearchResults);
 }
 
 function getWeeklyDisplayValue(player, statKey) {
@@ -178,6 +175,9 @@ const SEASON_RADAR_LAYOUT = Object.freeze({
   radius: 112,
   labelRadius: 135,
 });
+// Mobile season charts: trim unused canvas above/below the outside labels,
+// without moving the axes, values, ranks, or changing the desktop viewBox.
+const SEASON_RADAR_MOBILE_VIEWBOX = "0 16 460 312";
 const SEASON_RADAR_RING_LEVELS = Object.freeze([
   Object.freeze({ ratio: 0.95, fill: "rgba(44, 51, 79, 0.42)", stroke: "rgba(127, 146, 189, 0.19)" }),
   Object.freeze({ ratio: 0.75, fill: "rgba(45, 52, 81, 0.34)", stroke: "rgba(127, 146, 189, 0.14)" }),
@@ -675,7 +675,7 @@ export function createDataHubComparisonModal(React) {
     );
   }
 
-  function SeasonRadarChart({ player, colorIndex, statKeys }) {
+  function SeasonRadarChart({ player, colorIndex, statKeys, isCompact }) {
     if (!statKeys.length) {
       return h(ChartFallback, {
         mode: "season",
@@ -737,7 +737,7 @@ export function createDataHubComparisonModal(React) {
         "svg",
         {
           className: "dh-compare-season-radar",
-          viewBox: `0 0 ${SEASON_RADAR_LAYOUT.width} ${SEASON_RADAR_LAYOUT.height}`,
+          viewBox: isCompact ? SEASON_RADAR_MOBILE_VIEWBOX : `0 0 ${SEASON_RADAR_LAYOUT.width} ${SEASON_RADAR_LAYOUT.height}`,
           preserveAspectRatio: "xMidYMid meet",
           "aria-hidden": "true",
           focusable: "false",
@@ -938,7 +938,7 @@ export function createDataHubComparisonModal(React) {
       },
       h(PlayerChartHeader, { mode, player, weeklyStatKey, weeklyEdge }),
       mode === "season"
-        ? h(SeasonRadarChart, { player, colorIndex: paletteIndex, statKeys: seasonStatKeys })
+        ? h(SeasonRadarChart, { player, colorIndex: paletteIndex, statKeys: seasonStatKeys, isCompact })
         : hasEcharts && chartOption
         ? h("div", {
           className: "dh-compare-chart",
@@ -1052,13 +1052,15 @@ export function createDataHubComparisonModal(React) {
     const [activeOptionIndex, setActiveOptionIndex] = useState(0);
     const searchInputRef = useRef(null);
     const searchShellRef = useRef(null);
+    const searchMenuRef = useRef(null);
+    const pendingMenuScrollRef = useRef(null);
     const statShellRef = useRef(null);
     const dialogRef = useRef(null);
     const selectedPlayers = useMemo(() => getSelectedPlayers(playersById, selectedIds), [playersById, selectedIds]);
     const weeklyStatOptions = useMemo(() => getWeeklyStatOptions(selectedPlayers, thresholds), [selectedPlayers, thresholds]);
     const searchResults = useMemo(
-      () => getSearchResults(players, query, selectedIds, positionFilter),
-      [players, positionFilter, query, selectedIds],
+      () => getSearchResults(players, query, positionFilter),
+      [players, positionFilter, query],
     );
     const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
     const isAtMax = selectedIds.length >= MAX_COMPARISON_PLAYERS;
@@ -1094,6 +1096,16 @@ export function createDataHubComparisonModal(React) {
         dialog.style.removeProperty("--compare-empty-menu-space");
       };
     }, [selectedPlayers.length, isSearchOpen, mode]);
+
+    useLayoutEffect(() => {
+      // Compare picker continuity: restore the browsing offset before paint
+      // after selection updates the empty-state layout or clears a search.
+      // Player two still closes the menu; no input focus/keyboard is requested.
+      if (isSearchOpen && pendingMenuScrollRef.current !== null && searchMenuRef.current) {
+        searchMenuRef.current.scrollTop = pendingMenuScrollRef.current;
+      }
+      pendingMenuScrollRef.current = null;
+    }, [selectedIds, isSearchOpen, query]);
 
     useEffect(() => {
       setSelectedIds(getInitialSelectedIds(payload));
@@ -1179,6 +1191,7 @@ export function createDataHubComparisonModal(React) {
 
     const togglePlayer = (playerId) => {
       const isSelected = selectedSet.has(playerId);
+      pendingMenuScrollRef.current = searchMenuRef.current?.scrollTop ?? null;
       const addingFromEmptySelection = !isSelected && selectedIds.length === 0;
       if (addingFromEmptySelection) {
         // Clear-all recovery:
@@ -1239,7 +1252,13 @@ export function createDataHubComparisonModal(React) {
       h(
         "section",
         {
-          className: cx("dh-compare-modal__dialog", !selectedPlayers.length && "dh-compare-modal__dialog--empty"),
+          className: cx(
+            "dh-compare-modal__dialog",
+            !selectedPlayers.length && "dh-compare-modal__dialog--empty",
+            // Keep the picker in the full-height frame while browsing; only
+            // the closed season comparison hugs its compact radar content.
+            mode === "season" && selectedPlayers.length > 0 && !isSearchOpen && "dh-compare-modal__dialog--season",
+          ),
           ref: dialogRef,
           role: "dialog",
           "aria-modal": "true",
@@ -1385,6 +1404,7 @@ export function createDataHubComparisonModal(React) {
                     {
                       id: "dh-compare-search-results",
                       className: "dh-compare-search__menu",
+                      ref: searchMenuRef,
                       role: "listbox",
                       "aria-label": "Player search results",
                     },
