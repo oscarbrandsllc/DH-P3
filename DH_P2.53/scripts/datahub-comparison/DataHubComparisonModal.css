@@ -952,7 +952,7 @@ body[data-page="datahub"] .dh-compare-season-radar__axis {
 }
 
 body[data-page="datahub"] .dh-compare-season-radar__edge {
-  stroke-width: 2.2;
+  stroke-width: 1.2px;
   stroke-linecap: round;
 }
 
@@ -990,20 +990,20 @@ body[data-page="datahub"] .dh-compare-season-radar__rank.is-unavailable {
 body[data-page="datahub"] .dh-compare-season-radar__rank-suffix {
   font-size: 11px;
   font-weight: 400;
-  baseline-shift: -2px;
+  baseline-shift: 0px;
   alignment-baseline: mathematical;
 }
 
 body[data-page="datahub"] .dh-compare-season-radar__axis-stat {
   fill: rgba(235, 241, 250, 0.94);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.03em;
   stroke-width: 0;
 }
 
 body[data-page="datahub"] .dh-compare-season-radar__axis-value {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   stroke-width: 1px;
 }
