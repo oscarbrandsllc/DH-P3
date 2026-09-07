@@ -1010,6 +1010,40 @@ body[data-page="datahub"] .dh-compare-season-radar__axis-value {
   stroke-width: 1px;
 }
 
+/* Desktop-only season radar enlargement and label typography:
+   preserve every existing mobile value while scaling the centered chart
+   visually inside its clipped grid cell without changing grid dimensions. */
+@media (min-width: 720px) {
+  body[data-page="datahub"] .dh-compare-chart--season {
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    padding: 0 4px 4px;
+    scale: 1.2;
+  }
+
+  body[data-page="datahub"] .dh-compare-season-radar__axis-stat {
+    fill: rgba(235, 241, 250, 0.94);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    stroke-width: 0;
+  }
+
+  body[data-page="datahub"] .dh-compare-season-radar__axis-value {
+    font-size: 10px;
+    font-weight: 400;
+    stroke-width: 1px;
+  }
+
+  body[data-page="datahub"] .dh-compare-season-radar__rank-suffix {
+    font-size: 10px;
+    font-weight: 400;
+    baseline-shift: 1px;
+    alignment-baseline: hanging;
+  }
+}
+
 body[data-page="datahub"] .dh-compare-chart-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

@@ -24,8 +24,8 @@
 // ============================================================================
 // CACHE VERSION — CHANGE THIS TO FORCE A FULL CACHE RESET
 // ============================================================================
-// Refresh season radar outlines with conditional rank-color gradients.
-const CACHE_NAME = 'DH3.45g';
+// Refresh desktop-only season radar scale and label typography.
+const CACHE_NAME = 'DH3.45h';
 
 // ============================================================================
 // CORE ASSETS — Pre-cached during install
