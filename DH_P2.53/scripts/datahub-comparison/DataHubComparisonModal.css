@@ -970,16 +970,17 @@ body[data-page="datahub"] .dh-compare-season-radar__point {
 body[data-page="datahub"] .dh-compare-season-radar__rank,
 body[data-page="datahub"] .dh-compare-season-radar__axis-stat,
 body[data-page="datahub"] .dh-compare-season-radar__axis-value {
-  font-family: "Product Sans", "Google Sans", Inter, system-ui, sans-serif;
+  font-family: "Google Sans Flex","Product Sans", "Google Sans", Inter, system-ui, sans-serif;
   paint-order: stroke fill;
   stroke: rgba(5, 8, 16, 0.94);
   stroke-linejoin: round;
 }
 
 body[data-page="datahub"] .dh-compare-season-radar__rank {
-  font-size: 12px;
-  font-weight: 950;
-  stroke-width: 3px;
+  font-size: 15px;
+  font-weight: 500;
+  stroke-width: 2px;
+  font-family: 'Google Sans Flex';
 }
 
 body[data-page="datahub"] .dh-compare-season-radar__rank.is-unavailable {
@@ -987,22 +988,24 @@ body[data-page="datahub"] .dh-compare-season-radar__rank.is-unavailable {
 }
 
 body[data-page="datahub"] .dh-compare-season-radar__rank-suffix {
-  font-size: 7px;
-  font-weight: 900;
+  font-size: 11px;
+  font-weight: 400;
+  baseline-shift: -2px;
+  alignment-baseline: mathematical;
 }
 
 body[data-page="datahub"] .dh-compare-season-radar__axis-stat {
   fill: rgba(235, 241, 250, 0.94);
-  font-size: 13px;
-  font-weight: 900;
-  letter-spacing: 0.01em;
-  stroke-width: 3.5px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  stroke-width: 0;
 }
 
 body[data-page="datahub"] .dh-compare-season-radar__axis-value {
-  font-size: 11px;
-  font-weight: 850;
-  stroke-width: 3px;
+  font-size: 13px;
+  font-weight: 500;
+  stroke-width: 1px;
 }
 
 body[data-page="datahub"] .dh-compare-chart-grid {
