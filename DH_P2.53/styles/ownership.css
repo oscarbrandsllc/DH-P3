@@ -2392,10 +2392,12 @@ body[data-page="ownership"] .ownership-username-bar #usernameInput {
   border: none;
   border-radius: 12px 0 0 12px;
   background: transparent;
-  color: #dce4ff;
-  font-weight: 520;
+  color: #dce4ffd9;
+  font-weight: 200;
   padding: 0.52rem 0.72rem;
   outline: none;
+  font-family: "Google Sans Flex", 'Google Sans';
+  font-variation-settings: "wdth" 102, "GRAD" 70;
 }
 
 body[data-page="ownership"] .ownership-username-submit--inset {
