@@ -24,8 +24,8 @@
 // ============================================================================
 // CACHE VERSION — CHANGE THIS TO FORCE A FULL CACHE RESET
 // ============================================================================
-// Refresh the Ownership list sorting and mobile 14-league column cap.
-const CACHE_NAME = 'DH3.45j';
+// Refresh the Ownership list with device-pixel-stable mobile POS-tag undershadows.
+const CACHE_NAME = 'DH3.45k';
 
 // ============================================================================
 // CORE ASSETS — Pre-cached during install
