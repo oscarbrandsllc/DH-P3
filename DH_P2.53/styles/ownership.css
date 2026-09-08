@@ -372,7 +372,7 @@ body[data-page="ownership"] .pl-list-tag.ownership-pos-tag::after {
      Integer geometry exposes one stable CSS pixel, and currentColor keeps the
      shadow matched to each QB/RB/WR/TE tag without affecting other chips. */
   body[data-page="ownership"] .ownership-list-row .pl-list-tag.ownership-pos-tag {
-    box-shadow: rgba(255, 255, 255, 0.05) 0 1px 0 inset,      rgba(100, 100, 100, 0.12) 0 0 5px,      0 2px 2px -2px currentColor, 0 0 4px #0000;
+    box-shadow: rgba(255, 255, 255, 0.05) 0 1px 0 inset,      rgba(100, 100, 100, 0.12) 0 0 5px, 0 1px 1px -1px currentColor, 0 0 4px #0000;
   }
 }
 
