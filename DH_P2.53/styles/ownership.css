@@ -3321,7 +3321,8 @@ body[data-page="ownership"] .ownership-value-table .ownership-player-trigger--va
     border-radius: 999px;
     max-width: 101%;
     min-width: 100%;
-    padding-right: 13px;
+    gap: 0em !important;
+    padding: 0 15px 0 11px;
   }
 }
 
