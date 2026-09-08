@@ -7186,22 +7186,26 @@ body[data-page="research"] .pos-analysis-year-shift-line {
 }
 
 body[data-page="research"] .pos-analysis-year-shift-line-glow {
-  stroke-width: 7px;
+  stroke-width: 4px;
   opacity: 0.27;
   pointer-events: none;
 }
 
 body[data-page="research"] .pos-analysis-year-shift-point {
   stroke: rgba(3, 8, 18, 0.9);
-  stroke-width: 1.35;
+  stroke-width: 0.7px;
   vector-effect: non-scaling-stroke;
+  r: 3;
+  filter: drop-shadow(0px 0px 1px #0008);
 }
 
 body[data-page="research"] .pos-analysis-year-shift-point.is-labeled {
   cursor: pointer;
   stroke: rgba(4, 9, 20, 0.98);
-  stroke-width: 1.8;
+  stroke-width: 0.7px;
   outline: none;
+  r: 3.8;
+  filter: drop-shadow(0px 0px 1px black);
 }
 
 body[data-page="research"] .pos-analysis-year-shift-point.is-labeled:focus-visible {
@@ -7257,8 +7261,8 @@ body[data-page="research"] .pos-analysis-year-shift-card.is-rb-pivot .pos-analys
   opacity: 0.84;
 }
 
-body[data-page="research"] .pos-analysis-year-shift-card.is-rb-pivot .pos-analysis-year-shift-line--rb {
-  stroke-width: 1.5px;
+body[data-page="research"] .pos-analysis-year-shift-card.is-wr-pivot .pos-analysis-year-shift-line--wr {
+  stroke-width: 11.5px;
 }
 
 /* Desktop-only line treatment for the year-by-year chart grid. These approved
@@ -7275,7 +7279,8 @@ body[data-page="research"] .pos-analysis-year-shift-card.is-rb-pivot .pos-analys
   }
 
   body[data-page="research"] .pos-analysis-year-shift-card.is-rb-pivot .pos-analysis-year-shift-line--wr {
-    opacity: 0.98;
+    opacity: 1;
+    stroke-width: 1.5px;
   }
 
   body[data-page="research"] .pos-analysis-year-shift-card.is-rb-pivot .pos-analysis-year-shift-line-glow--wr {
@@ -7284,6 +7289,7 @@ body[data-page="research"] .pos-analysis-year-shift-card.is-rb-pivot .pos-analys
 
   body[data-page="research"] .pos-analysis-year-shift-card.is-rb-pivot .pos-analysis-year-shift-line--rb {
     stroke-width: 1.5px;
+    opacity: 1;
   }
 }
 
