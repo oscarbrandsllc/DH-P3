@@ -309,7 +309,7 @@ body[data-page="ownership"] .pl-list-tag.ownership-pos-tag {
   justify-content: center;
   min-width: 38px;
   height: auto;
-  padding: 4px 4px;
+  padding: 0px 0px;
   line-height: 1;
   font-size: 0.6rem;
   font-weight: 700;
@@ -355,9 +355,12 @@ body[data-page="ownership"] .pl-list-tag.ownership-pos-tag::after {
 @media (max-width: 640px) {
   body[data-page="ownership"] .pl-list-tag.ownership-pos-tag {
     border-radius: 0.4rem;
-    min-width: 25px;
+    min-width: 26px;
     width: 26px !important;
-    height: 20px !important;
+    max-width: 26px !important;
+    min-height: 21px !important;
+    height: 21px !important;
+    max-height: 21px !important;
   }
 
   body[data-page="ownership"] .pl-list-tag.ownership-pos-tag::after {
