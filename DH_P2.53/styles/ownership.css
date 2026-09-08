@@ -2176,7 +2176,7 @@ body[data-page="ownership"] #ownershipPlayerModal .ownership-modal-empty {
   }
 
   body[data-page="ownership"] .ownership-player-trigger {
-    font-size: 0.72rem;
+    font-size: 0.75rem;
   }
 
   body[data-page="ownership"] .ownership-list-player-wrap .team-tag {
@@ -2185,7 +2185,7 @@ body[data-page="ownership"] #ownershipPlayerModal .ownership-modal-empty {
   }
 
   body[data-page="ownership"] .ownership-player-meta {
-    font-size: 0.6rem;
+    font-size: 0.65rem;
   }
 
   body[data-page="ownership"] .ownership-list-exposure {
@@ -2193,9 +2193,10 @@ body[data-page="ownership"] #ownershipPlayerModal .ownership-modal-empty {
   }
 
   body[data-page="ownership"] .ownership-list-leagues {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     line-height: 1.14;
     font-weight: 600;
+    letter-spacing: -0.02em;
   }
 
   body[data-page="ownership"] .ownership-value-position-filter {
@@ -3190,7 +3191,7 @@ body[data-page="ownership"] .ownership-value-table .ownership-player-trigger--va
   }
 
   body[data-page="ownership"] .ownership-list-leagues {
-    line-height: 1.16;
+    line-height: 1;
     justify-self: flex-start;
   }
 }
