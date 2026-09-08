@@ -9482,6 +9482,12 @@ function renderOwnershipPercentList(shell) {
     // never travel behind its translucent material while the list scrolls.
     list.replaceChildren();
 
+    // Ownership Leagues column formatter: desktop retains the complete league
+    // list, while the dedicated mobile variant is capped at 14 abbreviations.
+    const formatOwnershipLeagueList = (leagueAbbrs) => leagueAbbrs
+        .map((abbr) => `<span style="color:${getLeagueColor(abbr)}">${abbr}</span>`)
+        .join(', ') || '—';
+
     filteredRows.forEach((row) => {
         const item = document.createElement('article');
         item.className = 'ownership-list-row';
@@ -9505,9 +9511,9 @@ function renderOwnershipPercentList(shell) {
         // Ownership Exposure class by COUNT only:
         // count and percentage share the same hue tier from the count bucket.
         const exposureClass = getOwnershipExposureTierClassByCount(exposureCount);
-        const leagueList = Array.isArray(row.leagueAbbrs)
-            ? row.leagueAbbrs.map((abbr) => `<span style="color:${getLeagueColor(abbr)}">${abbr}</span>`).join(', ')
-            : '—';
+        const leagueAbbrs = Array.isArray(row.leagueAbbrs) ? row.leagueAbbrs : [];
+        const leagueList = formatOwnershipLeagueList(leagueAbbrs);
+        const mobileLeagueList = formatOwnershipLeagueList(leagueAbbrs.slice(0, 14));
 
         item.innerHTML = `
             <div class="ownership-list-player-wrap">
@@ -9525,7 +9531,10 @@ function renderOwnershipPercentList(shell) {
                 <span class="ownership-exposure-sep" aria-hidden="true">⏐</span>
                 <span class="ownership-exposure-pct">${exposurePct}%</span>
             </div>
-            <div class="ownership-list-leagues">${leagueList || '—'}</div>
+            <div class="ownership-list-leagues">
+                <span class="ownership-list-leagues-full">${leagueList}</span>
+                <span class="ownership-list-leagues-mobile">${mobileLeagueList}</span>
+            </div>
         `;
         list.appendChild(item);
     });

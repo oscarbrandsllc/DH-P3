@@ -1846,6 +1846,24 @@ body[data-page="ownership"] .ownership-list-leagues {
   overflow-wrap: anywhere;
 }
 
+/* Ownership Leagues column variants: keep the complete list visible by
+   default; the capped variant is enabled only by the mobile rule below. */
+body[data-page="ownership"] .ownership-list-leagues-mobile {
+  display: none;
+}
+
+@media (max-width: 819px) {
+  /* Ownership mobile Leagues column only: show the renderer's first 14 league
+     abbreviations without changing exposure data or any other list column. */
+  body[data-page="ownership"] .ownership-list-leagues-full {
+    display: none;
+  }
+
+  body[data-page="ownership"] .ownership-list-leagues-mobile {
+    display: inline;
+  }
+}
+
 /* Player value position filters:
    - keep grouped control look
    - dim inactive position chips and boost active glow to match position-tag aesthetic */

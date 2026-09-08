@@ -24,8 +24,8 @@
 // ============================================================================
 // CACHE VERSION — CHANGE THIS TO FORCE A FULL CACHE RESET
 // ============================================================================
-// Refresh the Ownership player list with its SFLX KTC descending tie-break order.
-const CACHE_NAME = 'DH3.45i';
+// Refresh the Ownership list sorting and mobile 14-league column cap.
+const CACHE_NAME = 'DH3.45j';
 
 // ============================================================================
 // CORE ASSETS — Pre-cached during install
