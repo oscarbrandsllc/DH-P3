@@ -2853,11 +2853,10 @@
       });
     });
 
-    // Hit-rate return links use ?tab=... to reopen either remaining Vanilla
-    // Research panel without changing normal in-page tab behavior.
+    // Release routing: only Career Length Analytics can be opened locally.
+    // Old Positional Analysis links fall back to the active SYOP tab.
     const requestedTab = new URLSearchParams(window.location.search).get('tab');
     const requestedTargets = {
-      'positional-analysis': 'positional-analysis-tab-panel',
       syop: 'syop-tab-panel'
     };
     const requestedTarget = requestedTargets[requestedTab];
@@ -2891,8 +2890,7 @@
     renderSunburst();
     renderBarChart();
     renderGauges();
-    setupPosAnalysisInteractions();
-    renderPosAnalysisPersonnel();
+    // Positional Analysis stays uninitialized while unavailable for release.
     window.addEventListener('resize', handleResize);
   }
 

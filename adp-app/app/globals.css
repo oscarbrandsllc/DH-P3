@@ -245,8 +245,9 @@ body::before {
 }
 
 .adp-research-tabs {
+  /* Match the three available Research tabs on both isolated hit-rate routes. */
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   width: min(100%, 1150px);
   margin: 0 auto;
   gap: .3rem;
@@ -281,6 +282,16 @@ body::before {
 /* Shared ADP-route tab labels: mirror the static Research bar with vertical
    mobile stacks and single-row desktop labels on both isolated hit-rate pages. */
 @media (max-width: 868px) {
+  /* Career Length tab: force Analytics onto line two only on mobile;
+     the inline label keeps its existing desktop text flow. */
+  .adp-career-tab-label {
+    white-space: nowrap;
+  }
+
+  .adp-career-tab-label > span {
+    display: block;
+  }
+
   .adp-research-tab--positional-analysis,
   .adp-research-tab--nfl-draft {
     flex-direction: column;

@@ -596,10 +596,9 @@ body[data-page="research"] .research-meta-separator {
 }
 
 .syop-tabs {
-  /* Research four-tab bar: equal columns keep all dashboards visible without
-     allowing the added isolated ADP route to create horizontal overflow. */
+  /* Release Research bar: the three available dashboards fill the full row. */
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   align-self: stretch;
   gap: 0.3rem;
   padding: 0.18rem;
@@ -635,6 +634,16 @@ body[data-page="research"] .research-meta-separator {
 /* Research tab label controls: the two requested labels become vertical flex
    stacks only on mobile, replacing the old always-on NFL Draft <br>. */
 @media (max-width: 868px) {
+  /* Career Length tab: force Analytics onto line two only on mobile;
+     the inline label keeps its existing desktop text flow. */
+  body[data-page="research"] .research-career-tab-label {
+    white-space: nowrap;
+  }
+
+  body[data-page="research"] .research-career-tab-label > span {
+    display: block;
+  }
+
   body[data-page="research"] #positional-analysis-tab-button,
   body[data-page="research"] #nfl-draft-tab-link {
     flex-direction: column;

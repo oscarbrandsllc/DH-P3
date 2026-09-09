@@ -24,8 +24,8 @@
 // ============================================================================
 // CACHE VERSION — CHANGE THIS TO FORCE A FULL CACHE RESET
 // ============================================================================
-// Refresh the Ownership list with device-pixel-stable mobile POS-tag undershadows.
-const CACHE_NAME = 'DH3.45k';
+// Refresh the release-safe Research navigation and mobile Career Length label.
+const CACHE_NAME = 'DH3.45l';
 
 // ============================================================================
 // CORE ASSETS — Pre-cached during install

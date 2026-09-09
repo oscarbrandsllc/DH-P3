@@ -38,20 +38,13 @@ const INTERNAL_PATHS: Record<InternalDestination, string> = {
 
 type ActiveResearchTab = "rookie-adp" | "nfl-draft";
 
+// Release navigation: omit unfinished Positional Analysis from both hit-rate routes.
 const researchTabs = [
   {
-    id: "positional-analysis",
-    label: (
-      <>
-        <span className="adp-research-tab-label-part">Positional</span>{" "}
-        <span className="adp-research-tab-label-part">Analysis</span>
-      </>
-    ),
-    href: "/research/research.html?tab=positional-analysis",
-  },
-  {
     id: "syop",
-    label: "Career Length Analytics",
+    label: (
+      <span className="adp-career-tab-label">Career Length<span> Analytics</span></span>
+    ),
     href: "/research/research.html?tab=syop",
   },
   {
