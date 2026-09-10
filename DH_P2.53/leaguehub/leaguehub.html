@@ -27,14 +27,17 @@
   <meta name="theme-color" content="#0D0E1B" />
   <link href="../styles/styles.css?v=20260902-leaguehub-user-switch" rel="stylesheet" />
   <!-- LeagueHub page-specific styles (extracted from styles.css) -->
-  <link rel="stylesheet" href="../styles/leaguehub.css?v=DH3.45-leaguehub-trade-cards" />
+  <link rel="stylesheet" href="../styles/leaguehub.css?v=DH3.46-analysis" />
+  <link rel="stylesheet" href="../styles/leaguehub-analysis.css?v=DH3.46-analysis" />
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="icon" type="image/png" sizes="32x32" href="../assets/icons/favicon-32.png?v=20250926r5c" />
   <link rel="icon" type="image/png" sizes="16x16" href="../assets/icons/favicon-16.png?v=20250926r5c" />
   <link rel="shortcut icon" href="../assets/icons/favicon.ico?v=20250926r5c" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
     crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Chart.js retains the existing radar; Apache ECharts renders the redesigned bars. -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.min.js"></script>
+  <script src="../scripts/vendor/echarts-6.0.0.min.js"></script>
   <!-- Cloudflare Web Analytics: tracks visits for the current Dynasty Hub Cloudflare property; kept deferred so it does not block app rendering. -->
   <script defer src="https://static.cloudflareinsights.com/beacon.min.js"
     data-cf-beacon='{"token": "0a02235754b046f389fb57f26b46f13a"}'></script>
@@ -275,82 +278,41 @@
         </div>
       </div>
 
-      <section id="leagueAnalysisPanel" class="leaguehub-panel leaguehub-panel--analysis" role="tabpanel"
-        aria-labelledby="leagueAnalysisTab">
-        <section id="summaryStats" class="analyzer-summary-grid hidden" aria-live="polite" aria-label="Team summary">
-        </section>
-
+<!-- League Analysis owns these controls and visualizations. Both modes share
+             derived lineups; standings remain a separate historical panel below. -->
+      <section id="leagueAnalysisPanel" class="leaguehub-panel leaguehub-panel--analysis" role="tabpanel" aria-labelledby="leagueAnalysisTab">
+        <section id="summaryStats" class="analyzer-summary-grid hidden" aria-live="polite" aria-label="Team summary"></section>
         <section id="infographicContent" class="analyzer-content hidden">
-        <div class="analyzer-panels-grid">
-          <article class="analyzer-panel glass-panel" id="lineup-panel">
-            <header class="analyzer-panel-header">
-              <div>
-                <h2 class="analyzer-heading-with-info">
-                  <span class="analyzer-heading-text">Starting Lineup Overview</span>
-                  <!-- Analyzer lineup header help: explains that this chart auto-builds starters from league slot rules, including FLEX leftovers and SUPER_FLEX QB handling. -->
-                  <span class="analyzer-info">
-                    <button type="button" class="analyzer-info-trigger"
-                      aria-label="Explain how the starting lineup is determined"
-                      aria-describedby="startingLineupInfoTooltip">
-                      <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-                    </button>
-                    <span class="analyzer-info-tooltip" id="startingLineupInfoTooltip" role="tooltip">
-                        • Lineup parameters are pulled from league settings, and each team's "Starting Lineup" is built from the best available player options at each position for the selected metric. For FLEX, it uses the best remaining RB/WR/TE after the main positional slots are filled.
-                         <br>
-                        • Value uses the highest KTC-value players by position.
-                         <br>
-                        • PPG uses the highest-PPG players.
-                    </span>
-                  </span>
-                </h2>
-                <p>Toggle between KTC value and combined starter efficiency.</p>
-              </div>
-              <div class="analyzer-toggle" role="group" aria-label="Lineup metric">
-                <button type="button" class="toggle-option active" data-metric="value"
-                  aria-pressed="true">Value</button>
-                <button type="button" class="toggle-option" data-metric="ppg" aria-pressed="false">PPG</button>
-              </div>
-            </header>
-            <div class="analyzer-panel-body">
-              <div class="chart-container analyzer-chart">
-                <canvas id="startersValueChart" aria-label="Starting lineup comparison" role="img"></canvas>
-              </div>
+          <div class="la-projection-status" id="analysisProjectionStatus" role="status"></div>
+          <div class="analyzer-panels-grid">
+          <article class="analyzer-panel glass-panel la-bar-panel" id="lineup-panel">
+ <header class="analyzer-panel-header"><div><span class="la-eyebrow">01 / STARTING POWER</span><h2>Starting Lineup</h2><p>Your league’s lineup. Its strongest available starters.</p></div><div class="analyzer-toggle" role="group" aria-label="Ranking basis"><button type="button" class="toggle-option active" data-metric="value" aria-pressed="true">Dynasty</button><button type="button" class="toggle-option" data-metric="proj" aria-pressed="false">Contender</button></div></header>
+ <div class="la-chart-controls"><label class="la-filter">Lineup spot<select id="lineupPositionFilter" aria-label="Starting lineup spot"><option value="ALL">All starters</option></select></label><label class="la-filter">Teams<select id="lineupTeamFilter" aria-label="Teams shown in Starting Lineup"><option value="all">All teams</option><option value="top">Top 6</option><option value="near">Around my team</option></select></label><span class="la-unit" id="lineupChartUnit">KTC VALUE</span></div>
+ <div class="la-bar-chart" id="startersValueChart" role="img" aria-label="Starting Lineup"></div>
+ <div class="la-chart-legend" id="lineupChartLegend"></div><p class="la-chart-note" id="lineupChartNote">Ranked by total · Your team is highlighted</p>
+ </article>
+          <article class="analyzer-panel glass-panel la-bar-panel" id="value-panel">
+ <header class="analyzer-panel-header"><div><span class="la-eyebrow">02 / ROSTER COMPOSITION</span><h2>Roster Strength</h2><p>Explore where each team holds its value and production.</p></div><div class="analyzer-toggle" role="group" aria-label="Ranking basis"><button type="button" class="toggle-option active" data-metric="value" aria-pressed="true">Dynasty</button><button type="button" class="toggle-option" data-metric="proj" aria-pressed="false">Contender</button></div></header>
+ <div class="la-chart-controls"><label class="la-filter">Position<select id="overallPositionFilter" aria-label="Roster position"><option value="ALL">All positions</option><option value="QB">QB</option><option value="RB">RB</option><option value="WR">WR</option><option value="TE">TE</option><option value="Picks">Picks</option></select></label><label class="la-filter">Teams<select id="overallTeamFilter" aria-label="Teams shown in Roster Strength"><option value="all">All teams</option><option value="top">Top 6</option><option value="near">Around my team</option></select></label><span class="la-unit" id="overallChartUnit">KTC VALUE</span></div>
+ <div class="la-bar-chart" id="overallValueChart" role="img" aria-label="Roster Strength"></div>
+ <div class="la-chart-legend" id="overallChartLegend"></div><p class="la-chart-note" id="overallChartNote">Ranked by total · Your team is highlighted</p>
+ </article>
+          </div>
+          <section class="analyzer-panel glass-panel analyzer-radar-section" id="radar-panel">
+            <header class="analyzer-panel-header"><div><span class="la-eyebrow">03 / POSITIONAL QUALITY</span><h2>Positional Strength <span id="radarStrengthRank" class="radar-strength-rank-badge"></span></h2><p>Your starters at each position <b>vs.</b> League AVG.</p></div><div class="analyzer-toggle" role="group" aria-label="Ranking basis"><button type="button" class="toggle-option" data-metric="value" aria-pressed="false">Dynasty</button><button type="button" class="toggle-option active" data-metric="proj" aria-pressed="true">Contender</button></div></header>
+            <div class="la-quality-layout">
+              <div class="la-radar-wrap"><div class="chart-container analyzer-chart analyzer-chart--radar"><canvas id="radarChart" aria-label="Positional strength radar" role="img"></canvas></div><div class="la-radar-legend"><span>Your team</span><span>League average</span></div></div>
+              <section class="la-matrix-section" id="quality-matrix-panel" aria-labelledby="qualityMatrixTitle">
+                <header class="la-matrix-header"><div><h3 id="qualityMatrixTitle">Positional Quality Matrix</h3><p>Every starting spot. Every team. Ranked.</p></div><div class="analyzer-toggle" role="group" aria-label="Ranking basis"><button type="button" class="toggle-option active" data-metric="value" aria-pressed="true">Dynasty</button><button type="button" class="toggle-option" data-metric="proj" aria-pressed="false">Contender</button></div></header>
+                <div class="la-matrix-scroll" tabindex="0" role="region" aria-label="Positional quality rankings; scroll for all starting positions"><table class="la-matrix" id="qualityMatrixTable"><thead id="qualityMatrixHead"></thead><tbody id="qualityMatrixBody"></tbody></table></div>
+                <div class="la-matrix-key"><span><i class="la-key-dot"></i>League leaders</span><span><i class="la-key-dot la-key-dot--mid"></i>Middle</span><span><i class="la-key-dot la-key-dot--low"></i>Trailing</span></div>
+                <p class="la-method" id="qualityMatrixNote"></p>
+              </section>
             </div>
-          </article>
-
-          <article class="analyzer-panel glass-panel" id="value-panel">
-            <header class="analyzer-panel-header">
-              <div>
-                <h2>Total Roster Value</h2>
-                <p>KTC distribution by position for every team.</p>
-              </div>
-            </header>
-            <div class="analyzer-panel-body">
-              <div class="chart-container analyzer-chart">
-                <canvas id="overallValueChart" aria-label="Total roster value comparison" role="img"></canvas>
-              </div>
-            </div>
-          </article>
-        </div>
-
-        <section class="analyzer-panel glass-panel analyzer-radar-section" id="radar-panel">
-          <header class="analyzer-panel-header">
-            <div>
-              <h2>Positional Strength <span id="radarStrengthRank" class="radar-strength-rank-badge"></span></h2>
-              <p>Your starters at each position <b>vs.</b> League AVG.</p>
-            </div>
-            <!-- Analyzer radar metric toggle: keeps the Positional Strength panel on an
-                 independent Value/PPG switch so the radar can compare either metric. -->
-            <div class="analyzer-toggle" role="group" aria-label="Radar metric">
-              <button type="button" class="toggle-option" data-metric="value" aria-pressed="false">Value</button>
-              <button type="button" class="toggle-option active" data-metric="ppg" aria-pressed="true">PPG</button>
-            </div>
-          </header>
-          <div class="analyzer-panel-body analyzer-panel-body--stacked">
-            <div class="chart-container analyzer-chart analyzer-chart--radar">
-              <canvas id="radarChart" aria-label="Positional strength radar" role="img"></canvas>
-            </div>
-            <div class="analyzer-standings" aria-live="polite">
+            <details class="la-method-details"><summary>How starting lineups and rankings work</summary><p>League settings determine each starting spot. Dynasty selects the highest KTC values; Contender selects the highest rest-of-season PROJ. QB, RB, WR and TE slots fill first. FLEX uses the best remaining RB/WR/TE; SUPER_FLEX preserves the existing next-available-QB rule. Each player can fill only one spot. Tied values receive the same rank.</p></details>
+          </section>
+          <section class="analyzer-panel glass-panel la-standings-panel" id="league-table-panel" aria-label="League Table — Season and Career Overview">
+                      <div class="analyzer-standings" aria-live="polite">
               <div class="analyzer-standings-header">
                 <h3>League Table</h3>
                 <span class="analyzer-standings-subtitle"> - Season &amp; Career Overview</span>
@@ -420,44 +382,15 @@
                 </div>
               </div>
             </div>
-          </div>
+          </section>
+          <section class="analyzer-panel glass-panel analyzer-leaderboard-panel" id="leaders-panel">
+            <header class="analyzer-panel-header"><div><span class="la-eyebrow">05 / PLAYER LEADERBOARD</span><h2>League Leaders</h2><p>Top 100 rostered players · KTC value and rest-of-season PROJ.</p></div><div class="analyzer-toggle" role="group" aria-label="Ranking basis"><button type="button" class="toggle-option" data-metric="value" aria-pressed="false">Dynasty</button><button type="button" class="toggle-option active" data-metric="proj" aria-pressed="true">Contender</button></div></header>
+            <div class="analyzer-filter-group" role="group" aria-label="Position filters">
+              <button type="button" class="filter-chip active" data-pos="ALL" aria-pressed="true">ALL</button><button type="button" class="filter-chip" data-pos="QB" aria-pressed="false">QB</button><button type="button" class="filter-chip" data-pos="RB" aria-pressed="false">RB</button><button type="button" class="filter-chip" data-pos="WR" aria-pressed="false">WR</button><button type="button" class="filter-chip" data-pos="TE" aria-pressed="false">TE</button>
+            </div>
+            <div class="analyzer-panel-body"><div class="analyzer-leaderboard-scroll"><table class="analyzer-leaderboard-table" aria-live="polite"><thead><tr><th scope="col">RK</th><th scope="col" class="al-col-player">Player</th><th scope="col">Pos</th><th scope="col">TM</th><th scope="col" class="al-col-owner">Owner</th><th scope="col">KTC</th><th scope="col">PROJ</th></tr></thead><tbody id="leaderboardTableBody"></tbody></table></div></div>
+          </section>
         </section>
-
-        <section class="analyzer-panel glass-panel analyzer-leaderboard-panel">
-          <header class="analyzer-panel-header">
-            <div>
-              <h2>League Leaders</h2>
-              <p>Top 100 total fantasy scorers by position with team ownership.</p>
-            </div>
-            <div class="analyzer-filter-group" role="tablist" aria-label="Position filters">
-              <button type="button" class="filter-chip active" data-pos="ALL" role="tab"
-                aria-selected="true">ALL</button>
-              <button type="button" class="filter-chip" data-pos="QB" role="tab" aria-selected="false">QB</button>
-              <button type="button" class="filter-chip" data-pos="RB" role="tab" aria-selected="false">RB</button>
-              <button type="button" class="filter-chip" data-pos="WR" role="tab" aria-selected="false">WR</button>
-              <button type="button" class="filter-chip" data-pos="TE" role="tab" aria-selected="false">TE</button>
-            </div>
-          </header>
-          <div class="analyzer-panel-body">
-            <div class="analyzer-leaderboard-scroll">
-              <table class="analyzer-leaderboard-table" aria-live="polite">
-                <thead>
-                  <tr>
-                    <th scope="col">RK</th>
-                    <th scope="col" class="al-col-player">Player</th>
-                    <th scope="col">Pos</th>
-                    <th scope="col">TM</th>
-                    <th scope="col" class="al-col-owner">Owner</th>
-                    <th scope="col">FPTS</th>
-                    <th scope="col">PPG</th>
-                  </tr>
-                </thead>
-                <tbody id="leaderboardTableBody"></tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-      </section>
       </section>
 
       <!-- League trades workspace:
@@ -529,7 +462,8 @@
     </main>
   </div>
 
-  <script src="../scripts/leaguehub.js?v=DH3.45c-league-insights-heading"></script>
+  <script src="../scripts/leaguehub-analysis.js?v=DH3.46-analysis"></script>
+  <script src="../scripts/leaguehub.js?v=DH3.46-analysis"></script>
   <script defer src="../scripts/app.js?v=20260902-leaguehub-user-switch"></script>
 </body>
 

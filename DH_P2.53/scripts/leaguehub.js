@@ -4,6 +4,7 @@
       return;
     }
 
+    const Analysis = window.LeagueHubAnalysis;
     const params = new URLSearchParams(window.location.search);
     const initialUsername = params.get('username');
     const initialLeagueId = params.get('leagueId');
@@ -25,7 +26,7 @@
       summaryStats: document.getElementById('summaryStats'),
       content: document.getElementById('infographicContent'),
       lineupToggle: document.querySelectorAll('#lineup-panel .toggle-option'),
-      radarToggle: document.querySelectorAll('#radar-panel .toggle-option'),
+      radarToggle: document.querySelectorAll('#radar-panel > .analyzer-panel-header .toggle-option'),
       startersCanvas: document.getElementById('startersValueChart'),
       overallCanvas: document.getElementById('overallValueChart'),
       radarCanvas: document.getElementById('radarChart'),
@@ -34,7 +35,7 @@
       standingsBody: document.getElementById('standingsTableBody'),
       standingsFrozenBody: document.getElementById('standingsFrozenBody'),
       leaderboardBody: document.getElementById('leaderboardTableBody'),
-      leaderboardFilters: document.querySelectorAll('.analyzer-filter-group .filter-chip'),
+      leaderboardFilters: document.querySelectorAll('#leaders-panel .filter-chip'),
       tradesStatus: document.getElementById('leagueTradesStatus'),
       tradesEmptyState: document.getElementById('leagueTradesEmptyState'),
       tradesAnalytics: document.getElementById('leagueTradesAnalytics'),
@@ -100,33 +101,6 @@
     };
 
     const POSITION_ORDER = ['QB', 'RB', 'WR', 'TE'];
-
-    const LINEUP_VALUE_COLORS = {
-      QB: '#15607a',
-      RB: '#0c8184',
-      WR: '#0da0a4',
-      TE: '#09bb9f',
-      FLEX: '#2ad2a0',
-      SUPER_FLEX: '#37ebb5',
-    };
-
-    const LINEUP_PPG_COLORS = {
-      QB: '#003c63',
-      RB: '#005d91',
-      WR: '#006da2',
-      TE: '#007bb4',
-      FLEX: '#008cd1',
-      SUPER_FLEX: '#00a3ff',
-    };
-
-    const OVERALL_VALUE_COLORS = {
-      QB: '#3700B3',
-      RB: '#4c02de',
-      WR: '#6300ff',
-      TE: '#7100ff',
-      FLEX: '#8700ff',
-      Picks: '#9400ff',
-    };
 
     const RADAR_SLOT_TYPES = ['QB', 'RB', 'WR', 'TE', 'FLEX', 'SUPER_FLEX'];
     const RADAR_FLEX_ELIGIBLE = ['RB', 'WR', 'TE'];
@@ -306,15 +280,29 @@
       return {
         ...options,
         devicePixelRatio: getAnalyzerChartDevicePixelRatio(),
-        resizeDelay: 80,
+        // Immediate resizing avoids a delayed Chart.js update after a breakpoint
+        // replaces the radar instance (which otherwise targets a destroyed canvas).
+        resizeDelay: 0,
       };
     }
 
     let chartResolutionFrame = null;
     function refreshAnalyzerChartResolution() {
+      if (!state.teams.length) return;
+      // Rebuild responsive label formatting when the viewport crosses a compact
+      // breakpoint, including mobile PROJ's two-line labels and narrow usernames.
+      const layoutKey = [window.matchMedia('(max-width: 640px)').matches,
+        elements.startersCanvas.clientWidth < 440, elements.overallCanvas.clientWidth < 440].join(':');
+      if (state.chartLayoutKey !== layoutKey && elements.analysisPanel.getBoundingClientRect().width) {
+        state.chartLayoutKey = layoutKey;
+        renderLineupChart();
+        renderOverallChart();
+        renderRadarChart(state.teams, state.radarSlots);
+      }
       const nextRatio = getAnalyzerChartDevicePixelRatio();
       Object.values(state.charts || {}).forEach((chart) => {
         if (!chart) return;
+        if (typeof chart.setOption === 'function') { chart.resize(); return; }
         chart.options.devicePixelRatio = nextRatio;
         chart.resize();
         chart.update('none');
@@ -331,206 +319,7 @@
       });
     }
 
-    const barTotalsPlugin = {
-      id: 'analyzerBarTotals',
-      afterDatasetsDraw(chart, args, options) {
-        if (!options || options.enabled === false) return;
-
-        const datasets = chart.data?.datasets || [];
-        if (!datasets.length) return;
-
-        const metas = datasets
-          .map((dataset, index) => ({ meta: chart.getDatasetMeta(index), dataset }))
-          .filter(({ meta }) => meta && !meta.hidden);
-
-        if (!metas.length) return;
-
-        const isHorizontal = chart.options?.indexAxis === 'y';
-        const primaryScale = isHorizontal ? chart.scales?.x : chart.scales?.y;
-        if (!primaryScale) return;
-
-        const labelCount = chart.data?.labels?.length || 0;
-        if (!labelCount) return;
-
-        const totals = new Array(labelCount).fill(0);
-        const positions = new Array(labelCount).fill(null);
-
-        metas.forEach(({ meta, dataset }) => {
-          meta.data.forEach((element, index) => {
-            if (!element) return;
-            const value = Number(dataset.data?.[index]) || 0;
-            totals[index] += value;
-            if (!positions[index]) {
-              positions[index] = element;
-            }
-          });
-        });
-
-        const rankedTotals = totals
-          .map((value, index) => ({ value, index }))
-          .filter(({ value }) => Number.isFinite(value))
-          .sort((a, b) => {
-            if (b.value === a.value) {
-              return a.index - b.index;
-            }
-            return b.value - a.value;
-          });
-
-        const ranks = new Array(labelCount).fill(null);
-        let previousValue = null;
-        let previousRank = 0;
-        rankedTotals.forEach(({ value, index }, position) => {
-          if (!Number.isFinite(value)) return;
-          if (previousValue !== null && value === previousValue) {
-            ranks[index] = previousRank;
-            return;
-          }
-          const rank = position + 1;
-          ranks[index] = rank;
-          previousRank = rank;
-          previousValue = value;
-        });
-
-        const ctx = chart.ctx;
-        const offset = options.offset ?? 12;
-        const font = options.font || '10px "Product Sans", "Google Sans", sans-serif';
-        const mobileFont = options.mobileFont || '9px "Product Sans", "Google Sans", sans-serif';
-        const color = options.color || '#EAEBF0';
-        const formatter = options.formatter || ((val) => val.toFixed(0));
-        const isMobileViewport = window.matchMedia('(max-width: 640px)').matches;
-        const labelFont = isMobileViewport ? mobileFont : font;
-        const cssGlyphFont = getCssFontValue(options.rankFontCssVar);
-        const glyphFont = cssGlyphFont
-          || (isMobileViewport ? options.rankMobileFont : options.rankFont)
-          || scaleFontSize(labelFont, options.rankFontScale ?? 1.6);
-        const glyphColor = options.rankColor || color;
-        const glyphSpacing = options.rankSpacing ?? (isHorizontal ? 7 : 5);
-
-        totals.forEach((total, index) => {
-          if (!Number.isFinite(total) || total === 0) return;
-          const element = positions[index];
-          if (!element) return;
-
-          const formatted = formatter(total, index);
-          if (!formatted) return;
-          const rankGlyph = formatRankGlyph(ranks[index]);
-
-          const center = isHorizontal ? element.y : element.x;
-          const primaryPixel = primaryScale.getPixelForValue(total);
-          const chartArea = chart.chartArea;
-
-          ctx.save();
-          ctx.textBaseline = isHorizontal ? 'middle' : 'bottom';
-
-          const layoutPadding = chart.options?.layout?.padding || 0;
-          const resolvePadding = (side) =>
-            (typeof layoutPadding === 'number' ? layoutPadding : layoutPadding?.[side] ?? 0);
-          const paddingRight = resolvePadding('right');
-          const paddingLeft = resolvePadding('left');
-
-          let glyphWidth = 0;
-          let labelWidth = 0;
-          let totalWidth = 0;
-          let glyphMetrics = null;
-          let glyphLeftBearing = 0;
-
-          if (rankGlyph) {
-            ctx.font = glyphFont;
-            glyphMetrics = ctx.measureText(rankGlyph);
-            const actualLeft = glyphMetrics.actualBoundingBoxLeft ?? 0;
-            const actualRight = glyphMetrics.actualBoundingBoxRight ?? 0;
-            glyphLeftBearing = actualLeft;
-            glyphWidth = actualLeft + actualRight;
-            if (!glyphWidth || glyphWidth <= 0) {
-              glyphWidth = glyphMetrics.width;
-            }
-            ctx.font = labelFont;
-            labelWidth = ctx.measureText(formatted).width;
-            totalWidth = glyphWidth + glyphSpacing + labelWidth;
-          } else {
-            ctx.font = labelFont;
-            labelWidth = ctx.measureText(formatted).width;
-            totalWidth = labelWidth;
-          }
-
-          const glyphGap = rankGlyph ? options.rankGlyphGap ?? (isHorizontal ? -4 : -4) : 0;
-          let x = isHorizontal ? primaryPixel + offset + glyphGap : center;
-          let y = isHorizontal ? center : primaryPixel - offset;
-
-          if (isHorizontal) {
-            const maxX = chart.width - paddingRight - 4;
-            const minX = chartArea.left + paddingLeft + 4;
-            const maxStart = maxX - totalWidth;
-            if (Number.isFinite(maxStart)) {
-              x = Math.min(x, maxStart);
-            }
-            const minStart = Math.max(minX, primaryPixel + offset + glyphGap);
-            if (x < minStart) {
-              x = minStart;
-            }
-            y = center;
-          } else if (y < chartArea.top + 12) {
-            y = chartArea.top + 12;
-          }
-
-          if (rankGlyph) {
-            ctx.textAlign = 'left';
-
-            if (isHorizontal) {
-              ctx.font = glyphFont;
-              ctx.fillStyle = glyphColor;
-              const glyphStart = x - glyphLeftBearing;
-              ctx.fillText(rankGlyph, glyphStart, y);
-
-              ctx.font = labelFont;
-              ctx.fillStyle = color;
-              ctx.fillText(formatted, x + glyphWidth + glyphSpacing, y);
-            } else {
-              const minStart = chartArea.left + paddingLeft + 4;
-              const maxStart = chartArea.right - paddingRight - 4 - totalWidth;
-              let startX = x - totalWidth / 2;
-              if (Number.isFinite(maxStart)) {
-                startX = Math.min(startX, maxStart);
-              }
-              if (startX < minStart) {
-                startX = minStart;
-              }
-
-              ctx.font = glyphFont;
-              ctx.fillStyle = glyphColor;
-              const glyphStart = startX - glyphLeftBearing;
-              ctx.fillText(rankGlyph, glyphStart, y);
-
-              ctx.font = labelFont;
-              ctx.fillStyle = color;
-              ctx.fillText(formatted, startX + glyphWidth + glyphSpacing, y);
-            }
-          } else {
-            ctx.font = labelFont;
-            ctx.fillStyle = color;
-            ctx.textAlign = isHorizontal ? 'left' : 'center';
-
-            if (isHorizontal) {
-              const maxX = chart.width - paddingRight - 4 - totalWidth;
-              const minX = chartArea.left + paddingLeft + 4;
-              let startX = x;
-              if (Number.isFinite(maxX)) {
-                startX = Math.min(startX, maxX);
-              }
-              if (startX < minX) {
-                startX = minX;
-              }
-              ctx.fillText(formatted, startX, y);
-            } else {
-              ctx.fillText(formatted, x, y);
-            }
-          }
-          ctx.restore();
-        });
-      },
-    };
-
-    Chart.register(radarBackgroundPlugin, radarPointLabelsPlugin, barTotalsPlugin);
+    Chart.register(radarBackgroundPlugin, radarPointLabelsPlugin);
 
     const state = {
       userId: null,
@@ -538,12 +327,15 @@
       players: {},
       ktcOneQb: {},
       ktcSflx: {},
-      playerStats: {},
-      playerStatsSeason: null,
-      leaguePlayerStats: {},
       currentLeagueId: null,
       currentLineupMetric: 'value',
-      currentRadarMetric: 'ppg',
+      currentRadarMetric: 'proj',
+      currentOverallMetric: 'value',
+      currentMatrixMetric: 'value',
+      currentLeadersMetric: 'proj',
+      playerProjections: {},
+      projectionMeta: {},
+      analysisRequestToken: 0,
       isSuperflex: false,
       cache: {},
       championCache: {},
@@ -560,7 +352,6 @@
         overall: null,
         radar: null,
       },
-      lineupData: null,
       teams: [],
       standingsTeams: [],
       standingsSort: {
@@ -651,12 +442,10 @@
         currentLeagueId: state.currentLeagueId,
         currentLineupMetric: state.currentLineupMetric,
         currentRadarMetric: state.currentRadarMetric,
-        playerStats: state.playerStats,
-        playerStatsSeason: state.playerStatsSeason,
-        leaguePlayerStats: state.leaguePlayerStats,
+        playerProjections: state.playerProjections,
+        projectionMeta: state.projectionMeta,
         isSuperflex: state.isSuperflex,
         careerStatsByOwner: state.careerStatsByOwner,
-        lineupData: state.lineupData,
         teams: state.teams,
         standingsTeams: state.standingsTeams,
         leaderboards: state.leaderboards,
@@ -680,12 +469,10 @@
       state.currentLeagueId = snapshot.currentLeagueId;
       state.currentLineupMetric = snapshot.currentLineupMetric;
       state.currentRadarMetric = snapshot.currentRadarMetric;
-      state.playerStats = snapshot.playerStats;
-      state.playerStatsSeason = snapshot.playerStatsSeason;
-      state.leaguePlayerStats = snapshot.leaguePlayerStats;
+      state.playerProjections = snapshot.playerProjections;
+      state.projectionMeta = snapshot.projectionMeta;
       state.isSuperflex = snapshot.isSuperflex;
       state.careerStatsByOwner = snapshot.careerStatsByOwner;
-      state.lineupData = snapshot.lineupData;
       state.teams = snapshot.teams;
       state.standingsTeams = snapshot.standingsTeams;
       state.leaderboards = snapshot.leaderboards;
@@ -811,6 +598,32 @@
       });
     });
 
+    // Independent analysis controls keep filters and mode switches within their panel.
+    [
+      ['value-panel', 'currentOverallMetric', renderOverallChart],
+      ['quality-matrix-panel', 'currentMatrixMetric', renderQualityMatrix],
+      ['leaders-panel', 'currentLeadersMetric', renderLeagueLeaders],
+    ].forEach(([id, stateKey, render]) => {
+      const buttons = document.querySelectorAll(`#${id} .toggle-option`);
+      buttons.forEach(button => button.addEventListener('click', () => {
+        state[stateKey] = button.dataset.metric;
+        buttons.forEach(item => {
+          const active = item === button;
+          item.classList.toggle('active', active);
+          item.setAttribute('aria-pressed', String(active));
+        });
+        render();
+      }));
+    });
+    ['lineup', 'overall'].forEach(kind => {
+      ['Position', 'Team'].forEach(filter => document.getElementById(`${kind}${filter}Filter`)
+        ?.addEventListener('change', () => renderAnalysisBar(kind)));
+    });
+    // Resize observers also handle panel/sidebar width changes and hidden-tab returns.
+    const analysisResizeObserver = new ResizeObserver(() => scheduleAnalyzerChartResolutionRefresh());
+    [elements.startersCanvas, elements.overallCanvas, elements.radarCanvas?.parentElement]
+      .filter(Boolean).forEach(element => analysisResizeObserver.observe(element));
+
     elements.leaderboardFilters.forEach((button) => {
       button.addEventListener('click', () => {
         const pos = button.dataset.pos;
@@ -819,7 +632,7 @@
         elements.leaderboardFilters.forEach((btn) => {
           const isActive = btn.dataset.pos === pos;
           btn.classList.toggle('active', isActive);
-          btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+          btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
         });
         renderLeagueLeaders();
       });
@@ -905,7 +718,7 @@
           throw new Error('No active dynasty leagues found for this user in the current season.');
         }
 
-        setLoading(true, 'Analyzing league value and production...');
+        setLoading(true, 'Loading Dynasty values and rest-of-season projections...');
 
         if (targetLeagueId) {
           const target = state.leagues.find((league) => league.league_id === targetLeagueId);
@@ -990,6 +803,7 @@
       elements.tradeToolbar?.classList.toggle('hidden', isAnalysis);
       elements.tradeToolbar?.setAttribute('aria-hidden', isAnalysis ? 'true' : 'false');
 
+      if (isAnalysis) scheduleAnalyzerChartResolutionRefresh();
       if (!isAnalysis && !skipTradeLoad && state.currentLeagueId) {
         await ensureTradeArchiveLoaded();
       }
@@ -2813,100 +2627,6 @@
       populateLeagueSelect(state.leagues);
     }
 
-    async function ensurePlayerStats(season) {
-      if (state.playerStatsSeason === season && Object.keys(state.playerStats).length > 0) {
-        return;
-      }
-      const url = `https://api.sleeper.app/v1/stats/nfl/regular/${season}`;
-      const rawStats = await fetchWithCache(url);
-      state.playerStats = transformSeasonStats(rawStats);
-      state.playerStatsSeason = season;
-    }
-
-    /**
-     * Fetch league-specific FPTS & PPG by aggregating per-player points
-     * from every regular-season matchup week (1–18).
-     * Each matchup entry contains a `players_points` object keyed by
-     * player ID with the fantasy points scored under that league's
-     * scoring settings.
-     */
-    async function fetchLeaguePlayerStats(leagueId) {
-      const TOTAL_WEEKS = 18;
-      const weekPromises = [];
-      for (let week = 1; week <= TOTAL_WEEKS; week += 1) {
-        weekPromises.push(
-          fetchWithCache(`https://api.sleeper.app/v1/league/${leagueId}/matchups/${week}`)
-            .catch(() => null),
-        );
-      }
-      const allWeeks = await Promise.all(weekPromises);
-
-      const aggregated = {}; // playerId -> { total, games }
-
-      allWeeks.forEach((weekMatchups) => {
-        if (!Array.isArray(weekMatchups)) return;
-        weekMatchups.forEach((entry) => {
-          const pointsMap = entry.players_points;
-          if (!pointsMap || typeof pointsMap !== 'object') return;
-          Object.entries(pointsMap).forEach(([playerId, pts]) => {
-            const points = toNumber(pts);
-            if (!aggregated[playerId]) {
-              aggregated[playerId] = { total: 0, games: 0 };
-            }
-            aggregated[playerId].total += points;
-            // Count a game played if the player scored any non-zero points
-            if (points !== 0) {
-              aggregated[playerId].games += 1;
-            }
-          });
-        });
-      });
-
-      // Compute PPG
-      const result = {};
-      Object.entries(aggregated).forEach(([playerId, data]) => {
-        const ppg = data.games > 0 ? data.total / data.games : 0;
-        result[playerId] = {
-          total: data.total,
-          games: data.games,
-          ppg,
-        };
-      });
-
-      state.leaguePlayerStats = result;
-    }
-
-    function transformSeasonStats(rawStats) {
-      const result = {};
-      if (!rawStats) return result;
-
-      const processEntry = (playerId, stats) => {
-        if (!playerId || !stats) return;
-        const total = toNumber(stats.pts_ppr ?? stats.fpts_ppr ?? stats.fpts ?? 0);
-        const games = toNumber(stats.gp ?? stats.games_played ?? stats.gm ?? 0);
-        const ppg = games > 0 ? total / games : 0;
-        result[playerId] = {
-          total,
-          games,
-          ppg,
-        };
-      };
-
-      if (Array.isArray(rawStats)) {
-        rawStats.forEach((entry) => {
-          if (!entry) return;
-          const playerId = entry.player_id || entry.playerId || entry.id;
-          processEntry(playerId, entry);
-        });
-      } else if (typeof rawStats === 'object') {
-        Object.entries(rawStats).forEach(([playerId, stats]) => {
-          processEntry(playerId, stats);
-        });
-      }
-
-      return result;
-    }
-
     function toNumber(value) {
       const parsed = Number(value);
       return Number.isFinite(parsed) ? parsed : 0;
@@ -3117,7 +2837,6 @@
 
       return {
         rosterLeagueId,
-        ppgLeagueId: completedSeasonLeagueId,
         standingsLeagueId: completedSeasonLeagueId,
         statsSeason,
       };
@@ -3281,8 +3000,9 @@
     }
 
     async function analyzeLeague(leagueId, { preserveExistingContent = false } = {}) {
+      const requestToken = ++state.analysisRequestToken;
       try {
-        setLoading(true, 'Analyzing league value and production...');
+        setLoading(true, 'Loading Dynasty values and rest-of-season projections...');
         if (!preserveExistingContent) hideContent();
 
         const leagueInfo = state.leagues.find((league) => league.league_id === leagueId);
@@ -3295,12 +3015,10 @@
         const superflexSlots = leagueInfo.roster_positions.filter((slot) => slot === 'SUPER_FLEX').length;
         state.isSuperflex = qbSlots > 1 || superflexSlots > 0;
 
-        await ensurePlayerStats(analyzerSources.statsSeason);
-        await fetchLeaguePlayerStats(analyzerSources.ppgLeagueId);
 
         // Analyzer league fetch split:
         // current-season rosters drive ownership, values, and lineup construction, while the
-        // completed-season source preserves standings plus 2025 PPG/FPTS context.
+        // completed-season source preserves the historical standings.
         const standingsDataPromise = analyzerSources.standingsLeagueId === analyzerSources.rosterLeagueId
           ? Promise.resolve([null, null])
           : Promise.all([
@@ -3317,6 +3035,12 @@
           fetchAnalyzerCareerStats(leagueInfo),
         ]);
 
+        const projections = await fetchAnalysisProjections(leagueInfo, rosters);
+        if (requestToken !== state.analysisRequestToken) return false;
+        state.playerProjections = projections.values;
+        state.projectionMeta = projections.meta;
+        // Commit scoring format with its request so a fast league switch cannot mix KTC formats.
+        state.isSuperflex = qbSlots > 1 || superflexSlots > 0;
         resetTradeArchiveForLeague(leagueInfo, users, rosters);
 
         const radarSlots = buildRadarSlots(leagueInfo.roster_positions || []);
@@ -3336,6 +3060,10 @@
         state.leaderboards = processed.leaderboards;
         state.radarSlots = processed.radarSlots;
 
+        elements.content.classList.remove('hidden');
+        document.getElementById('analysisProjectionStatus').textContent = state.projectionMeta.label;
+        populateAnalysisSlotFilter();
+        renderQualityMatrix();
         renderSummaryStats(state.teams, state.standingsTeams);
         renderLineupChart(state.teams);
         renderOverallChart(state.teams);
@@ -3354,6 +3082,7 @@
         }
         return true;
       } catch (error) {
+        if (requestToken !== state.analysisRequestToken) return false;
         console.error('Analyze league error:', error);
         if (window.__dhUsernameGate?.isSubmitting?.()) {
           showLeagueHubGate({
@@ -3367,212 +3096,88 @@
         }
         return false;
       } finally {
-        setLoading(false);
+        if (requestToken === state.analysisRequestToken) setLoading(false);
+      }
+    }
+
+    // League Analysis projections: fetch each remaining week once, score with the
+    // selected league settings, and retain null for missing/incomplete coverage.
+    async function fetchAnalysisProjections(leagueInfo, rosters) {
+      const playerIds = [...new Set(rosters.flatMap(roster => roster.players || []))];
+      try {
+        const nfl = await fetchWithCache('https://api.sleeper.app/v1/state/nfl');
+        const weeks = Analysis.projectionWeeks(leagueInfo.season, nfl);
+        if (!weeks.length) return { values: {}, meta: { available: false, label: `${leagueInfo.season} season complete · No remaining regular-season projections.` } };
+        const totals = Object.fromEntries(playerIds.map(id => [id, { total: 0, covered: false }]));
+        // Four simultaneous requests bound payload pressure on mobile connections.
+        for (let index = 0; index < weeks.length; index += 4) {
+          const batch = await Promise.all(weeks.slice(index, index + 4).map(week =>
+            fetchWithCache(`https://api.sleeper.app/v1/projections/nfl/regular/${leagueInfo.season}/${week}`)));
+          batch.forEach(data => {
+            if (!data || !Object.values(data).some(stats => stats?.pts_ppr != null)) throw new Error('A remaining week has no projection feed.');
+            playerIds.forEach(id => {
+              const score = Analysis.scoreProjection(data[id], leagueInfo.scoring_settings, state.players[id]?.position);
+              // Bye weeks have no scoring fields and contribute zero. Players with
+              // no scoring fields in any remaining week keep an unavailable value.
+              if (score !== null) { totals[id].total += score; totals[id].covered = true; }
+            });
+          });
+        }
+        const values = Object.fromEntries(Object.entries(totals).map(([id, item]) => [id, item.covered ? item.total : null]));
+        const eligible = playerIds.filter(id => POSITION_ORDER.includes(state.players[id]?.position));
+        const missing = eligible.filter(id => values[id] === null).length;
+        const available = eligible.some(id => Number.isFinite(values[id]));
+        return { values, meta: { available, season: leagueInfo.season, weeks, missing,
+          label: `${leagueInfo.season} · PROJ: Weeks ${weeks[0]}–18 · League scoring${missing ? ` · ${missing} rostered players have no projection (—)` : ''}` } };
+      } catch (error) {
+        console.warn('LeagueHub projections unavailable:', error);
+        return { values: {}, meta: { available: false, label: 'PROJ unavailable · Sleeper projections could not be loaded. Reload to retry; Dynasty values remain available.' } };
       }
     }
 
     function processLeagueData(rosters, users, tradedPicks, leagueInfo, radarSlots = []) {
-      const userMap = Array.isArray(users)
-        ? users.reduce((acc, user) => {
-          acc[user.user_id] = user;
-          return acc;
-        }, {})
-        : {};
-
+      const userMap = Object.fromEntries((users || []).map(user => [user.user_id, user]));
       const leaderboards = { ALL: [], QB: [], RB: [], WR: [], TE: [] };
-      const globalTotals = [];
-      const slotSequence = Array.isArray(radarSlots) && radarSlots.length
-        ? radarSlots
-        : buildRadarSlots(leagueInfo?.roster_positions || []);
+      const slotSequence = radarSlots.length ? radarSlots : buildRadarSlots(leagueInfo.roster_positions || []);
       const ageAsOfDate = new Date();
-
-      const teams = (Array.isArray(rosters) ? rosters : []).map((roster) => {
+      const teams = (rosters || []).map(roster => {
         const owner = userMap[roster.owner_id] || userMap[roster.co_owner_id];
-        const teamName = roster.metadata?.team_name || owner?.display_name || `Team ${roster.roster_id}`;
-
-        const startersBySlot = {};
-        SLOT_ORDER.forEach((slot) => {
-          startersBySlot[slot] = { value: 0, ppg: 0, players: [] };
-        });
-
-        const startersValueByPos = { QB: 0, RB: 0, WR: 0, TE: 0 };
-        const starterIds = roster.starters || [];
-        const rosterPositions = leagueInfo.roster_positions || [];
-        let topScorer = null;
-
-        starterIds.forEach((playerId, index) => {
-          const slotRaw = rosterPositions[index] || 'BN';
-          const slot = normalizeSlot(slotRaw);
-          if (!slot) return;
-          if (!startersBySlot[slot]) {
-            startersBySlot[slot] = { value: 0, ppg: 0, players: [] };
-          }
-
-          const playerInfo = state.players[playerId];
-          const leagueStats = state.leaguePlayerStats[playerId] || {};
-          const playerStats = state.playerStats[playerId] || {};
-          const ktc = getKtcValue(playerId);
-          const ppg = leagueStats.ppg ?? playerStats.ppg ?? 0;
-
-          startersBySlot[slot].value += ktc;
-          startersBySlot[slot].ppg += ppg;
-
-          const playerName = formatPlayerName(playerInfo);
-          startersBySlot[slot].players.push({ name: playerName, value: ktc, ppg });
-
-          const pos = playerInfo?.position;
-          if (pos && startersValueByPos[pos] !== undefined) {
-            startersValueByPos[pos] += ktc;
-          }
-        });
-
+        const teamName = roster.metadata?.team_name || owner?.metadata?.team_name || owner?.display_name || `Team ${roster.roster_id}`;
         const overallPositional = { QB: 0, RB: 0, WR: 0, TE: 0, Picks: 0 };
-        const allPlayers = (roster.players || [])
-          .map((playerId) => {
-            const playerInfo = state.players[playerId];
-            const leagueStats = state.leaguePlayerStats[playerId] || {};
-            const stats = state.playerStats[playerId] || {};
-            const ktc = getKtcValue(playerId);
-            const pos = playerInfo?.position;
-            const ppg = leagueStats.ppg ?? stats.ppg ?? (stats.games ? stats.total / stats.games : 0);
-            if (pos && overallPositional[pos] !== undefined) {
-              overallPositional[pos] += ktc;
-            }
-            return {
-              id: playerId,
-              pos,
-              ktc,
-              ppg,
-              name: formatPlayerName(playerInfo),
-            };
-          })
-          .sort((a, b) => b.ktc - a.ktc);
-
-        getOwnedPicks(roster.roster_id, rosters, tradedPicks, leagueInfo).forEach((pick) => {
-          overallPositional.Picks += getKtcValue(pick.label);
+        const allPlayers = [...new Set(roster.players || [])].map(id => {
+          const info = state.players[id];
+          const player = { id, pos: info?.position, ktc: getKtcValue(id), proj: state.playerProjections[id] ?? null, name: formatPlayerName(info) };
+          if (POSITION_ORDER.includes(player.pos)) overallPositional[player.pos] += player.ktc;
+          if (leaderboards[player.pos]) {
+            const entry = { ...player, playerId: id, owner: owner?.display_name || owner?.username || teamName, nflTeam: info?.team || '--' };
+            leaderboards[player.pos].push(entry);
+            leaderboards.ALL.push(entry);
+          }
+          return player;
         });
-
-        // Analyzer lineup derivation:
-        // rebuilds the lineup charts from league starter settings instead of Sleeper's
-        // manual starter slots. FLEX pulls from leftover RB/WR/TE options, while
-        // SUPER_FLEX only consumes the next remaining QB for the selected metric.
+        getOwnedPicks(roster.roster_id, rosters, tradedPicks, leagueInfo).forEach(pick => { overallPositional.Picks += getKtcValue(pick.label); });
+        // Preserve positional-first, FLEX-leftover, and QB-only SUPER_FLEX selection.
         const derivedLineups = {
-          value: buildDerivedLineup(allPlayers, leagueInfo?.roster_positions || [], slotSequence, 'value'),
-          ppg: buildDerivedLineup(allPlayers, leagueInfo?.roster_positions || [], slotSequence, 'ppg'),
+          value: buildDerivedLineup(allPlayers, leagueInfo.roster_positions, slotSequence, 'value'),
+          proj: buildDerivedLineup(allPlayers, leagueInfo.roster_positions, slotSequence, 'proj'),
         };
-
-        const totalValue = Object.values(overallPositional).reduce((sum, value) => sum + value, 0);
-        // LeagueHub summary starters:
-        // reuse the chart-derived lineups so Starter Value follows the Value toggle,
-        // while Starter PPG and its per-player average follow the PPG toggle.
-        const derivedValueLineup = derivedLineups.value;
-        const derivedPpgLineup = derivedLineups.ppg;
-        const startersValueTotal = Number(derivedValueLineup?.totals?.value) || 0;
-        const starterPpgTotal = Number(derivedPpgLineup?.totals?.ppg) || 0;
-        const starterPlayerCount = countDerivedLineupPlayers(derivedPpgLineup);
-        const starterPpgPerPlayer = starterPlayerCount > 0 ? starterPpgTotal / starterPlayerCount : 0;
-        // LeagueHub roster age summaries:
-        // target the summary-card strip and use Sleeper player birth dates from the
-        // current roster/player source; starter age follows the value-derived chart lineup.
-        const teamAvgAge = averagePlayerAge(roster.players || [], ageAsOfDate);
-        const startersAvgAge = averageDerivedLineupAge(derivedValueLineup, ageAsOfDate);
-
-        const settings = roster.settings || {};
-        const wins = toNumber(settings.wins);
-        const losses = toNumber(settings.losses);
-        const ties = toNumber(settings.ties);
-        const pf = combineScore(settings.fpts, settings.fpts_decimal);
-        const pa = combineScore(settings.fpts_against, settings.fpts_against_decimal);
-        const gamesPlayed = wins + losses + ties;
-        const teamPpg = gamesPlayed > 0 ? pf / gamesPlayed : 0;
-
-        const record = ties ? `${wins}-${losses}-${ties}` : `${wins}-${losses}`;
-
-        (roster.players || []).forEach((playerId) => {
-          const playerInfo = state.players[playerId];
-          if (!playerInfo) return;
-          const pos = playerInfo.position;
-          if (!leaderboards[pos]) return;
-          const leagueStats = state.leaguePlayerStats[playerId] || {};
-          const stats = state.playerStats[playerId] || {};
-          const total = leagueStats.total ?? stats.total ?? 0;
-          const ppg = leagueStats.ppg ?? stats.ppg ?? (stats.games ? stats.total / stats.games : 0);
-          if (total <= 0) return;
-          if (!topScorer || total > topScorer.total) {
-            topScorer = {
-              playerId,
-              name: formatPlayerName(playerInfo),
-              total,
-              ppg,
-            };
-          }
-          globalTotals.push({ playerId, total });
-          const entry = {
-            playerId,
-            name: formatPlayerName(playerInfo),
-            pos,
-            owner: teamName,
-            nflTeam: playerInfo.team || '--',
-            total,
-            ppg,
-          };
-          leaderboards[pos].push(entry);
-          leaderboards.ALL.push(entry);
-        });
-
-        return {
-          teamName,
-          roster,
-          overallPositional,
-          startersBySlot,
-          startersValueByPos,
-          allPlayers,
-          derivedLineups,
-          totalValue,
-          startersValueTotal,
-          starterPpgTotal,
-          starterPlayerCount,
-          starterPpgPerPlayer,
-          teamAvgAge,
-          startersAvgAge,
-          wins,
-          losses,
-          ties,
-          record,
-          totalFpts: pf,
-          pointsAgainst: pa,
-          teamPpg,
-          isUserTeam: roster.owner_id === state.userId,
-          topScorer,
+        const team = {
+          teamName, username: owner?.display_name || owner?.username || `Team ${roster.roster_id}`, roster, overallPositional, allPlayers, derivedLineups,
+          totalValue: Object.values(overallPositional).reduce((sum, value) => sum + value, 0),
+          startersValueTotal: derivedLineups.value.totals.value,
+          teamAvgAge: averagePlayerAge(roster.players || [], ageAsOfDate),
+          startersAvgAge: averageDerivedLineupAge(derivedLineups.value, ageAsOfDate),
+          isUserTeam: roster.owner_id === state.userId || (roster.co_owners || []).includes(state.userId),
         };
-      });
-
-      const rankMap = {};
-      globalTotals
-        .filter((entry) => entry.total > 0)
-        .sort((a, b) => b.total - a.total)
-        .forEach((entry, index) => {
-          if (!rankMap[entry.playerId]) {
-            rankMap[entry.playerId] = index + 1;
-          }
-        });
-
-      teams.forEach((team) => {
-        if (team.topScorer?.playerId) {
-          team.topScorer.rank = rankMap[team.topScorer.playerId] || null;
+        team.quality = { value: Analysis.quality(team, 'value'), proj: Analysis.quality(team, 'proj') };
+        if (!state.projectionMeta.available) {
+          team.quality.proj.overall = null;
+          team.quality.proj.starters = null;
+          team.quality.proj.depth = null;
+          team.quality.proj.slots = slotSequence.map(() => null);
         }
+        return team;
       });
-
-      Object.keys(leaderboards).forEach((pos) => {
-        leaderboards[pos] = leaderboards[pos]
-          .sort((a, b) => {
-            if (b.total !== a.total) return b.total - a.total;
-            if (b.ppg !== a.ppg) return b.ppg - a.ppg;
-            return a.name.localeCompare(b.name);
-          })
-          .slice(0, 100);
-      });
-
       teams.sort((a, b) => b.totalValue - a.totalValue);
       return { teams, leaderboards, radarSlots: slotSequence };
     }
@@ -3671,16 +3276,17 @@
     function createDerivedSlotTotals() {
       const slotTotals = {};
       SLOT_ORDER.forEach((slot) => {
-        slotTotals[slot] = { value: 0, ppg: 0, players: [] };
+        slotTotals[slot] = { value: 0, proj: 0, players: [] };
       });
       return slotTotals;
     }
 
     function compareDerivedCandidates(a, b, metricKey) {
+      if (metricKey === 'proj' && Number.isFinite(a?.proj) !== Number.isFinite(b?.proj)) return Number.isFinite(b?.proj) ? 1 : -1;
       const primaryDiff = (Number(b?.[metricKey]) || 0) - (Number(a?.[metricKey]) || 0);
       if (primaryDiff !== 0) return primaryDiff;
 
-      const secondaryKey = metricKey === 'ppg' ? 'ktc' : 'ppg';
+      const secondaryKey = metricKey === 'proj' ? 'ktc' : 'proj';
       const secondaryDiff = (Number(b?.[secondaryKey]) || 0) - (Number(a?.[secondaryKey]) || 0);
       if (secondaryDiff !== 0) return secondaryDiff;
 
@@ -3693,13 +3299,13 @@
         : buildRadarSlots(rosterPositions || []);
       const startersBySlot = createDerivedSlotTotals();
       const assignments = orderedSlots.map((slot) => ({ ...slot, score: 0, player: null }));
-      const totals = { value: 0, ppg: 0 };
+      const totals = { value: 0, proj: 0 };
 
       if (!orderedSlots.length) {
         return { startersBySlot, assignments, totals };
       }
 
-      const metricKey = metric === 'ppg' ? 'ppg' : 'ktc';
+      const metricKey = metric === 'proj' ? 'proj' : 'ktc';
       const availableByPos = { QB: [], RB: [], WR: [], TE: [] };
 
       (players || []).forEach((player) => {
@@ -3707,7 +3313,7 @@
         availableByPos[player.pos].push({
           ...player,
           ktc: Number(player.ktc) || 0,
-          ppg: Number(player.ppg) || 0,
+          proj: Number.isFinite(player.proj) ? player.proj : null,
         });
       });
 
@@ -3765,19 +3371,19 @@
 
       const applySelection = (slot, idx, selected) => {
         const playerValue = Number(selected.ktc) || 0;
-        const playerPpg = Number(selected.ppg) || 0;
-        const score = metric === 'ppg' ? playerPpg : playerValue;
+        const playerProj = Number(selected.proj) || 0;
+        const score = metric === 'proj' ? playerProj : playerValue;
 
         startersBySlot[slot.type].value += playerValue;
-        startersBySlot[slot.type].ppg += playerPpg;
+        startersBySlot[slot.type].proj += playerProj;
         startersBySlot[slot.type].players.push({
           name: selected.name,
           value: playerValue,
-          ppg: playerPpg,
+          proj: selected.proj,
         });
 
         totals.value += playerValue;
-        totals.ppg += playerPpg;
+        totals.proj += playerProj;
 
         assignments[idx] = {
           ...slot,
@@ -3786,7 +3392,7 @@
             id: selected.id,
             name: selected.name,
             value: playerValue,
-            ppg: playerPpg,
+            proj: selected.proj,
             score,
           },
         };
@@ -3912,568 +3518,165 @@
       return formatted.replace(/([kMB])$/, `<span class="${suffixClassName}">$1</span>`);
     }
 
-    function formatStarterPpgValue(totalPpg, perPlayerPpg) {
-      return `<span class="chip-value-primary">${formatPpg(totalPpg)}</span><span class="chip-value-divider"> | </span><span class="chip-value-detail" aria-label="${formatPpg(perPlayerPpg)} average per starter"><span class="chip-value-detail-number">${formatPpg(perPlayerPpg)}</span><span class="chip-value-detail-suffix">avg</span></span>`;
+    function formatAnalysisValue(value, metric = 'value') {
+      if (!Number.isFinite(value)) return '—';
+      return value.toLocaleString('en-US', { maximumFractionDigits: metric === 'proj' ? 1 : 0, minimumFractionDigits: metric === 'proj' ? 1 : 0 });
     }
 
-    function formatLeagueAverage(valueMarkup) {
-      return `<span class="chip-avg-label">League Avg: </span><span class="chip-avg-value">${valueMarkup}</span>`;
+    // Reuse LeagueHub's existing conditional rank palette, scaled to league size.
+    function analysisRankColor(rank, count) {
+      return rank ? getRankColor(rank, count) : '#8793ab';
     }
 
-    function formatStarterPpgLeagueAverage(totalPpg, perPlayerPpg) {
-      return `<span class="chip-avg-label">League Avg: </span><span class="chip-avg-value">${formatPpg(totalPpg)}</span><span class="chip-avg-separator"> | </span><span class="chip-avg-ppg"><span class="chip-avg-ppg-number">${formatPpg(perPlayerPpg)}</span></span>`;
-    }
-
-    // Analyzer summary chips:
-    // combine current-roster analysis with preserved standings context so ownership/value
-    // reflects the current league, while ranking and total FPTS remain tied to the completed season.
-    function renderSummaryStats(teams, standingsTeams = teams) {
-      const userTeam = teams.find((team) => team.isUserTeam);
-      const standingsUserTeam = standingsTeams.find((team) => team.isUserTeam) || userTeam;
-      if (!userTeam || !standingsUserTeam) {
-        elements.summaryStats.classList.add('hidden');
-        return;
-      }
-
-      const totalTeams = standingsTeams.length || teams.length;
-      const standingsOrder = sortTeamsByStandings(standingsTeams);
-      const overallRank = computeRank(standingsOrder, (team) => team.isUserTeam);
-
-      const starterValueRank = computeRank(
-        [...teams].sort((a, b) => b.startersValueTotal - a.startersValueTotal),
-        (team) => team.isUserTeam,
-      );
-
-      const totalValueRank = computeRank(
-        [...teams].sort((a, b) => b.totalValue - a.totalValue),
-        (team) => team.isUserTeam,
-      );
-
-      const fptsRank = computeRank(
-        [...standingsTeams].sort((a, b) => b.totalFpts - a.totalFpts),
-        (team) => team.isUserTeam,
-      );
-
-      const starterPpgRank = computeRank(
-        [...teams].sort((a, b) => b.starterPpgTotal - a.starterPpgTotal),
-        (team) => team.isUserTeam,
-      );
-
-      const teamAvgAgeRank = computeRank(
-        [...teams]
-          .filter((team) => Number.isFinite(team.teamAvgAge))
-          .sort((a, b) => a.teamAvgAge - b.teamAvgAge),
-        (team) => team.isUserTeam,
-      );
-
-      const startersAvgAgeRank = computeRank(
-        [...teams]
-          .filter((team) => Number.isFinite(team.startersAvgAge))
-          .sort((a, b) => a.startersAvgAge - b.startersAvgAge),
-        (team) => team.isUserTeam,
-      );
-
-      const rankingValue = formatRankingValue(overallRank);
-      // Ranking chip context:
-      // presents the season record in the same meta row used by rank labels, and
-      // moves team count into the footer row so the card matches the other summaries.
-      const rankingRecord = standingsUserTeam.record || '—';
-      const rankingMeta = `<span class="chip-meta-label">Record </span><span class="chip-meta-value">${escapeHtml(rankingRecord)}</span>`;
-      const rankingTeamCount = totalTeams ? String(totalTeams) : '—';
-
-      // Summary chip averages:
-      // compute league-wide averages for each metric so each chip can show a contextual
-      // average below the rank line. Ranking chip is excluded (no meaningful avg).
-      const avgTotalValue = teams.length
-        ? teams.reduce((s, t) => s + (t.totalValue || 0), 0) / teams.length
-        : 0;
-      const avgStarterValue = teams.length
-        ? teams.reduce((s, t) => s + (t.startersValueTotal || 0), 0) / teams.length
-        : 0;
-      const avgTotalFpts = standingsTeams.length
-        ? standingsTeams.reduce((s, t) => s + (t.totalFpts || 0), 0) / standingsTeams.length
-        : 0;
-      const avgStarterPpg = teams.length
-        ? teams.reduce((s, t) => s + (t.starterPpgTotal || 0), 0) / teams.length
-        : 0;
-      const avgStarterPpgPerPlayer = averageNumbers(teams.map((t) => t.starterPpgPerPlayer)) ?? 0;
-      const avgTeamAge = averageNumbers(teams.map((t) => t.teamAvgAge));
-      const avgStartersAge = averageNumbers(teams.map((t) => t.startersAvgAge));
-      const avgTopScorerFpts = (() => {
-        const valid = teams.filter((t) => t.topScorer?.total > 0);
-        return valid.length ? valid.reduce((s, t) => s + t.topScorer.total, 0) / valid.length : null;
-      })();
-
-      const topScorer = userTeam.topScorer;
-      // Top scorer meta: FPTS label wrapped in a smaller span for visual hierarchy.
-      const topScorerMeta = topScorer?.total
-        ? `${topScorer.rank ? `Rank ${topScorer.rank}` : 'Rank NA'} • ${topScorer.total.toFixed(1)} <span class="chip-meta-unit">FPTS</span>`
-        : 'No scoring data';
-
-      const chips = [
-        {
-          label: 'Ranking',
-          value: rankingValue,
-          meta: rankingMeta,
-          avg: `<span class="chip-avg-label">Teams: </span><span class="chip-avg-value">${rankingTeamCount}</span>`,
-          accent: overallRank ? getRankColor(overallRank, totalTeams) : undefined,
-          className: 'analyzer-chip--ranking',
-        },
-        {
-          label: 'TTL Team Value',
-          value: formatNumberWithSuffixMarkup(userTeam.totalValue),
-          meta: totalValueRank ? `Rank ${totalValueRank}/${totalTeams}` : 'KTC',
-          avg: formatLeagueAverage(formatNumberWithSuffixMarkup(avgTotalValue, 'chip-avg-value-suffix')),
-          accent: totalValueRank ? getRankColor(totalValueRank, totalTeams) : undefined,
-          className: 'analyzer-chip--total-value analyzer-chip--value-card',
-        },
-        {
-          label: 'Starter Value',
-          value: formatNumberWithSuffixMarkup(userTeam.startersValueTotal),
-          meta: starterValueRank ? `Rank ${starterValueRank}/${totalTeams}` : 'Rank NA',
-          avg: formatLeagueAverage(formatNumberWithSuffixMarkup(avgStarterValue, 'chip-avg-value-suffix')),
-          accent: starterValueRank ? getRankColor(starterValueRank, totalTeams) : undefined,
-          className: 'analyzer-chip--starter-value analyzer-chip--value-card',
-        },
-        {
-          label: 'Total FPTS',
-          value: standingsUserTeam.totalFpts.toFixed(1),
-          meta: fptsRank ? `Rank ${fptsRank}/${totalTeams}` : 'Rank NA',
-          avg: formatLeagueAverage(avgTotalFpts.toFixed(1)),
-          accent: fptsRank ? getRankColor(fptsRank, totalTeams) : undefined,
-          className: 'analyzer-chip--total-fpts',
-        },
-        {
-          label: 'Starter PPG',
-          value: formatStarterPpgValue(userTeam.starterPpgTotal, userTeam.starterPpgPerPlayer),
-          valueClassName: 'chip-value--compound',
-          meta: starterPpgRank ? `Rank ${starterPpgRank}/${totalTeams}` : 'Rank NA',
-          avg: formatStarterPpgLeagueAverage(avgStarterPpg, avgStarterPpgPerPlayer),
-          accent: starterPpgRank ? getRankColor(starterPpgRank, totalTeams) : undefined,
-          className: 'analyzer-chip--starter-ppg',
-        },
-        {
-          label: 'Team Avg Age',
-          value: formatAge(userTeam.teamAvgAge),
-          meta: teamAvgAgeRank ? `Rank ${teamAvgAgeRank}/${totalTeams}` : 'Rank NA',
-          avg: formatLeagueAverage(formatAge(avgTeamAge)),
-          accent: teamAvgAgeRank ? getRankColor(teamAvgAgeRank, totalTeams) : undefined,
-          className: 'analyzer-chip--avg-age analyzer-chip--team-avg-age',
-        },
-        {
-          label: 'Starters Avg Age',
-          value: formatAge(userTeam.startersAvgAge),
-          meta: startersAvgAgeRank ? `Rank ${startersAvgAgeRank}/${totalTeams}` : 'Rank NA',
-          avg: formatLeagueAverage(formatAge(avgStartersAge)),
-          accent: startersAvgAgeRank ? getRankColor(startersAvgAgeRank, totalTeams) : undefined,
-          className: 'analyzer-chip--avg-age analyzer-chip--starters-avg-age',
-        },
-        {
-          label: 'Top Scorer',
-          value: topScorer?.name ? abbreviateFirstName(topScorer.name) : '—',
-          meta: topScorerMeta,
-          avg: avgTopScorerFpts != null ? formatLeagueAverage(avgTopScorerFpts.toFixed(1)) : null,
-          accent: topScorer?.total ? 'var(--color-accent-secondary)' : undefined,
-          className: 'analyzer-chip--top-scorer',
-        },
-      ];
-
-      elements.summaryStats.innerHTML = chips
-        .map((chip) => `
-          <article class="analyzer-chip${chip.className ? ` ${chip.className}` : ''}">
-            <span class="chip-label">${chip.label}</span>
-            <span class="chip-value${chip.valueClassName ? ` ${chip.valueClassName}` : ''}"${chip.accent ? ` style="color: ${chip.accent};"` : ''}>${chip.value}</span>
-            <span class="chip-meta">${chip.meta}</span>
-            ${chip.avg ? `<span class="chip-avg">${chip.avg}</span>` : ''}
-          </article>
-        `)
-        .join('');
-
+    // Team rank rings mirror Research's dial: tick marks, gradient arc, inset core,
+    // and glowing endpoint. Rank 1 fills the circle; tied ranks have equal fill.
+    function renderSummaryStats(teams) {
+      const team = teams.find(item => item.isUserTeam);
+      if (!team) { elements.summaryStats.classList.add('hidden'); return; }
+      const rings = ['value', 'proj'].map(metric => {
+        const quality = team.quality[metric];
+        const rank = Analysis.rank(quality.overall, teams.map(item => item.quality[metric].overall));
+        const arc = Analysis.rankFill(rank, teams.length) * 360;
+        const title = metric === 'value' ? 'Dynasty' : 'Contender';
+        return `<article class="la-rank-card la-rank-card--${metric}"><div class="la-rank-title"><span>${title}</span><small>${metric === 'value' ? 'LONG TERM' : 'WIN NOW'}</small></div>
+          <div class="la-rank-dial" role="meter" aria-label="${title} league rank" aria-valuemin="0" aria-valuemax="${teams.length}" aria-valuenow="${rank ? teams.length - rank + 1 : 0}" aria-valuetext="${rank ? `Rank ${rank} of ${teams.length}` : 'Projection ranking unavailable'}" style="--arc-end:${arc}deg;--arc-mid:${arc / 2}deg">
+            <span class="la-rank-glow" aria-hidden="true"></span><span class="la-rank-arc" aria-hidden="true"></span><span class="la-rank-echo" aria-hidden="true"></span>${rank ? '<span class="la-rank-cap" aria-hidden="true"></span>' : ''}<span class="la-rank-core" aria-hidden="true"><strong>${rank ? `<small>#</small>${rank}` : '—'}</strong><em>OF ${teams.length}</em></span>
+          </div><div class="la-rank-total">${formatAnalysisValue(quality.overall, metric)} <small>${metric === 'value' ? 'KTC' : 'PROJ'}</small></div><p>${metric === 'value' ? 'Full roster + draft picks' : 'Rest-of-season starters'}</p></article>`;
+      }).join('');
+      const cards = [
+        ['Team Value', team.totalValue, 'value', 'Roster + picks'],
+        ['Starter Value', team.startersValueTotal, 'value', 'Best Dynasty lineup'],
+        ['Team Avg Age', team.teamAvgAge, 'age', 'Full roster'],
+        ['Starters Avg Age', team.startersAvgAge, 'age', 'Dynasty starters'],
+      ].map(([label, value, metric, note]) => `<article class="la-summary-stat"><span>${label}</span><strong>${metric === 'age' ? formatAge(value) : formatNumber(value)}</strong><small>${note}</small></article>`).join('');
+      const top = [...team.allPlayers].filter(player => Number.isFinite(player.proj)).sort((a, b) => b.proj - a.proj)[0];
+      elements.summaryStats.innerHTML = `<div class="la-summary-overview"><span class="la-eyebrow">YOUR TEAM / LEAGUE OUTLOOK</span><h2>${escapeHtml(team.teamName)}</h2><p>${teams.length} teams · ${state.isSuperflex ? 'Superflex / 2QB' : '1QB'} · Dynasty league</p><div class="la-summary-stats">${cards}</div><div class="la-summary-leader"><span>PROJECTION LEADER</span><strong>${escapeHtml(top?.name || '—')}</strong><small>${formatAnalysisValue(top?.proj, 'proj')} PROJ</small></div></div><div class="la-rank-pair">${rings}</div>`;
       elements.summaryStats.classList.remove('hidden');
     }
 
-    function renderLineupChart(teams) {
-      state.lineupData = buildLineupDatasets(teams);
-      if (state.charts.lineup) {
-        state.charts.lineup.destroy();
+    function renderQualityMatrix() {
+      const metric = state.currentMatrixMetric;
+      const dynasty = metric === 'value';
+      const columns = [
+        ...state.radarSlots.map((slot, index) => ({ label: slot.label, get: team => team.quality[metric].slots[index], slot: index })),
+        ...(dynasty ? [{ label: 'STARTERS', get: team => team.quality[metric].starters }] : []),
+        { label: 'DEPTH', get: team => team.quality[metric].depth },
+        ...(dynasty ? [{ label: 'PICKS', get: team => team.quality[metric].picks }] : []),
+        { label: 'OVERALL', get: team => team.quality[metric].overall },
+      ];
+      const teams = [...state.teams].sort((a, b) => (b.quality[metric].overall ?? -Infinity) - (a.quality[metric].overall ?? -Infinity) || a.teamName.localeCompare(b.teamName));
+      document.getElementById('qualityMatrixHead').innerHTML = `<tr><th scope="col">TM</th>${columns.map(column => `<th scope="col"${column.label === 'OVERALL' ? ' aria-sort="descending"' : ''}>${escapeHtml(column.label)}${column.label === 'OVERALL' ? ' ↓' : ''}</th>`).join('')}</tr>`;
+      document.getElementById('qualityMatrixBody').innerHTML = teams.map(team => `<tr${team.isUserTeam ? ' class="is-user-team"' : ''}><th scope="row"><span title="${escapeHtml(team.username)}">${escapeHtml(team.username)}</span>${team.isUserTeam ? '<small>YOU</small>' : ''}</th>${columns.map(column => {
+        const value = column.get(team);
+        const rank = Analysis.rank(value, state.teams.map(column.get));
+        const player = column.slot != null ? team.derivedLineups[metric].assignments[column.slot]?.player : null;
+        const detail = column.slot != null ? (player?.name || 'Empty starting spot') : column.label === 'DEPTH' ? team.quality[metric].depthPlayers.map(p => p.name).join(', ') : column.label;
+        return `<td${column.label === 'OVERALL' ? ' class="la-matrix-overall"' : ''}><span class="la-rank-badge" style="--rank-color:${analysisRankColor(rank, teams.length)}" tabindex="0" aria-label="${escapeHtml(`${column.label}: ${rank ? `rank ${rank}, ${formatAnalysisValue(value, metric)} ${dynasty ? 'KTC' : 'PROJ'}` : 'projection unavailable'}. ${detail}`)}" title="${escapeHtml(detail)}">${rank ? `#${rank}` : '—'}</span><small class="la-matrix-value">(${formatAnalysisValue(value, metric)})</small></td>`;
+      }).join('')}</tr>`).join('');
+      document.getElementById('qualityMatrixNote').textContent = dynasty
+        ? 'KTC value in parentheses. Depth: all non-starting QB/RB/WR/TE. Overall: full roster + picks. Sorted by overall.'
+        : 'ROS PROJ in parentheses. Depth: best remaining 1 QB, 3 RB/WR combined + 1 TE. Overall: starters only. — means projections are unavailable.';
+    }
+
+    function populateAnalysisSlotFilter() {
+      const select = document.getElementById('lineupPositionFilter');
+      const previous = select.value;
+      select.innerHTML = '<option value="ALL">All starters</option>' + [...new Set(state.radarSlots.map(slot => slot.type))].map(slot => `<option value="${slot}">${SLOT_LABELS[slot]}</option>`).join('');
+      if ([...select.options].some(option => option.value === previous)) select.value = previous;
+    }
+
+    function renderLineupChart() { renderAnalysisBar('lineup'); }
+    function updateLineupChart() { renderAnalysisBar('lineup'); }
+    function renderOverallChart() { renderAnalysisBar('overall'); }
+    function updateRadarChart() { renderRadarChart(state.teams, state.radarSlots); }
+
+    // ECharts owns only the redesigned bars. Charts, tooltips, filters, and matrix
+    // read the same enriched players and derived lineup objects, with zero baselines.
+    function renderAnalysisBar(kind) {
+      const metric = kind === 'lineup' ? state.currentLineupMetric : state.currentOverallMetric;
+      const dynasty = metric === 'value';
+      const positionSelect = document.getElementById(`${kind}PositionFilter`);
+      if (kind === 'overall') {
+        const pickOption = positionSelect.querySelector('option[value="Picks"]');
+        pickOption.disabled = !dynasty;
+        if (!dynasty && positionSelect.value === 'Picks') positionSelect.value = 'ALL';
       }
-      const metricConfig = state.lineupData[state.currentLineupMetric];
-      state.charts.lineup = createStackedBarChart(
-        elements.startersCanvas,
-        teams.map((team) => truncateLabel(team.teamName)),
-        metricConfig.datasets,
-        buildLineupOptions(metricConfig.max, state.currentLineupMetric, teams),
-      );
-    }
-
-    function updateLineupChart() {
-      if (!state.charts.lineup || !state.lineupData) return;
-      const metricConfig = state.lineupData[state.currentLineupMetric];
-      state.charts.lineup.data.datasets = metricConfig.datasets;
-      const teamLabels = (state.teams || []).map((team) => truncateLabel(team.teamName));
-      if (teamLabels.length) {
-        state.charts.lineup.data.labels = teamLabels;
-      }
-      state.charts.lineup.options = applyAnalyzerChartRenderQuality(
-        buildLineupOptions(
-          metricConfig.max,
-          state.currentLineupMetric,
-          state.teams || [],
-        ),
-      );
-      state.charts.lineup.update();
-    }
-
-    function updateRadarChart() {
-      if (!state.teams?.length) return;
-      renderRadarChart(state.teams, state.radarSlots);
-    }
-
-    function buildLineupDatasets(teams) {
-      const createDatasetForMetric = (metric) => {
-        const datasets = [];
-        SLOT_ORDER.forEach((slot) => {
-          const values = teams.map((team) => team.derivedLineups?.[metric]?.startersBySlot?.[slot]?.[metric] ?? 0);
-          if (!values.some((value) => value > 0)) return;
-          const colorSource = metric === 'value' ? LINEUP_VALUE_COLORS : LINEUP_PPG_COLORS;
-          const hex = colorSource[slot] || colorSource.FLEX || '#37ebb5';
-          const gradientPair = buildGradientPair(hex);
-          datasets.push({
-            label: SLOT_LABELS[slot] || slot,
-            slotKey: slot,
-            data: values,
-            backgroundColor: (context) => createGradient(context, gradientPair),
-            borderColor: hexToRgba(hex, 0.95),
-            borderWidth: 1,
-            borderRadius: 10,
-            barPercentage: 0.9,
-            categoryPercentage: 0.7,
-            stack: 'lineup',
-          });
-        });
-
-        const maxValue = Math.max(
-          0,
-          ...teams.map((team) => team.derivedLineups?.[metric]?.totals?.[metric] ?? 0),
-        );
-
-        return { datasets, max: maxValue };
-      };
-
-      return {
-        value: createDatasetForMetric('value'),
-        ppg: createDatasetForMetric('ppg'),
-      };
-    }
-
-    function buildLineupOptions(max, metric, teams) {
-      const formatter = metric === 'value' ? formatNumber : formatPpg;
-      const paddedMax = max > 0 ? max * 1.06 : max;
-      const axisMax = metric === 'value'
-        ? roundUpTo(paddedMax, 5000)
-        : roundUpTo(paddedMax, 5);
-      const isMobile = window.matchMedia('(max-width: 640px)').matches;
-
-      return {
-        responsive: true,
-        maintainAspectRatio: false,
-        indexAxis: 'y',
-        interaction: { mode: 'nearest', intersect: false },
-        onClick: (evt, elements, chart) => {
-          const tooltip = chart.tooltip;
-          if (!tooltip) return;
-
-          const activeElements = tooltip.getActiveElements();
-
-          if (activeElements.length > 0) {
-            const lastActiveElement = activeElements[0];
-            tooltip.setActiveElements([], { x: 0, y: 0 });
-
-            if (elements.length > 0) {
-              const newElement = elements[0];
-              if (lastActiveElement.datasetIndex !== newElement.datasetIndex || lastActiveElement.index !== newElement.index) {
-                tooltip.setActiveElements(elements, evt);
-              }
-            }
-          } else if (elements.length > 0) {
-            tooltip.setActiveElements(elements, evt);
+      const filter = positionSelect.value;
+      const scope = document.getElementById(`${kind}TeamFilter`).value;
+      const allKeys = kind === 'lineup' ? [...new Set(state.radarSlots.map(slot => slot.type))] : [...POSITION_ORDER, ...(dynasty ? ['Picks'] : [])];
+      const keys = filter === 'ALL' ? allKeys : allKeys.filter(key => key === filter);
+      // Preserve the previous LeagueHub chart palettes across the new renderer.
+      const colors = kind === 'overall' && dynasty
+        ? { QB: '#3700B3', RB: '#4c02de', WR: '#6300ff', TE: '#7100ff', Picks: '#9400ff' }
+        : dynasty
+          ? { QB: '#15607a', RB: '#0c8184', WR: '#0da0a4', TE: '#09bb9f', FLEX: '#2ad2a0', SUPER_FLEX: '#37ebb5' }
+          : { QB: '#003c63', RB: '#005d91', WR: '#006da2', TE: '#007bb4', FLEX: '#008cd1', SUPER_FLEX: '#00a3ff' };
+      const rows = state.teams.map(team => {
+        const segments = keys.map(key => {
+          if (kind === 'lineup') {
+            const assignments = team.derivedLineups[metric].assignments.filter(slot => slot.type === key);
+            const players = assignments.flatMap(slot => slot.player ? [slot.player] : []);
+            const value = dynasty ? players.reduce((sum, p) => sum + p.value, 0) : Analysis.sumProjections(players);
+            return { key, value, players };
           }
-
-          chart.update();
-        },
-        layout: {
-          padding: {
-            left: isMobile ? 2 : 4,
-            right: isMobile ? 34 : 46,
-            top: 6,
-            bottom: 6,
-          },
-        },
-        scales: {
-          x: {
-            stacked: true,
-            grid: { color: 'rgba(234, 235, 240, 0.08)' },
-            ticks: {
-              color: '#EAEBF0',
-              callback: (value) => formatter(value),
-              font: {
-                size: isMobile ? 10 : 12,
-                family: "'Product Sans', 'Google Sans', sans-serif",
-              },
-            },
-            max: axisMax,
-          },
-          y: {
-            stacked: true,
-            grid: { display: false },
-            ticks: {
-              color: '#EAEBF0',
-              padding: isMobile ? 1 : 2,
-              font: {
-                size: isMobile ? 10 : 12,
-                family: "'Product Sans', 'Google Sans', sans-serif",
-                weight: '600',
-              },
-              callback(value) {
-                const label = this.getLabelForValue ? this.getLabelForValue(value) : value;
-                return truncateLabel(label);
-              },
-            },
-          },
-        },
-        plugins: {
-          legend: {
-            position: 'bottom',
-            labels: {
-              color: '#EAEBF0',
-              usePointStyle: true,
-            },
-          },
-          tooltip: {
-            backgroundColor: 'rgba(13, 14, 35, 0.92)',
-            borderColor: 'rgba(118, 109, 255, 0.5)',
-            borderWidth: 1,
-            callbacks: {
-              title: (items) => {
-                if (!items?.length) return '';
-                const index = items[0].dataIndex;
-                return teams[index]?.teamName || '';
-              },
-              label: (context) => {
-                const value = context.raw ?? 0;
-                return `${context.dataset.label}: ${formatter(value)}`;
-              },
-              footer: (tooltipItems) => {
-                if (!tooltipItems.length) return '';
-                const teamIndex = tooltipItems[0].dataIndex;
-                const slotKey = tooltipItems[0].dataset.slotKey;
-                const team = teams[teamIndex];
-                const players = team?.derivedLineups?.[metric]?.startersBySlot?.[slotKey]?.players || [];
-                const valueKey = metric === 'value' ? 'value' : 'ppg';
-                return players
-                  .slice()
-                  .sort((a, b) => (b[valueKey] || 0) - (a[valueKey] || 0))
-                  .slice(0, 3)
-                  .map((player) => `${player.name}: ${formatter(player[valueKey] || 0)}`)
-                  .join('\n');
-              },
-            },
-          },
-          analyzerBarTotals: {
-            enabled: true,
-            offset: isMobile ? 10 : 18,
-            formatter: (value) => formatter(value),
-            mobileFont: '9px "Product Sans", "Google Sans", sans-serif',
-            rankFontCssVar: '--analyzer-rank-glyph-font',
-          },
-        },
-      };
-    }
-
-    function createGradient(context, colors = ['rgba(118, 109, 255, 0.8)', 'rgba(118, 109, 255, 0.4)']) {
-      const { chart } = context;
-      const { ctx, chartArea } = chart;
-      if (!chartArea) return colors[0];
-      const gradient = ctx.createLinearGradient(chartArea.left, 0, chartArea.right, 0);
-      gradient.addColorStop(0, colors[0]);
-      gradient.addColorStop(1, colors[1] ?? colors[0]);
-      return gradient;
-    }
-
-    function hexToRgba(hex, alpha = 1) {
-      if (!hex) return `rgba(255, 255, 255, ${alpha})`;
-      let sanitized = hex.replace('#', '');
-      if (sanitized.length === 3) {
-        sanitized = sanitized
-          .split('')
-          .map((char) => char + char)
-          .join('');
+          const players = team.allPlayers.filter(player => player.pos === key);
+          // Whole-roster projection totals include available projections. Unknown
+          // bench players are counted and called out instead of silently fabricated.
+          return { key, value: dynasty ? team.overallPositional[key] : players.reduce((sum, p) => sum + (p.proj ?? 0), 0), players };
+        });
+        let total = segments.some(segment => segment.value === null) ? null : segments.reduce((sum, segment) => sum + segment.value, 0);
+        if (!dynasty && !state.projectionMeta.available) total = null;
+        return { team, segments, total };
+      }).sort((a, b) => (b.total ?? -Infinity) - (a.total ?? -Infinity) || a.team.teamName.localeCompare(b.team.teamName));
+      rows.forEach(row => { row.rank = Analysis.rank(row.total, rows.map(item => item.total)); });
+      let visible = rows;
+      if (scope === 'top') visible = rows.slice(0, 6);
+      if (scope === 'near') {
+        const index = Math.max(0, rows.findIndex(row => row.team.isUserTeam));
+        const start = Math.max(0, Math.min(index - 2, rows.length - 5));
+        visible = rows.slice(start, start + 5);
       }
-      const bigint = parseInt(sanitized, 16);
-      const r = (bigint >> 16) & 255;
-      const g = (bigint >> 8) & 255;
-      const b = bigint & 255;
-      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-    }
-
-    function buildGradientPair(hex) {
-      return [hexToRgba(hex, 0.8), hexToRgba(hex, 0.32)];
-    }
-
-    function createStackedBarChart(canvas, labels, datasets, options) {
-      return new Chart(canvas, {
-        type: 'bar',
-        data: { labels, datasets },
-        options: applyAnalyzerChartRenderQuality(options),
-      });
-    }
-
-    function renderOverallChart(teams) {
-      if (state.charts.overall) {
-        state.charts.overall.destroy();
-      }
-
-      const labels = teams.map((team) => truncateLabel(team.teamName));
-      const positions = ['QB', 'RB', 'WR', 'TE', 'Picks'];
-      const datasets = positions
-        .map((pos) => {
-          const values = teams.map((team) => team.overallPositional[pos] || 0);
-          if (!values.some((value) => value > 0)) return null;
-          const hex = OVERALL_VALUE_COLORS[pos] || '#3700B3';
-          const gradientPair = buildGradientPair(hex);
-          return {
-            label: SLOT_LABELS[pos] || pos,
-            slotKey: pos,
-            data: values,
-            backgroundColor: (context) => createGradient(context, gradientPair),
-            borderColor: hexToRgba(hex, 0.92),
-            borderWidth: 1,
-            borderRadius: 10,
-            barPercentage: 0.9,
-            categoryPercentage: 0.7,
-            stack: 'overall',
-          };
-        })
-        .filter(Boolean);
-
-      const maxValue = Math.max(0, ...teams.map((team) => team.totalValue));
-      const paddedMaxValue = maxValue > 0 ? maxValue * 1.06 : maxValue;
-      const isMobile = window.matchMedia('(max-width: 640px)').matches;
-
-      const totalsPluginOffset = isMobile ? 10 : 18;
-
-      state.charts.overall = createStackedBarChart(
-        elements.overallCanvas,
-        labels,
-        datasets,
-        {
-          responsive: true,
-          maintainAspectRatio: false,
-          indexAxis: 'y',
-          interaction: { mode: 'nearest', intersect: false },
-          onClick: (evt, elements, chart) => {
-            const tooltip = chart.tooltip;
-            if (!tooltip) return;
-
-            const activeElements = tooltip.getActiveElements();
-
-            if (activeElements.length > 0) {
-              const lastActiveElement = activeElements[0];
-              tooltip.setActiveElements([], { x: 0, y: 0 });
-
-              if (elements.length > 0) {
-                const newElement = elements[0];
-                if (lastActiveElement.datasetIndex !== newElement.datasetIndex || lastActiveElement.index !== newElement.index) {
-                  tooltip.setActiveElements(elements, evt);
-                }
-              }
-            } else if (elements.length > 0) {
-              tooltip.setActiveElements(elements, evt);
-            }
-
-            chart.update();
-          },
-          layout: {
-            padding: {
-              left: isMobile ? 2 : 4,
-              right: isMobile ? 34 : 46,
-              top: 6,
-              bottom: 6,
-            },
-          },
-          scales: {
-            x: {
-              stacked: true,
-              grid: { color: 'rgba(234, 235, 240, 0.08)' },
-              ticks: {
-                color: '#EAEBF0',
-                callback: (value) => formatNumber(value),
-                font: {
-                  size: isMobile ? 10 : 12,
-                  family: "'Product Sans', 'Google Sans', sans-serif",
-                },
-              },
-              max: roundUpTo(paddedMaxValue, 10000),
-            },
-            y: {
-              stacked: true,
-              grid: { display: false },
-              ticks: {
-                color: '#EAEBF0',
-                padding: isMobile ? 1 : 2,
-                font: {
-                  size: isMobile ? 10 : 12,
-                  family: "'Product Sans', 'Google Sans', sans-serif",
-                  weight: '600',
-                },
-                callback(value) {
-                  const label = this.getLabelForValue ? this.getLabelForValue(value) : value;
-                  return truncateLabel(label);
-                },
-              },
-            },
-          },
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: { color: '#EAEBF0', usePointStyle: true },
-            },
-            tooltip: {
-              backgroundColor: 'rgba(13, 14, 35, 0.92)',
-              borderColor: 'rgba(118, 109, 255, 0.5)',
-              borderWidth: 1,
-              callbacks: {
-                title: (items) => {
-                  if (!items?.length) return '';
-                  const index = items[0].dataIndex;
-                  return teams[index]?.teamName || '';
-                },
-                label: (context) => {
-                  const value = context.raw ?? 0;
-                  return `${context.dataset.label}: ${formatNumber(value)}`;
-                },
-                footer: (tooltipItems) => {
-                  if (!tooltipItems.length) return '';
-                  const teamIndex = tooltipItems[0].dataIndex;
-                  const slotKey = tooltipItems[0].dataset.slotKey;
-                  const players = teams[teamIndex]?.allPlayers || [];
-                  const list = players.filter((player) => player.pos === slotKey).slice(0, 3);
-                  return list
-                    .map((player) => `${player.name}: ${formatNumber(player.ktc)}`)
-                    .join('\n');
-                },
-              },
-            },
-            analyzerBarTotals: {
-              enabled: true,
-              offset: totalsPluginOffset,
-              formatter: (value) => formatNumber(value),
-              mobileFont: '9px "Product Sans", "Google Sans", sans-serif',
-              rankFontCssVar: '--analyzer-rank-glyph-font',
-            },
-          },
-        },
-      );
+      const host = kind === 'lineup' ? elements.startersCanvas : elements.overallCanvas;
+      if (!window.echarts) { host.textContent = 'Charts unavailable. Rankings are available in the matrix.'; return; }
+      host.style.height = `${Math.max(220, visible.length * 30 + 36)}px`;
+      const chart = state.charts[kind] || echarts.init(host, null, { renderer: 'svg' });
+      state.charts[kind] = chart;
+      const mobile = host.clientWidth < 440;
+      const max = Math.max(1, ...visible.map(row => row.total || 0));
+      chart.setOption({
+        animation: !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+        animationDuration: 450,
+        textStyle: { fontFamily: 'Google Sans, sans-serif' },
+        aria: { enabled: true, label: { description: `${kind === 'lineup' ? 'Starting lineup' : 'Roster'} ${dynasty ? 'Dynasty KTC values' : 'Contender rest-of-season projections'}. ${visible.map(row => `${row.team.username}: ${formatAnalysisValue(row.total, metric)}`).join('. ')}` } },
+        grid: { left: mobile ? 68 : 84, right: mobile ? 49 : 56, top: 5, bottom: 24 },
+        xAxis: { type: 'value', min: 0, max: max * 1.04, splitNumber: 3, axisLine: { show: false }, axisTick: { show: false }, axisLabel: { color: '#71809c', fontSize: 10, formatter: value => formatNumber(value) }, splitLine: { lineStyle: { color: 'rgba(152,169,204,.09)', type: 'dashed' } } },
+        yAxis: { type: 'category', inverse: true, data: visible.map(row => String(row.team.roster.roster_id)), axisLine: { show: false }, axisTick: { show: false }, axisLabel: {
+          interval: 0, margin: 10, formatter: (_, index) => {
+            const row = visible[index];
+            const name = truncateLabel(row.team.username, mobile ? 8 : 11).replace(/[{}]/g, '');
+            return `{${row.team.isUserTeam ? 'you' : 'rank'}|${row.rank ? String(row.rank).padStart(2, '0') : '—'}} {${row.team.isUserTeam ? 'you' : 'name'}|${name}}`;
+          }, rich: { rank: { color: '#72839f', fontSize: 10, width: 17 }, name: { color: '#c6d0e4', fontSize: 11 }, you: { color: '#f1e3ff', fontSize: 11, fontWeight: 700 } },
+        } },
+        tooltip: { trigger: 'axis', confine: true, appendToBody: false, backgroundColor: '#111a2b', borderColor: '#34415b', textStyle: { color: '#e6edf9', fontSize: 12 }, extraCssText: 'max-width:300px;white-space:normal;box-shadow:0 14px 40px #0007;border-radius:12px;',
+          formatter: params => {
+            const row = visible[params[0]?.dataIndex];
+            if (!row) return '';
+            const details = row.segments.map(segment => `<div style="margin-top:7px"><b style="color:${colors[segment.key]}">${SLOT_LABELS[segment.key] || segment.key}</b> · ${formatAnalysisValue(segment.value, metric)}<div style="color:#9eacc4;font-size:11px">${segment.players.slice().sort((a,b) => (b[metric === 'value' ? (kind === 'lineup' ? 'value' : 'ktc') : 'proj'] || 0) - (a[metric === 'value' ? (kind === 'lineup' ? 'value' : 'ktc') : 'proj'] || 0)).slice(0, 5).map(p => escapeHtml(p.name)).join(', ') || (segment.key === 'Picks' ? 'Owned draft capital' : 'Empty slot')}</div></div>`).join('');
+            return `<b>${escapeHtml(row.team.username)}</b><div style="margin-top:4px">${row.rank ? `#${row.rank} · ` : ''}${formatAnalysisValue(row.total, metric)} ${dynasty ? 'KTC' : 'PROJ'}</div>${details}`;
+          } },
+        series: keys.map((key, index) => ({ name: SLOT_LABELS[key] || key, type: 'bar', stack: 'total', barWidth: mobile ? 15 : 18,
+          emphasis: { focus: 'self', itemStyle: { shadowBlur: 8, shadowColor: colors[key] } },
+          itemStyle: { color: colors[key], borderRadius: index === keys.length - 1 ? [0, 4, 4, 0] : 0 },
+          label: { show: index === keys.length - 1, position: 'right', distance: 9, color: '#c8d5ec', fontSize: 11, fontWeight: 600, formatter: params => Number.isFinite(visible[params.dataIndex].total) ? formatNumber(visible[params.dataIndex].total) : '—' },
+          data: visible.map(row => ({ value: row.total === null ? 0 : row.segments[index].value ?? 0, itemStyle: { opacity: row.team.isUserTeam ? 1 : .92, borderColor: row.team.isUserTeam ? 'rgba(255,255,255,.5)' : 'transparent', borderWidth: row.team.isUserTeam ? 1 : 0 } })),
+        })),
+      }, true);
+      chart.resize();
+      document.getElementById(`${kind}ChartUnit`).textContent = dynasty ? 'KTC VALUE' : 'ROS PROJ';
+      document.getElementById(`${kind}ChartLegend`).innerHTML = keys.map(key => `<span><i style="background:${colors[key]}"></i>${SLOT_LABELS[key] || key}</span>`).join('');
+      document.getElementById(`${kind}ChartNote`).textContent = kind === 'overall' && !dynasty
+        ? 'All rostered players with available PROJ · Contender overall rank uses starters only'
+        : 'Ranked by selected total · Your team is highlighted';
     }
 
     function renderRadarChart(teams, radarSlots = state.radarSlots) {
@@ -4482,17 +3685,17 @@
 
       const slots = Array.isArray(radarSlots) && radarSlots.length ? radarSlots : buildRadarSlots();
       const labels = slots.map((slot) => slot.label);
-      const radarMetric = state.currentRadarMetric === 'value' ? 'value' : 'ppg';
+      const radarMetric = state.currentRadarMetric === 'value' ? 'value' : 'proj';
       const isMobileRadar = window.matchMedia('(max-width: 640px)').matches;
-      const radarMetricLabel = radarMetric === 'value' ? 'Value' : 'PPG';
-      const radarValueFormatter = radarMetric === 'value' ? formatNumber : formatPpg;
+      const radarMetricLabel = radarMetric === 'value' ? 'Value' : 'PROJ';
+      const radarValueFormatter = radarMetric === 'value' ? formatNumber : formatProj;
 
       // Analyzer radar data labels:
-      // desktop uses a larger label size for both metrics, while mobile PPG stacks
+      // desktop uses a larger label size for both metrics, while mobile PROJ stacks
       // the unit beneath the value so labels fit without pushing wider.
       const radarDataLabelFormatter = radarMetric === 'value'
         ? (value) => formatNumber(value).replace(/k$/, 'K')
-        : (value) => (isMobileRadar ? [formatPpg(value), 'PPG'] : `${formatPpg(value)} PPG`);
+        : (value) => (isMobileRadar ? [formatProj(value), 'PROJ'] : `${formatProj(value)} PROJ`);
       const radarDataLabelFont = radarMetric === 'value'
         ? (isMobileRadar
           ? '700 10px "Product Sans", "Google Sans", sans-serif'
@@ -4500,42 +3703,29 @@
         : (isMobileRadar
           ? '700 10px "Product Sans", "Google Sans", sans-serif'
           : '700 13px "Product Sans", "Google Sans", sans-serif');
-      const radarDataLabelLineHeight = isMobileRadar && radarMetric === 'ppg' ? 0.98 : 1.1;
+      const radarDataLabelLineHeight = isMobileRadar && radarMetric === 'proj' ? 0.98 : 1.1;
       const comparisonTeams = teams.filter((team) => !team.isUserTeam);
       const leagueAverageTeams = comparisonTeams.length ? comparisonTeams : teams;
       const usingRestOfLeague = comparisonTeams.length > 0;
 
       // Analyzer positional strength radar:
-      // reuses the shared derived lineup selections for both Value and PPG, and averages
+      // reuses the shared derived lineup selections for both Value and PROJ, and averages
       // each slot against the rest of the league so position-by-position comparisons stay aligned.
       const userAssignments = userTeam.derivedLineups?.[radarMetric]?.assignments || [];
-      const userData = slots.map((slot, index) => userAssignments[index]?.score ?? 0);
+      const userData = userTeam.quality[radarMetric].slots;
 
       const leagueAverageDetails = slots.map((slot, index) => {
-        const totalMetric = leagueAverageTeams.reduce(
-          (sum, team) => sum + (team.derivedLineups?.[radarMetric]?.assignments?.[index]?.score ?? 0),
-          0,
-        );
-        const totalValue = leagueAverageTeams.reduce(
-          (sum, team) => sum + (team.derivedLineups?.[radarMetric]?.assignments?.[index]?.player?.value ?? 0),
-          0,
-        );
-        const totalPpg = leagueAverageTeams.reduce(
-          (sum, team) => sum + (team.derivedLineups?.[radarMetric]?.assignments?.[index]?.player?.ppg ?? 0),
-          0,
-        );
-        const populatedCount = leagueAverageTeams.reduce(
-          (sum, team) => sum + (team.derivedLineups?.[radarMetric]?.assignments?.[index]?.player ? 1 : 0),
-          0,
-        );
-        const teamCount = leagueAverageTeams.length;
+        const availableTeams = leagueAverageTeams.filter(team => Number.isFinite(team.quality[radarMetric].slots[index]));
+        const mean = values => {
+          const available = values.filter(Number.isFinite);
+          return available.length ? available.reduce((sum, value) => sum + value, 0) / available.length : null;
+        };
         return {
-          metricAverage: teamCount ? totalMetric / teamCount : 0,
-          valueAverage: teamCount ? totalValue / teamCount : 0,
-          ppgAverage: teamCount ? totalPpg / teamCount : 0,
-          teamCount,
-          populatedCount,
-          comparisonLabel: usingRestOfLeague ? `Across ${teamCount} other teams` : `Across ${teamCount} teams`,
+          metricAverage: mean(availableTeams.map(team => team.quality[radarMetric].slots[index])),
+          valueAverage: mean(availableTeams.map(team => team.derivedLineups[radarMetric].assignments[index]?.player?.value ?? 0)),
+          projAverage: mean(availableTeams.map(team => team.derivedLineups[radarMetric].assignments[index]?.player?.proj)),
+          populatedCount: availableTeams.length,
+          comparisonLabel: `Across ${availableTeams.length} ${usingRestOfLeague ? 'other ' : ''}teams with available data`,
         };
       });
       const leagueAverages = leagueAverageDetails.map((detail) => detail.metricAverage);
@@ -4552,37 +3742,14 @@
       // Positional strength slot ranks:
       // for each radar slot, ranks the user team among all teams by that slot's derived score
       // so the chart labels can show rank in parentheses (e.g. "QB (#3)").
-      const slotRanks = slots.map((slot, slotIndex) => {
-        const sorted = [...teams].sort(
-          (a, b) =>
-            (b.derivedLineups?.[radarMetric]?.assignments?.[slotIndex]?.score ?? 0) -
-            (a.derivedLineups?.[radarMetric]?.assignments?.[slotIndex]?.score ?? 0),
-        );
-        const idx = sorted.findIndex((t) => t.isUserTeam);
-        return idx === -1 ? null : idx + 1;
-      });
-
-      // Positional strength overall rank:
-      // sums each team's derived lineup scores across all slots for the current metric,
-      // then ranks the user among all teams for the panel title badge.
-      const teamMetricTotals = teams.map((t) => ({
-        isUserTeam: t.isUserTeam,
-        total: slots.reduce(
-          (sum, _, slotIndex) =>
-            sum + (t.derivedLineups?.[radarMetric]?.assignments?.[slotIndex]?.score ?? 0),
-          0,
-        ),
-      }));
-      const radarRank = (() => {
-        const sorted = [...teamMetricTotals].sort((a, b) => b.total - a.total);
-        const idx = sorted.findIndex((t) => t.isUserTeam);
-        return idx === -1 ? null : idx + 1;
-      })();
+      const slotRanks = slots.map((_, index) => Analysis.rank(
+        userTeam.quality[radarMetric].slots[index], teams.map(team => team.quality[radarMetric].slots[index])));
+      const radarRank = Analysis.rank(userTeam.quality[radarMetric].starters, teams.map(team => team.quality[radarMetric].starters));
 
       // Update the Positional Strength title badge with the overall rank for the active metric.
       const radarStrengthRankEl = document.getElementById('radarStrengthRank');
       if (radarStrengthRankEl) {
-        const radarMetricBadgeLabel = radarMetric === 'value' ? 'Value' : 'PPG';
+        const radarMetricBadgeLabel = radarMetric === 'value' ? 'Dynasty starters' : 'Contender';
         radarStrengthRankEl.textContent = radarRank ? `(#${radarRank} ${radarMetricBadgeLabel})` : '';
       }
 
@@ -4598,9 +3765,8 @@
         right: isMobileRadar ? 0 : 4,
       };
       const radarPointLabelPadding = isMobileRadar ? 4 : 6;
-      const radarLabelOffset = isMobileRadar
-        ? (radarMetric === 'ppg' ? 15 : 14)
-        : 22;
+      // Longer PROJ labels sit inside their points, keeping slot/rank labels clear.
+      const radarLabelOffset = radarMetric === 'proj' ? (isMobileRadar ? -18 : -20) : (isMobileRadar ? 14 : 22);
 
       if (state.charts.radar) {
         state.charts.radar.destroy();
@@ -4617,7 +3783,7 @@
         return [
           assignment.player.name,
           `Value: ${formatNumber(assignment.player.value)}`,
-          `PPG: ${formatPpg(assignment.player.ppg)}`,
+          `PROJ: ${formatAnalysisValue(assignment.player.proj, 'proj')}`,
         ];
       });
 
@@ -4627,7 +3793,7 @@
         }
         return [
           `Avg Value: ${formatNumber(detail.valueAverage)}`,
-          `Avg PPG: ${formatPpg(detail.ppgAverage)}`,
+          `Avg PROJ: ${formatProj(detail.projAverage)}`,
           detail.comparisonLabel,
         ];
       });
@@ -4942,27 +4108,6 @@
       });
     }
 
-    /* Rank-based color scale for FPTS / PPG (mirrors Stats page OVERVIEW_RANK_COLOR_SCALE) */
-    const LEADERBOARD_RANK_COLORS = [
-      { rank: 12, color: '#00ffc4ba' },
-      { rank: 24, color: '#85fff3ba' },
-      { rank: 36, color: '#7dd1ffba' },
-      { rank: 48, color: '#48a6ffba' },
-      { rank: 60, color: '#957cffba' },
-      { rank: 72, color: '#a642ffba' },
-      { rank: 84, color: '#cf60ffba' },
-      { rank: 96, color: '#ff6fe1ba' },
-      { rank: Infinity, color: '#ff0080ba' },
-    ];
-
-    function getLeaderboardRankColor(rank) {
-      if (!Number.isFinite(rank) || rank <= 0) return null;
-      for (const tier of LEADERBOARD_RANK_COLORS) {
-        if (rank <= tier.rank) return tier.color;
-      }
-      return LEADERBOARD_RANK_COLORS[LEADERBOARD_RANK_COLORS.length - 1]?.color || null;
-    }
-
     const LOGO_KEY_MAP = { WSH: 'was', WAS: 'was', JAC: 'jax', LA: 'lar' };
 
     function renderTeamCell(teamAbbr) {
@@ -4974,43 +4119,18 @@
       return `<img class="al-team-logo" src="../assets/NFL_logos_svg/${normalized}.svg" alt="${key}" width="20" height="20">`;
     }
 
+    // Player leaderboard follows the same mode semantics as team analysis and
+    // includes current rookies even when no historical scoring row exists.
     function renderLeagueLeaders() {
-      const position = state.activeLeaderboard;
-      const leaders = state.leaderboards[position] || [];
-      if (!leaders.length) {
-        elements.leaderboardBody.innerHTML = '<tr><td colspan="7" class="empty-row">No scoring data available.</td></tr>';
-        return;
-      }
-
-      // Build rank maps for FPTS and PPG conditional formatting
-      // Sort all current leaders by FPTS descending to assign color ranks
-      const byFpts = [...leaders].sort((a, b) => b.total - a.total);
-      const byPpg = [...leaders].sort((a, b) => b.ppg - a.ppg);
-      const fptsRankMap = new Map();
-      const ppgRankMap = new Map();
-      byFpts.forEach((entry, i) => { fptsRankMap.set(entry.playerId, i + 1); });
-      byPpg.forEach((entry, i) => { ppgRankMap.set(entry.playerId, i + 1); });
-
-      elements.leaderboardBody.innerHTML = leaders
-        .map((entry, index) => {
-          const pos = (entry.pos || '').toUpperCase();
-          const fptsColor = getLeaderboardRankColor(fptsRankMap.get(entry.playerId));
-          const ppgColor = getLeaderboardRankColor(ppgRankMap.get(entry.playerId));
-          const fptsStyle = fptsColor ? ` style="color:${fptsColor}"` : '';
-          const ppgStyle = ppgColor ? ` style="color:${ppgColor}"` : '';
-
-          return `
-          <tr>
-            <td>${index + 1}</td>
-            <td class="al-cell-player">${abbreviateFirstName(entry.name) || '—'}</td>
-            <td><span class="al-pos-tag ${pos}">${pos || '—'}</span></td>
-            <td>${renderTeamCell(entry.nflTeam)}</td>
-            <td class="al-cell-owner">${truncateLabel(entry.owner, 11) || '—'}</td>
-            <td class="al-fpts-cell"${fptsStyle}>${entry.total.toFixed(1)}</td>
-            <td class="al-ppg-cell"${ppgStyle}>${entry.ppg.toFixed(1)}</td>
-          </tr>`;
-        })
-        .join('');
+      const metric = state.currentLeadersMetric;
+      const key = metric === 'value' ? 'ktc' : 'proj';
+      const population = state.leaderboards[state.activeLeaderboard] || [];
+      const leaders = [...population].sort((a, b) => (b[key] ?? -Infinity) - (a[key] ?? -Infinity) || a.name.localeCompare(b.name)).slice(0, 100);
+      elements.leaderboardBody.innerHTML = leaders.length ? leaders.map(entry => {
+        const rank = Analysis.rank(entry[key], population.map(player => player[key]));
+        const color = analysisRankColor(rank, population.length);
+        return `<tr><td style="color:${color}">${rank || '—'}</td><td class="al-cell-player" title="${escapeHtml(entry.name)}">${escapeHtml(abbreviateFirstName(entry.name))}</td><td><span class="al-pos-tag ${entry.pos}">${entry.pos}</span></td><td>${renderTeamCell(entry.nflTeam)}</td><td class="al-cell-owner" title="${escapeHtml(entry.owner)}">${escapeHtml(truncateLabel(entry.owner, 15))}</td><td>${formatAnalysisValue(entry.ktc)}</td><td>${formatAnalysisValue(entry.proj, 'proj')}</td></tr>`;
+      }).join('') : '<tr><td colspan="7" class="empty-row">No rostered players available.</td></tr>';
     }
 
     function populateLeagueSelect(leagues) {
@@ -5102,8 +4222,8 @@
       return Math.round(value).toLocaleString();
     }
 
-    function formatPpg(value) {
-      if (!Number.isFinite(value)) return '0.0';
+    function formatProj(value) {
+      if (!Number.isFinite(value)) return '—';
       return value.toFixed(1);
     }
 

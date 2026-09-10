@@ -24,8 +24,8 @@
 // ============================================================================
 // CACHE VERSION — CHANGE THIS TO FORCE A FULL CACHE RESET
 // ============================================================================
-// Refresh the Ownership list with device-pixel-stable mobile POS-tag undershadows.
-const CACHE_NAME = 'DH3.45k';
+// Refresh League Analysis with ROS projections, the positional matrix, and redesigned charts.
+const CACHE_NAME = 'DH3.46-analysis';
 
 // ============================================================================
 // CORE ASSETS — Pre-cached during install
@@ -56,6 +56,10 @@ const CORE_ASSET_PATHS = [
   '/scripts/stats.js',
   '/scripts/DataHub.js',
   '/scripts/leaguehub.js',
+  // League Analysis shares a local projection model and a pinned ECharts renderer.
+  '/scripts/leaguehub-analysis.js',
+  '/scripts/vendor/echarts-6.0.0.min.js',
+  '/styles/leaguehub-analysis.css',
   '/scripts/dashboard.js',
   '/scripts/syop.js',
   '/scripts/dh-scramble.js',

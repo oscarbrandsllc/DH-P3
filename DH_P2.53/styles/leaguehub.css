@@ -1941,7 +1941,8 @@ body[data-page="leaguehub"] .analyzer-toggle .toggle-option.active {
   background: linear-gradient(135deg, rgba(118, 109, 255, 0.8), rgba(118, 109, 255, 0.45));
   color: #fff;
   box-shadow: 0 6px 16px rgba(118, 109, 255, 0.35);
-  width: 4rem !important;
+  /* Dynasty/Contender labels size naturally; a fixed Value/PPG-era width clipped Contender. */
+  width: auto;
 }
 
 body[data-page="leaguehub"] .analyzer-toggle .toggle-option:focus-visible {
@@ -2918,96 +2919,8 @@ body[data-page="leaguehub"] .app-header {
     padding: 0.28rem 0.5rem;
   }
 
-  /* Analyzer mobile panel headers: keep the title/subtitle stack intact while placing the
-     metric toggle and leaderboard position filters inline with the panel titles only. */
-  body[data-page="leaguehub"] #lineup-panel>.analyzer-panel-header,
-  body[data-page="leaguehub"] #radar-panel>.analyzer-panel-header,
-  body[data-page="leaguehub"] .analyzer-leaderboard-panel>.analyzer-panel-header {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
-    grid-template-areas:
-      "title . control"
-      "subtitle subtitle subtitle";
-    column-gap: 0rem;
-    row-gap: 0;
-    align-items: start;
-  }
-
-  /* Target the title/subtitle wrapper inside those headers so h2 and p can be placed on
-     separate grid rows without changing HTML structure or panel spacing. */
-  body[data-page="leaguehub"] #lineup-panel>.analyzer-panel-header> :first-child,
-  body[data-page="leaguehub"] #radar-panel>.analyzer-panel-header> :first-child,
-  body[data-page="leaguehub"] .analyzer-leaderboard-panel>.analyzer-panel-header> :first-child {
-    display: contents;
-  }
-
-  /* Title row placement for the mobile analyzer headers that carry inline controls. */
-  body[data-page="leaguehub"] #lineup-panel>.analyzer-panel-header h2,
-  body[data-page="leaguehub"] #radar-panel>.analyzer-panel-header h2,
-  body[data-page="leaguehub"] .analyzer-leaderboard-panel>.analyzer-panel-header h2 {
-    grid-area: title;
-    min-width: 0;
-    align-self: center;
-    justify-self: start;
-    text-wrap-mode: nowrap;
-  }
-
-  body[data-page="leaguehub"] #lineup-panel>.analyzer-panel-header .analyzer-heading-with-info {
-    gap: 0.65rem;
-  }
-
-  body[data-page="leaguehub"] #lineup-panel>.analyzer-panel-header .analyzer-info-trigger {
-    width: 1.05rem;
-    height: 1.05rem;
-  }
-
-  body[data-page="leaguehub"] #lineup-panel>.analyzer-panel-header .analyzer-info-tooltip {
-    left: -110px;
-    transform: translateX(0) translateY(4px);
-    width: min(280px, calc(100vw - 1.5rem));
-  }
-
-  body[data-page="leaguehub"] #lineup-panel>.analyzer-panel-header .analyzer-info:hover .analyzer-info-tooltip,
-  body[data-page="leaguehub"] #lineup-panel>.analyzer-panel-header .analyzer-info:focus-within .analyzer-info-tooltip {
-    transform: translateX(0) translateY(0);
-  }
-
-  /* Subtitle remains directly beneath the title row, preserving existing margin/padding rhythm. */
-  body[data-page="leaguehub"] #lineup-panel>.analyzer-panel-header p,
-  body[data-page="leaguehub"] #radar-panel>.analyzer-panel-header p,
-  body[data-page="leaguehub"] .analyzer-leaderboard-panel>.analyzer-panel-header p {
-    grid-area: subtitle;
-    min-width: 0;
-    margin-bottom: 0rem;
-    font-size: 0.82rem;
-  }
-
-  /* Place each control on the title row and pin it to the right edge of its own panel header. */
-  body[data-page="leaguehub"] #lineup-panel>.analyzer-panel-header .analyzer-toggle,
-  body[data-page="leaguehub"] #radar-panel>.analyzer-panel-header .analyzer-toggle,
-  body[data-page="leaguehub"] .analyzer-leaderboard-panel>.analyzer-panel-header .analyzer-filter-group {
-    grid-area: control;
-    justify-self: end;
-    align-self: center;
-    flex-shrink: 0;
-  }
-
-  /* Mobile lineup/radar toggles: slightly larger than the ultra-compact pass, but still
-     sized to fit beside the long panel titles on common phone widths. */
-  body[data-page="leaguehub"] #lineup-panel>.analyzer-panel-header .analyzer-toggle,
-  body[data-page="leaguehub"] #radar-panel>.analyzer-panel-header .analyzer-toggle {
-    gap: 0rem;
-    padding: 0.05rem;
-    margin-left: 6px;
-  }
-
-  body[data-page="leaguehub"] #lineup-panel>.analyzer-panel-header .analyzer-toggle .toggle-option,
-  body[data-page="leaguehub"] #radar-panel>.analyzer-panel-header .analyzer-toggle .toggle-option {
-    font-size: 0.75rem;
-    letter-spacing: 0.04em;
-    padding: 0.4rem 0rem;
-    width: 3.6rem;
-  }
+  /* League Analysis headers and Dynasty/Contender controls now live in
+     leaguehub-analysis.css; the former fixed-width Value/PPG grid is removed. */
 
   /* Mobile leaderboard filters: increase chip footprint so the control group visually fills
      more of the title row without affecting desktop sizing. */
